@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3 uid="uid://bfbrc8hceno8d"]
+
+[ext_resource type="Script" path="res://Universe.cs" id="1_wh6hk"]
+
+[node name="Universe" type="Node3D"]
+script = ExtResource("1_wh6hk")
+
+[node name="Pivot" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0)
+
+[node name="Camera3D" type="Camera3D" parent="Pivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 100)
