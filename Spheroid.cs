@@ -15,6 +15,7 @@ public partial class Spheroid : Planetoid
 		var uvs = new List<Vector2>();
 		var normals = new List<Vector3>();
 		var indices = new List<int>();
+        var colors = new List<Color>();
 
 		var surfaceArray = new Godot.Collections.Array();
 		surfaceArray.Resize((int)Mesh.ArrayType.Max);
@@ -40,9 +41,10 @@ public partial class Spheroid : Planetoid
                 var vert = new Vector3(x * radius * w, y * radius, z * radius * w);
                 verts.Add(vert);
                 normals.Add(vert.Normalized());
+                colors.Add(color.Lightened((i + j)/(float)(rings + radialSegments)));
                 uvs.Add(new Vector2(u, v));
                 point += 1;
-
+ 
                 // Create triangles in ring using indices.
                 if (i > 0 && j > 0)
                 {
@@ -73,10 +75,18 @@ public partial class Spheroid : Planetoid
 
 		surfaceArray[(int)Mesh.ArrayType.Vertex] = verts.ToArray();
 		surfaceArray[(int)Mesh.ArrayType.TexUV] = uvs.ToArray();
+        surfaceArray[(int)Mesh.ArrayType.Color] = colors.ToArray();
 		surfaceArray[(int)Mesh.ArrayType.Normal] = normals.ToArray();
 		surfaceArray[(int)Mesh.ArrayType.Index] = indices.ToArray();
 
 		meshInstance.Mesh = new ArrayMesh();
 		(meshInstance.Mesh as ArrayMesh).AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, surfaceArray);
+
+        var material = new StandardMaterial3D();
+       //material.EmissionEnabled = true;
+        //material.AlbedoColor = color;
+        material.VertexColorUseAsAlbedo = true;
+        material.ClearcoatEnabled = true;
+        (meshInstance.Mesh as ArrayMesh).SurfaceSetMaterial(0, material);
     }
 }

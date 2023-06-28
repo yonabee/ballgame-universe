@@ -7,6 +7,7 @@ public partial class Planetoid : Node3D
     public Vector3 initialVelocity;
     public int radius = 1;
     public int mass = 100;
+    public Color color = Colors.Red;
     public MeshInstance3D meshInstance;
     public Vector3 currentVelocity;
 
@@ -26,8 +27,8 @@ public partial class Planetoid : Node3D
     public void GeneratePlanet()
     {
         Initialize();
-        GenerateMesh();
         GenerateColors();
+        GenerateMesh();
     }
 
     public virtual void Initialize() {
@@ -49,7 +50,7 @@ public partial class Planetoid : Node3D
                 float sqrDist = distance.LengthSquared();
                 Vector3 forceDir = distance.Normalized();
                 Vector3 force = forceDir * _gravity * mass * otherBody.mass / sqrDist;
-                Vector3 acceleration = force / mass;
+                Vector3 acceleration = (force / mass).Normalized();
                 currentVelocity += acceleration * timeStep;
             }
         }
