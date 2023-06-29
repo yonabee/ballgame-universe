@@ -41,7 +41,7 @@ public partial class Spheroid : Planetoid
                 var vert = new Vector3(x * radius * w, y * radius, z * radius * w);
                 verts.Add(vert);
                 normals.Add(vert.Normalized());
-                colors.Add(color.Lightened((i + j)/(float)(rings + radialSegments)));
+                colors.Add(color);
                 uvs.Add(new Vector2(u, v));
                 point += 1;
  
@@ -83,10 +83,11 @@ public partial class Spheroid : Planetoid
 		(meshInstance.Mesh as ArrayMesh).AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, surfaceArray);
 
         var material = new StandardMaterial3D();
-       //material.EmissionEnabled = true;
+        //material.EmissionEnabled = true;
         //material.AlbedoColor = color;
         material.VertexColorUseAsAlbedo = true;
         material.ClearcoatEnabled = true;
+        //material.RimEnabled = true;
         (meshInstance.Mesh as ArrayMesh).SurfaceSetMaterial(0, material);
     }
 }

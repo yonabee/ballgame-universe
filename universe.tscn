@@ -1,6 +1,11 @@
-[gd_scene load_steps=2 format=3 uid="uid://bfbrc8hceno8d"]
+[gd_scene load_steps=3 format=3 uid="uid://bfbrc8hceno8d"]
 
 [ext_resource type="Script" path="res://Universe.cs" id="1_wh6hk"]
+
+[sub_resource type="Environment" id="Environment_p4qy4"]
+background_mode = 1
+ambient_light_source = 2
+ambient_light_color = Color(0.211765, 0.211765, 0.211765, 1)
 
 [node name="Universe" type="Node3D"]
 script = ExtResource("1_wh6hk")
@@ -9,4 +14,8 @@ script = ExtResource("1_wh6hk")
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0)
 
 [node name="Camera3D" type="Camera3D" parent="Pivot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 100)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1000)
+far = 8000.0
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_p4qy4")

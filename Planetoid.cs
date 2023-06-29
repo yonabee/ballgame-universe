@@ -13,6 +13,8 @@ public partial class Planetoid : Node3D
 
     float _gravity;
 
+    bool _outOfBounds = false;
+
     public override void _Ready()
     {
         _gravity = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle();
@@ -42,22 +44,52 @@ public partial class Planetoid : Node3D
 
     public void UpdateVelocity(List<Planetoid> allBodies, float timeStep) 
     {
-        foreach(var otherBody in allBodies) 
-        {
-            if (otherBody != this)
+        var distance = Math.Abs((Vector3.Zero - Transform.Origin).Length());
+        if (distance > Universe.Radius * 4) {
+            foreach(var otherBody in allBodies) 
             {
-                Vector3 distance = otherBody.Transform.Origin - Transform.Origin;
-                float sqrDist = distance.LengthSquared();
-                Vector3 forceDir = distance.Normalized();
-                Vector3 force = forceDir * _gravity * mass * otherBody.mass / sqrDist;
-                Vector3 acceleration = (force / mass).Normalized();
-                currentVelocity += acceleration * timeStep;
+                if (otherBody != this)
+                {
+                    _ApplyVelocity(otherBody.Transform.Origin, otherBody.mass, otherBody.radius, timeStep);
+                }
             }
         }
+
+        // sun
+        _ApplyVelocity(Vector3.Zero, 10000000, 0, timeStep);
     }
 
     public void UpdatePosition(float timeStep) 
     {
         TranslateObjectLocal(currentVelocity * timeStep);
+    }
+
+    void _ApplyVelocity(Vector3 origin, int bodyMass, int bodyRadius, float timeStep) 
+    {
+        Vector3 distance = origin - Transform.Origin;
+        if (bodyRadius == 0) {
+            if (Math.Abs(distance.Length()) > Universe.Radius*10) {
+                if (!_outOfBounds) {
+                    currentVelocity = Vector3.Zero;
+                    _outOfBounds = true;
+                }
+                distance = distance.Normalized() * Universe.Radius;
+            } else {
+                _outOfBounds = false;
+            } 
+        }
+
+        float sqrDist = distance.LengthSquared();
+        Vector3 forceDir = distance.Normalized();
+        Vector3 force = forceDir * _gravity * mass * bodyMass / sqrDist;
+        Vector3 acceleration = (force / mass).Normalized();
+        if (!Mathf.IsNaN(acceleration.Length())) {
+            if (bodyRadius != 0 && distance.Length() > this.radius + bodyRadius) {
+                currentVelocity += acceleration * timeStep;
+            } else {
+                currentVelocity += -acceleration * timeStep * 10;
+            }
+        }
+
     }
 }

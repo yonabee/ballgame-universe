@@ -15,6 +15,14 @@ run/main_scene="res://universe.tscn"
 config/features=PackedStringArray("4.0", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 
+[display]
+
+window/size/viewport_width=384
+window/size/viewport_height=216
+window/size/window_width_override=3840
+window/size/window_height_override=2160
+window/stretch/mode="viewport"
+
 [dotnet]
 
 project/assembly_name="Godot"
