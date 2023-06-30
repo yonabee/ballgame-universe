@@ -11,6 +11,19 @@ public partial class Spheroid : Planetoid
     {
         base.GenerateMesh();
 
+        var random = new RandomNumberGenerator();
+        random.Seed = (ulong)id;
+        var chance = random.Randf();
+
+        var noise = new FastNoiseLite();
+        noise.NoiseType = FastNoiseLite.NoiseTypeEnum.Simplex;
+        noise.FractalOctaves = 4;
+        noise.Seed = id;
+        noise.Frequency = random.RandfRange(0.0005f, 0.001f);
+        noise.DomainWarpEnabled = true;
+        noise.DomainWarpFractalOctaves = 2;
+        noise.DomainWarpFrequency = random.RandfRange(0.0005f, 0.005f);
+
 		var verts = new List<Vector3>();
 		var uvs = new List<Vector2>();
 		var normals = new List<Vector3>();
@@ -41,7 +54,24 @@ public partial class Spheroid : Planetoid
                 var vert = new Vector3(x * radius * w, y * radius, z * radius * w);
                 verts.Add(vert);
                 normals.Add(vert.Normalized());
-                colors.Add(color);
+                var zz = Mathf.Abs(noise.GetNoise3Dv(vert));
+                if (chance < 0.1 && zz < 0.3) {
+                    if (zz < 0.1) {
+                        colors.Add(altColor.Lightened(0.2f));
+                    } else {
+                        colors.Add(altColor);
+                    }
+                } else if (zz < 0.1) {
+                    colors.Add(color.Lightened(0.2f));
+                } else if (zz > 0.6) {
+                    if (chance < 0.3) {
+                        colors.Add(altColor.Darkened(0.15f));
+                    } else  {
+                        colors.Add(color.Darkened(0.15f));
+                    }
+                } else {
+                    colors.Add(color);
+                }
                 uvs.Add(new Vector2(u, v));
                 point += 1;
  

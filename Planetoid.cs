@@ -8,8 +8,10 @@ public partial class Planetoid : Node3D
     public int radius = 1;
     public int mass = 100;
     public Color color = Colors.Red;
+    public Color altColor = Colors.Blue;
     public MeshInstance3D meshInstance;
     public Vector3 currentVelocity;
+    public int id = 0;
 
     float _gravity;
 
@@ -44,19 +46,20 @@ public partial class Planetoid : Node3D
 
     public void UpdateVelocity(List<Planetoid> allBodies, float timeStep) 
     {
-        var distance = Math.Abs((Vector3.Zero - Transform.Origin).Length());
-        if (distance > Universe.Radius * 4) {
+        var universeOrigin = GetParent<Node3D>().Transform.Origin;
+        var distance = Math.Abs((universeOrigin - Transform.Origin).Length());
+        if (distance < Universe.Radius * 2) {
             foreach(var otherBody in allBodies) 
             {
                 if (otherBody != this)
                 {
-                    _ApplyVelocity(otherBody.Transform.Origin, otherBody.mass, otherBody.radius, timeStep);
+                    _ApplyVelocity(otherBody.ToGlobal(otherBody.Transform.Origin), otherBody.mass, otherBody.radius, timeStep);
                 }
             }
         }
 
         // sun
-        _ApplyVelocity(Vector3.Zero, 10000000, 0, timeStep);
+        _ApplyVelocity(universeOrigin, 10000000, 0, timeStep);
     }
 
     public void UpdatePosition(float timeStep) 
@@ -68,7 +71,7 @@ public partial class Planetoid : Node3D
     {
         Vector3 distance = origin - Transform.Origin;
         if (bodyRadius == 0) {
-            if (Math.Abs(distance.Length()) > Universe.Radius*10) {
+            if (Math.Abs(distance.Length()) > Universe.Radius*4) {
                 if (!_outOfBounds) {
                     currentVelocity = Vector3.Zero;
                     _outOfBounds = true;
@@ -87,7 +90,11 @@ public partial class Planetoid : Node3D
             if (bodyRadius != 0 && distance.Length() > this.radius + bodyRadius) {
                 currentVelocity += acceleration * timeStep;
             } else {
-                currentVelocity += -acceleration * timeStep * 10;
+                if (bodyRadius > 0) {
+                   currentVelocity += -acceleration * timeStep * 100;
+                } else {
+                    currentVelocity += acceleration * timeStep * 10;
+                }
             }
         }
 

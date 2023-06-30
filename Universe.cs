@@ -7,7 +7,9 @@ public partial class Universe : Node3D
 	List<Planetoid> bodies = new List<Planetoid>();
 	DirectionalLight3D sun = new DirectionalLight3D();
 
-	public static int Radius = 500;
+	public static int Radius = 1500;
+
+	Vector3 _rotate = Vector3.Zero;
 
 	Color[] colors = {
 		new Color("#5e0086"),
@@ -26,6 +28,10 @@ public partial class Universe : Node3D
 	{
 		var random = new RandomNumberGenerator();
 
+		_rotate.X = random.RandfRange(-2, 2);
+		_rotate.Y = random.RandfRange(-2, 2);
+		_rotate.Z = random.RandfRange(-2, 2);
+
 		var sun = new OmniLight3D();
 		sun.OmniRange = 100000;
 		sun.OmniAttenuation = 0.1f;
@@ -36,10 +42,11 @@ public partial class Universe : Node3D
 
 		for (int i = 0; i < sphereCount; i++) {
 			var sphere = new Spheroid();
-			sphere.radius = random.RandiRange(10, 250);
+			sphere.id = i;
+			sphere.radius = random.RandiRange(10, 300);
 			sphere.rings = sphere.radius * 3;
 			sphere.radialSegments = sphere.rings;
-			sphere.mass = sphere.radius * 100;
+			sphere.mass = sphere.radius * 1000;
 			switch(i%8) {
 				case 0:
 					sphere.TranslateObjectLocal(new Vector3(random.RandiRange(-Radius, 0),random.RandiRange(-Radius, 0),random.RandiRange(-Radius, 0)));
@@ -67,6 +74,7 @@ public partial class Universe : Node3D
 					break;
 			}
 			sphere.color = colors[i%colors.Length];
+			sphere.altColor = colors[(i + random.RandiRange(1, 32))%colors.Length];
 			bodies.Add(sphere);
 			AddChild(sphere);
 		}
@@ -82,6 +90,13 @@ public partial class Universe : Node3D
 		//	sun.Rotation.Y, 
 		//	sun.Rotation.Z
 		//);
+		// for (int i = 0; i < bodies.Count; i++) {
+		// 	bodies[i].Rotation = new Vector3(
+		// 		Mathf.Wrap(bodies[i].Rotation.X + (float)delta * _rotate.X, -Mathf.Pi, Mathf.Pi),
+		// 		Mathf.Wrap(bodies[i].Rotation.Y + (float)delta * _rotate.Y, -Mathf.Pi, Mathf.Pi),
+		// 		Mathf.Wrap(bodies[i].Rotation.Z + (float)delta * _rotate.Z, -Mathf.Pi, Mathf.Pi)
+		// 	);
+		// }
 		for (int i = 0; i < bodies.Count; i++) {
 			switch(i%4) {
 				case 0:
