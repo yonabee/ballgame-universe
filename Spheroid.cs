@@ -55,7 +55,7 @@ public partial class Spheroid : Planetoid
                 verts.Add(vert);
                 normals.Add(vert.Normalized());
                 var zz = Mathf.Abs(noise.GetNoise3Dv(vert));
-                if (chance < 0.1 && zz < 0.3) {
+                if (chance < 0.2 && zz < 0.3) {
                     if (zz < 0.1) {
                         colors.Add(altColor.Lightened(0.2f));
                     } else {
@@ -64,7 +64,7 @@ public partial class Spheroid : Planetoid
                 } else if (zz < 0.1) {
                     colors.Add(color.Lightened(0.2f));
                 } else if (zz > 0.6) {
-                    if (chance < 0.3) {
+                    if (chance < 0.4) {
                         colors.Add(altColor.Darkened(0.15f));
                     } else  {
                         colors.Add(color.Darkened(0.15f));

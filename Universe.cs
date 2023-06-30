@@ -101,33 +101,42 @@ public partial class Universe : Node3D
 			switch(i%4) {
 				case 0:
 					bodies[i].Rotation = new Vector3(
-						Mathf.Wrap(bodies[i].Rotation.X + (float)delta, -Mathf.Pi, Mathf.Pi),
+						Mathf.Wrap(bodies[i].Rotation.X + (float)delta * _rotate.X, -Mathf.Pi, Mathf.Pi),
 						bodies[i].Rotation.Y,
 						bodies[i].Rotation.Z
 					);
 					break;
 				case 1:
 					bodies[i].Rotation = new Vector3(
-						Mathf.Wrap(bodies[i].Rotation.X + (float)delta, -Mathf.Pi, Mathf.Pi),
-						Mathf.Wrap(bodies[i].Rotation.Y + (float)delta * 2, -Mathf.Pi, Mathf.Pi),
+						Mathf.Wrap(bodies[i].Rotation.X + (float)delta * _rotate.X, -Mathf.Pi, Mathf.Pi),
+						Mathf.Wrap(bodies[i].Rotation.Y + (float)delta * _rotate.Y, -Mathf.Pi, Mathf.Pi),
 						bodies[i].Rotation.Z
 					);
 					break;
 				case 2:
 					bodies[i].Rotation = new Vector3(
-						Mathf.Wrap(bodies[i].Rotation.X + (float)delta, -Mathf.Pi, Mathf.Pi),
-						Mathf.Wrap(bodies[i].Rotation.Y + (float)delta * 3, -Mathf.Pi, Mathf.Pi),
-						bodies[i].Rotation.Z
+						Mathf.Wrap(bodies[i].Rotation.X + (float)delta * _rotate.X, -Mathf.Pi, Mathf.Pi),
+						Mathf.Wrap(bodies[i].Rotation.Y + (float)delta * _rotate.Y, -Mathf.Pi, Mathf.Pi),
+						Mathf.Wrap(bodies[i].Rotation.Z + (float)delta * _rotate.Z, -Mathf.Pi, Mathf.Pi)
 					);
 					break;
 				case 3:
 					bodies[i].Rotation = new Vector3(
 						bodies[i].Rotation.X,
-						Mathf.Wrap(bodies[i].Rotation.Y + (float)delta, -Mathf.Pi, Mathf.Pi),
+						Mathf.Wrap(bodies[i].Rotation.Y + (float)delta * _rotate.Y, -Mathf.Pi, Mathf.Pi),
 						bodies[i].Rotation.Z
 					);
 					break;
 			}
 		}
 	}
+
+    public override void _Input(InputEvent @event)
+    {
+        if (@event.IsActionPressed("jump")) {
+			bodies.ForEach(body => body.QueueFree());
+			bodies.Clear();
+			_Ready();
+		}
+    }
 }
