@@ -46,7 +46,7 @@ public partial class Universe : Node3D
 			sphere.radius = random.RandiRange(10, 300);
 			sphere.rings = sphere.radius * 3;
 			sphere.radialSegments = sphere.rings;
-			sphere.mass = sphere.radius * 1000;
+			sphere.mass = sphere.radius * 10000;
 			switch(i%8) {
 				case 0:
 					sphere.TranslateObjectLocal(new Vector3(random.RandiRange(-Radius, 0),random.RandiRange(-Radius, 0),random.RandiRange(-Radius, 0)));

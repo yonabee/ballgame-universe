@@ -88,12 +88,12 @@ public partial class Planetoid : Node3D
         Vector3 acceleration = (force / mass).Normalized();
         if (!Mathf.IsNaN(acceleration.Length())) {
             if (bodyRadius != 0 && distance.Length() > this.radius + bodyRadius) {
-                currentVelocity += acceleration * timeStep;
+                currentVelocity += acceleration * timeStep / 4;
             } else {
                 if (bodyRadius > 0) {
-                   currentVelocity += -acceleration * timeStep * 100;
+                   currentVelocity += -acceleration * timeStep * 10;
                 } else {
-                    currentVelocity += acceleration * timeStep * 10;
+                    currentVelocity += acceleration * timeStep;
                 }
             }
         }
