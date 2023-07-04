@@ -2,13 +2,11 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
-public partial class Planetoid : Node3D
+public partial class Planetoid : RigidBody3D
 {
     public Vector3 initialVelocity;
-    public int radius = 1;
-    public int mass = 100;
-    public Color color = Colors.Red;
-    public Color altColor = Colors.Blue;
+    public float radius = 1;
+    public Color[] crayons = { Colors.Red };
     public MeshInstance3D meshInstance;
     public Vector3 currentVelocity;
     public int id = 0;
@@ -20,12 +18,9 @@ public partial class Planetoid : Node3D
     public override void _Ready()
     {
         _gravity = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle();
+        CustomIntegrator = true;
         currentVelocity = initialVelocity;
         GeneratePlanet();
-    }
-
-    public override void _Process(double delta)
-    {
     }
 
     public void GeneratePlanet()
@@ -53,7 +48,7 @@ public partial class Planetoid : Node3D
             {
                 if (otherBody != this)
                 {
-                    _ApplyVelocity(otherBody.ToGlobal(otherBody.Transform.Origin), otherBody.mass, otherBody.radius, timeStep);
+                    _ApplyVelocity(otherBody.ToGlobal(otherBody.Transform.Origin), otherBody.Mass, otherBody.radius, timeStep);
                 }
             }
         }
@@ -67,13 +62,13 @@ public partial class Planetoid : Node3D
         TranslateObjectLocal(currentVelocity * timeStep);
     }
 
-    void _ApplyVelocity(Vector3 origin, int bodyMass, int bodyRadius, float timeStep) 
+    void _ApplyVelocity(Vector3 origin, float bodyMass, float bodyRadius, float timeStep) 
     {
         Vector3 distance = origin - Transform.Origin;
         if (bodyRadius == 0) {
-            if (Math.Abs(distance.Length()) > Universe.Radius*4) {
+            if (Math.Abs(distance.Length()) > Universe.Radius) {
                 if (!_outOfBounds) {
-                    currentVelocity = Vector3.Zero;
+                    currentVelocity = currentVelocity / 2;
                     _outOfBounds = true;
                 }
                 distance = distance.Normalized() * Universe.Radius;
@@ -84,14 +79,14 @@ public partial class Planetoid : Node3D
 
         float sqrDist = distance.LengthSquared();
         Vector3 forceDir = distance.Normalized();
-        Vector3 force = forceDir * _gravity * mass * bodyMass / sqrDist;
-        Vector3 acceleration = (force / mass).Normalized();
+        Vector3 force = forceDir * _gravity * Mass * bodyMass / sqrDist;
+        Vector3 acceleration = (force / Mass).Normalized();
         if (!Mathf.IsNaN(acceleration.Length())) {
             if (bodyRadius != 0 && distance.Length() > this.radius + bodyRadius) {
-                currentVelocity += acceleration * timeStep / 4;
+                currentVelocity += acceleration * timeStep;
             } else {
                 if (bodyRadius > 0) {
-                   currentVelocity += -acceleration * timeStep * 10;
+                   currentVelocity += -acceleration * timeStep * 100;
                 } else {
                     currentVelocity += acceleration * timeStep;
                 }

@@ -5,11 +5,13 @@ using System.Collections.Generic;
 public partial class Universe : Node3D
 {
 	List<Planetoid> bodies = new List<Planetoid>();
-	DirectionalLight3D sun = new DirectionalLight3D();
+	//DirectionalLight3D sun = new DirectionalLight3D();
 
-	public static int Radius = 1500;
+	public static int Radius = 1000;
 
 	Vector3 _rotate = Vector3.Zero;
+
+	DirectionalLight3D otherSun;
 
 	Color[] colors = {
 		new Color("#5e0086"),
@@ -28,25 +30,29 @@ public partial class Universe : Node3D
 	{
 		var random = new RandomNumberGenerator();
 
-		_rotate.X = random.RandfRange(-2, 2);
-		_rotate.Y = random.RandfRange(-2, 2);
-		_rotate.Z = random.RandfRange(-2, 2);
+		_rotate.X = random.RandfRange(-1f, 1f);
+		_rotate.Y = random.RandfRange(-1f, 1f);
+		_rotate.Z = random.RandfRange(-1f, 1f);
 
 		var sun = new OmniLight3D();
-		sun.OmniRange = 100000;
-		sun.OmniAttenuation = 0.1f;
-		sun.LightIntensityLumens = 100000;
+		sun.OmniRange = 1000f;
+		sun.OmniAttenuation = 1f;
+		sun.LightIntensityLumens = 1000;
 		AddChild(sun);
 
-		int sphereCount = random.RandiRange(75,125);
+		otherSun = new DirectionalLight3D();
+		otherSun.LightIntensityLumens = 10;
+		AddChild(otherSun);
+
+		int sphereCount = 100;
 
 		for (int i = 0; i < sphereCount; i++) {
 			var sphere = new Spheroid();
 			sphere.id = i;
-			sphere.radius = random.RandiRange(10, 300);
-			sphere.rings = sphere.radius * 3;
+			sphere.radius = random.RandiRange(10, 500);
+			sphere.rings = Mathf.FloorToInt(sphere.radius);
 			sphere.radialSegments = sphere.rings;
-			sphere.mass = sphere.radius * 10000;
+			sphere.Mass = sphere.radius * 1000;
 			switch(i%8) {
 				case 0:
 					sphere.TranslateObjectLocal(new Vector3(random.RandiRange(-Radius, 0),random.RandiRange(-Radius, 0),random.RandiRange(-Radius, 0)));
@@ -73,8 +79,101 @@ public partial class Universe : Node3D
 					sphere.TranslateObjectLocal(new Vector3(random.RandiRange(Radius, 0),random.RandiRange(Radius, 0),random.RandiRange(Radius, 0)));
 					break;
 			}
-			sphere.color = colors[i%colors.Length];
-			sphere.altColor = colors[(i + random.RandiRange(1, 32))%colors.Length];
+
+			var chance = random.Randf();
+			if (chance < 0.2f) {
+				chance = random.Randf();
+
+				// classic rainbow
+				if (chance < 0.15f) {
+					sphere.crayons = new[] {
+						new Color("#E50000"),
+						new Color("#FF8D00"),
+						new Color("#FFEE00"),
+						new Color("#028121"),
+						new Color("#004CFF"),
+						new Color("#770088")
+					};
+				
+				// progress rainbow
+				} else if (chance < 0.3f) {
+					sphere.crayons = new[] {
+						new Color("#FFFFFF"),
+						new Color("#FFAFC7"),
+						new Color("#73D7EE"),
+						new Color("#613915"),
+						new Color("#000000"),
+						new Color("#E50000"),
+						new Color("#FF8D00"),
+						new Color("#FFEE00"),
+						new Color("#028121"),
+						new Color("#004CFF"),
+						new Color("#770088")
+					};
+
+				// transgender
+				} else if (chance < 0.45f) {
+					sphere.crayons = new[] {
+						new Color("#5BCFFB"),
+						new Color("#F5ABB9"),
+						new Color("#FFFFFF"),
+						new Color("#F5ABB9"),
+						new Color("#5BCFFB")
+					};
+
+				// lesbian
+				} else if (chance < 0.6f) {
+					sphere.crayons = new[] {
+						new Color("#D62800"),
+						new Color("#FF9B56"),
+						new Color("#FFFFFF"),
+						new Color("#D462A6"),
+						new Color("#A40062"),
+					};
+				
+				// bisexual
+				} else if (chance < 0.7f) {
+					sphere.crayons = new[] {
+						new Color("#D60270"),
+						new Color("#9B4F96"),
+						new Color("#0038A8")
+					};
+
+				// pansexual
+				} else if (chance < 0.8f) {
+					sphere.crayons = new[] {
+						new Color("#FF1C8D"),
+						new Color("#FFD700"),
+						new Color("#1AB3FF")
+					};
+
+				// nonbinary
+				} else if (chance < 0.9f) {
+					sphere.crayons = new[] {
+						new Color("#FCF431"),
+						new Color("#FCFCFC"),
+						new Color("#9D59D2"),
+						new Color("#282828")
+					};
+				
+				// genderfluid
+				} else {
+					sphere.crayons = new[] {
+						new Color("#FE76A2"),
+						new Color("#FFFFFF"),
+						new Color("#BF12D7"),
+						new Color("#000000"),
+						new Color("#303CBE")
+					};
+				}
+
+			
+			} else {
+				sphere.crayons = new[] { 
+					colors[i%colors.Length],
+					colors[(i + random.RandiRange(1, 32))%colors.Length]
+				};
+			}
 			bodies.Add(sphere);
 			AddChild(sphere);
 		}
@@ -83,13 +182,13 @@ public partial class Universe : Node3D
 	public override void _PhysicsProcess(double delta)
 	{
 		base._PhysicsProcess(delta);
-			bodies.ForEach(body => body.UpdateVelocity(bodies, (float)delta));
-			bodies.ForEach(body => body.UpdatePosition((float)delta));
-		//sun.Rotation = new Vector3(
-		//	Mathf.Wrap(sun.Rotation.X + (float)delta, -Mathf.Pi, Mathf.Pi), 
-		//	sun.Rotation.Y, 
-		//	sun.Rotation.Z
-		//);
+		bodies.ForEach(body => body.UpdateVelocity(bodies, (float)delta));
+		bodies.ForEach(body => body.UpdatePosition((float)delta));
+		otherSun.Rotation = new Vector3(
+			Mathf.Wrap(otherSun.Rotation.X + (float)delta / 4, -Mathf.Pi, Mathf.Pi), 
+			Mathf.Wrap(otherSun.Rotation.Y + (float)delta / 8, -Mathf.Pi, Mathf.Pi), 
+			Mathf.Wrap(otherSun.Rotation.Z + (float)delta / 20, -Mathf.Pi, Mathf.Pi) 
+		);
 		// for (int i = 0; i < bodies.Count; i++) {
 		// 	bodies[i].Rotation = new Vector3(
 		// 		Mathf.Wrap(bodies[i].Rotation.X + (float)delta * _rotate.X, -Mathf.Pi, Mathf.Pi),

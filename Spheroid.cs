@@ -6,6 +6,19 @@ public partial class Spheroid : Planetoid
 {
     public int radialSegments = 50;
     public int rings = 50;
+    public CollisionShape3D collisionShape;
+
+    public override void Initialize()
+    {
+        base.Initialize();
+        if (collisionShape == null) {
+            collisionShape = new CollisionShape3D();
+            var shape = new SphereShape3D();
+            shape.Radius = radius;
+            collisionShape.Shape = shape;
+            AddChild(collisionShape);
+        }
+    }
 
     public override void GenerateMesh()
     {
@@ -54,23 +67,44 @@ public partial class Spheroid : Planetoid
                 var vert = new Vector3(x * radius * w, y * radius, z * radius * w);
                 verts.Add(vert);
                 normals.Add(vert.Normalized());
-                var zz = Mathf.Abs(noise.GetNoise3Dv(vert));
-                if (chance < 0.2 && zz < 0.3) {
-                    if (zz < 0.1) {
-                        colors.Add(altColor.Lightened(0.2f));
-                    } else {
-                        colors.Add(altColor);
+                var noizz = Mathf.Abs(noise.GetNoise3Dv(vert));
+
+                // "Pride" marbles 🏳️‍🌈🏳️‍⚧️
+                if (crayons.Length > 2) {
+                    for (var k = 0; k < crayons.Length; k++) {
+                        if (noizz < (float)(k + 1)/(float)crayons.Length) {
+                            if (chance < 0.1) {
+                                colors.Add(crayons[k].Lightened(0.2f));
+                            } else if (chance < 0.2) {
+                                colors.Add(crayons[k].Darkened(0.15f));
+                            } else {
+                                colors.Add(crayons[k]);
+                            }
+                            break;
+                        }
                     }
-                } else if (zz < 0.1) {
-                    colors.Add(color.Lightened(0.2f));
-                } else if (zz > 0.6) {
-                    if (chance < 0.4) {
-                        colors.Add(altColor.Darkened(0.15f));
+
+                }
+
+                // Contrast stripes
+                else if (chance < 0.2 && noizz < 0.3 && crayons.Length > 1) {
+                    if (noizz < 0.1) {
+                        colors.Add(crayons[1].Lightened(0.2f));
+                    } else {
+                        colors.Add(crayons[1]);
+                    }
+
+                // Regular racing stripes, occasionally with spots
+                } else if (noizz < 0.1) {
+                    colors.Add(crayons[0].Lightened(0.2f));
+                } else if (noizz > 0.6) {
+                    if (chance < 0.4 && crayons.Length > 1) {
+                        colors.Add(crayons[1].Darkened(0.15f));
                     } else  {
-                        colors.Add(color.Darkened(0.15f));
+                        colors.Add(crayons[0].Darkened(0.15f));
                     }
                 } else {
-                    colors.Add(color);
+                    colors.Add(crayons[0]);
                 }
                 uvs.Add(new Vector2(u, v));
                 point += 1;
