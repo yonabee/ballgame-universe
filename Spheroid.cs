@@ -14,7 +14,7 @@ public partial class Spheroid : Planetoid
         if (collisionShape == null) {
             collisionShape = new CollisionShape3D();
             var shape = new SphereShape3D();
-            shape.Radius = radius;
+            shape.Radius = Radius;
             collisionShape.Shape = shape;
             AddChild(collisionShape);
         }
@@ -64,7 +64,7 @@ public partial class Spheroid : Planetoid
                 var u = ((float)j) / radialSegments;
                 var x = Mathf.Sin(u * Mathf.Pi * 2);
                 var z = Mathf.Cos(u * Mathf.Pi * 2);
-                var vert = new Vector3(x * radius * w, y * radius, z * radius * w);
+                var vert = new Vector3(x * Radius * w, y * Radius, z * Radius * w);
                 verts.Add(vert);
                 normals.Add(vert.Normalized());
                 var noizz = Mathf.Abs(noise.GetNoise3Dv(vert));

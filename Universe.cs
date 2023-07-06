@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public partial class Universe : Node3D
 {
-	List<Planetoid> bodies = new List<Planetoid>();
+	List<HeavenlyBody> bodies = new List<HeavenlyBody>();
 	//DirectionalLight3D sun = new DirectionalLight3D();
 
 	public static int Radius = 1000;
@@ -12,15 +12,16 @@ public partial class Universe : Node3D
 	Vector3 _rotate = Vector3.Zero;
 
 	DirectionalLight3D otherSun;
+	OmniLight3D sun;
 
 	Color[] colors = {
+		new Color("#000000"),
 		new Color("#5e0086"),
 		new Color("#201ec1"),
 		new Color("#00b200"),
 		new Color("#ffe200"),
 		new Color("#ff4600"),
 		new Color("#ff001f"),
-		new Color("#000000"),
 		new Color("#492708"),
 		new Color("#00dcfa"), 
 		new Color("#da17ff")
@@ -34,25 +35,44 @@ public partial class Universe : Node3D
 		_rotate.Y = random.RandfRange(-1f, 1f);
 		_rotate.Z = random.RandfRange(-1f, 1f);
 
-		var sun = new OmniLight3D();
-		sun.OmniRange = 1000f;
-		sun.OmniAttenuation = 1f;
-		sun.LightIntensityLumens = 1000;
-		AddChild(sun);
+		if (sun == null) {
+			sun = new OmniLight3D();
+			sun.OmniRange = 2500f;
+			sun.OmniAttenuation = 0.2f;
+			sun.LightIntensityLumens = 1000;
+			sun.ShadowEnabled = true;
+			AddChild(sun);
+		}
 
-		otherSun = new DirectionalLight3D();
-		otherSun.LightIntensityLumens = 10;
-		AddChild(otherSun);
+		if (otherSun == null) {
+			otherSun = new DirectionalLight3D();
+			otherSun.LightIntensityLumens = 10;
+			otherSun.LightColor = new Color("#808080");
+			AddChild(otherSun);
+		}
 
 		int sphereCount = 100;
+		int starCount = 4;
+
+		for (int i = 0; i < starCount; i++) {
+			var star = new Star();
+			star.Mass = 1000000;
+			star.Radius = 10;
+			star.OmniRange = 1500f;
+			star.OmniAttenuation = 0.2f;
+			star.LightIntensityLumens = 1000f;
+			star.LightColor = colors[random.RandiRange(1, 9)];
+			bodies.Add(star);
+			AddChild(star);
+		}
 
 		for (int i = 0; i < sphereCount; i++) {
 			var sphere = new Spheroid();
 			sphere.id = i;
-			sphere.radius = random.RandiRange(10, 500);
-			sphere.rings = Mathf.FloorToInt(sphere.radius);
+			sphere.Radius = random.RandiRange(10, 500);
+			sphere.rings = Mathf.FloorToInt(sphere.Radius);
 			sphere.radialSegments = sphere.rings;
-			sphere.Mass = sphere.radius * 1000;
+			sphere.Mass = sphere.Radius * 10000;
 			switch(i%8) {
 				case 0:
 					sphere.TranslateObjectLocal(new Vector3(random.RandiRange(-Radius, 0),random.RandiRange(-Radius, 0),random.RandiRange(-Radius, 0)));
@@ -182,7 +202,7 @@ public partial class Universe : Node3D
 	public override void _PhysicsProcess(double delta)
 	{
 		base._PhysicsProcess(delta);
-		bodies.ForEach(body => body.UpdateVelocity(bodies, (float)delta));
+		bodies.ForEach(body => body.UpdateVelocity(bodies, Transform.Origin, (float)delta));
 		bodies.ForEach(body => body.UpdatePosition((float)delta));
 		otherSun.Rotation = new Vector3(
 			Mathf.Wrap(otherSun.Rotation.X + (float)delta / 4, -Mathf.Pi, Mathf.Pi), 

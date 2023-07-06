@@ -36,7 +36,7 @@ public partial class CubePlanet : Planetoid
         if (shapeSettings == null) {
             shapeSettings = new ShapeGenerator.ShapeSettings();
             shapeSettings.mass = Mass;
-            shapeSettings.radius = radius;
+            shapeSettings.radius = Radius;
             var noise = new NoiseSettings();
             noise.center = ToGlobal(Transform.Origin);
             noise.filterType = NoiseSettings.FilterType.Simple;
