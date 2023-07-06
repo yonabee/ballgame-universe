@@ -28,7 +28,7 @@ public interface HeavenlyBody
         }
 
         // sun
-        _ApplyVelocity(origin, 100000000, 0, timeStep);
+        _ApplyVelocity(origin, 1000000000, 0, timeStep);
     }
 
     public void UpdatePosition(float timeStep) 
@@ -60,7 +60,7 @@ public interface HeavenlyBody
                 CurrentVelocity += acceleration * timeStep;
             } else {
                 if (bodyRadius > 0) {
-                   CurrentVelocity += -acceleration * timeStep * 100;
+                   CurrentVelocity += -acceleration * timeStep * 10;
                 } else {
                     CurrentVelocity += acceleration * timeStep;
                 }

@@ -51,13 +51,13 @@ public partial class Universe : Node3D
 			AddChild(otherSun);
 		}
 
-		int sphereCount = 100;
+		int sphereCount = 150;
 		int starCount = 4;
 
 		for (int i = 0; i < starCount; i++) {
 			var star = new Star();
-			star.Mass = 1000000;
-			star.Radius = 10;
+			star.Mass = random.RandiRange(100000, 10000000);
+			star.Radius = 0.1f;
 			star.OmniRange = 1500f;
 			star.OmniAttenuation = 0.2f;
 			star.LightIntensityLumens = 1000f;
@@ -69,7 +69,7 @@ public partial class Universe : Node3D
 		for (int i = 0; i < sphereCount; i++) {
 			var sphere = new Spheroid();
 			sphere.id = i;
-			sphere.Radius = random.RandiRange(10, 500);
+			sphere.Radius = random.RandiRange(10, 200);
 			sphere.rings = Mathf.FloorToInt(sphere.Radius);
 			sphere.radialSegments = sphere.rings;
 			sphere.Mass = sphere.Radius * 10000;
@@ -211,13 +211,13 @@ public partial class Universe : Node3D
 		);
 		// for (int i = 0; i < bodies.Count; i++) {
 		// 	bodies[i].Rotation = new Vector3(
-		// 		Mathf.Wrap(bodies[i].Rotation.X + (float)delta * _rotate.X, -Mathf.Pi, Mathf.Pi),
-		// 		Mathf.Wrap(bodies[i].Rotation.Y + (float)delta * _rotate.Y, -Mathf.Pi, Mathf.Pi),
-		// 		Mathf.Wrap(bodies[i].Rotation.Z + (float)delta * _rotate.Z, -Mathf.Pi, Mathf.Pi)
-		// 	);
+		// 			Mathf.Wrap(bodies[i].Rotation.X + (float)delta * _rotate.X, -Mathf.Pi, Mathf.Pi),
+		// 			bodies[i].Rotation.Y,
+		// 			bodies[i].Rotation.Z
+		// 		);		
 		// }
 		for (int i = 0; i < bodies.Count; i++) {
-			switch(i%4) {
+			switch(i%3) {
 				case 0:
 					bodies[i].Rotation = new Vector3(
 						Mathf.Wrap(bodies[i].Rotation.X + (float)delta * _rotate.X, -Mathf.Pi, Mathf.Pi),
@@ -228,22 +228,15 @@ public partial class Universe : Node3D
 				case 1:
 					bodies[i].Rotation = new Vector3(
 						Mathf.Wrap(bodies[i].Rotation.X + (float)delta * _rotate.X, -Mathf.Pi, Mathf.Pi),
-						Mathf.Wrap(bodies[i].Rotation.Y + (float)delta * _rotate.Y, -Mathf.Pi, Mathf.Pi),
-						bodies[i].Rotation.Z
+						bodies[i].Rotation.Y,
+						Mathf.Wrap(bodies[i].Rotation.Z + (float)delta * _rotate.Z, -Mathf.Pi, Mathf.Pi)
 					);
 					break;
 				case 2:
 					bodies[i].Rotation = new Vector3(
-						Mathf.Wrap(bodies[i].Rotation.X + (float)delta * _rotate.X, -Mathf.Pi, Mathf.Pi),
-						Mathf.Wrap(bodies[i].Rotation.Y + (float)delta * _rotate.Y, -Mathf.Pi, Mathf.Pi),
-						Mathf.Wrap(bodies[i].Rotation.Z + (float)delta * _rotate.Z, -Mathf.Pi, Mathf.Pi)
-					);
-					break;
-				case 3:
-					bodies[i].Rotation = new Vector3(
 						bodies[i].Rotation.X,
-						Mathf.Wrap(bodies[i].Rotation.Y + (float)delta * _rotate.Y, -Mathf.Pi, Mathf.Pi),
-						bodies[i].Rotation.Z
+						bodies[i].Rotation.Y,
+						Mathf.Wrap(bodies[i].Rotation.Z + (float)delta * _rotate.Z, -Mathf.Pi, Mathf.Pi)
 					);
 					break;
 			}
