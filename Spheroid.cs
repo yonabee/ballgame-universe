@@ -96,12 +96,20 @@ public partial class Spheroid : Planetoid
 
                 // Regular racing stripes, occasionally with spots
                 } else if (noizz < 0.1) {
-                    colors.Add(crayons[0].Lightened(0.2f));
+                    if (crayons[0] != Colors.White) {
+                        colors.Add(crayons[0].Lightened(0.2f));
+                    } else {
+                        colors.Add(crayons[1].Darkened(0.15f));
+                    }
                 } else if (noizz > 0.6) {
                     if (chance < 0.4 && crayons.Length > 1) {
                         colors.Add(crayons[1].Darkened(0.15f));
                     } else  {
-                        colors.Add(crayons[0].Darkened(0.15f));
+                        if (crayons[0] != Colors.White) {
+                            colors.Add(crayons[0].Darkened(0.15f));
+                        } else {
+                            colors.Add(crayons[1].Lightened(0.2f));
+                        }
                     }
                 } else {
                     colors.Add(crayons[0]);

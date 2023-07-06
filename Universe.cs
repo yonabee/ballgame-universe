@@ -7,7 +7,7 @@ public partial class Universe : Node3D
 	List<HeavenlyBody> bodies = new List<HeavenlyBody>();
 	//DirectionalLight3D sun = new DirectionalLight3D();
 
-	public static int Radius = 1000;
+	public static int Radius = 2000;
 
 	Vector3 _rotate = Vector3.Zero;
 
@@ -16,15 +16,16 @@ public partial class Universe : Node3D
 
 	Color[] colors = {
 		new Color("#000000"),
-		new Color("#5e0086"),
-		new Color("#201ec1"),
-		new Color("#00b200"),
-		new Color("#ffe200"),
-		new Color("#ff4600"),
-		new Color("#ff001f"),
-		new Color("#492708"),
-		new Color("#00dcfa"), 
-		new Color("#da17ff")
+		new Color("#E50000"),
+		new Color("#FF8D00"),
+		new Color("#FFEE00"),
+		new Color("#028121"),
+		new Color("#004CFF"),
+		new Color("#770088"),
+		new Color("#FFFFFF"),
+		new Color("#FFAFC7"),
+		new Color("#73D7EE"),
+		new Color("#613915")
 	};
 
 	public override void _Ready() 
@@ -61,7 +62,7 @@ public partial class Universe : Node3D
 			star.OmniRange = 1500f;
 			star.OmniAttenuation = 0.2f;
 			star.LightIntensityLumens = 1000f;
-			star.LightColor = colors[random.RandiRange(1, 9)];
+			star.LightColor = colors[random.RandiRange(1, 10)];
 			bodies.Add(star);
 			AddChild(star);
 		}
@@ -69,7 +70,7 @@ public partial class Universe : Node3D
 		for (int i = 0; i < sphereCount; i++) {
 			var sphere = new Spheroid();
 			sphere.id = i;
-			sphere.Radius = random.RandiRange(10, 200);
+			sphere.Radius = random.RandiRange(10, 300);
 			sphere.rings = Mathf.FloorToInt(sphere.Radius);
 			sphere.radialSegments = sphere.rings;
 			sphere.Mass = sphere.Radius * 10000;
@@ -103,10 +104,10 @@ public partial class Universe : Node3D
 			var chance = random.Randf();
 			if (chance < 0.2f) {
 				chance = random.Randf();
-
+				Color[] crayons;
 				// classic rainbow
 				if (chance < 0.15f) {
-					sphere.crayons = new[] {
+					crayons = new[] {
 						new Color("#E50000"),
 						new Color("#FF8D00"),
 						new Color("#FFEE00"),
@@ -114,10 +115,11 @@ public partial class Universe : Node3D
 						new Color("#004CFF"),
 						new Color("#770088")
 					};
+
 				
 				// progress rainbow
 				} else if (chance < 0.3f) {
-					sphere.crayons = new[] {
+					crayons = new[] {
 						new Color("#FFFFFF"),
 						new Color("#FFAFC7"),
 						new Color("#73D7EE"),
@@ -133,7 +135,7 @@ public partial class Universe : Node3D
 
 				// transgender
 				} else if (chance < 0.45f) {
-					sphere.crayons = new[] {
+					crayons = new[] {
 						new Color("#5BCFFB"),
 						new Color("#F5ABB9"),
 						new Color("#FFFFFF"),
@@ -143,7 +145,7 @@ public partial class Universe : Node3D
 
 				// lesbian
 				} else if (chance < 0.6f) {
-					sphere.crayons = new[] {
+					crayons = new[] {
 						new Color("#D62800"),
 						new Color("#FF9B56"),
 						new Color("#FFFFFF"),
@@ -153,7 +155,7 @@ public partial class Universe : Node3D
 				
 				// bisexual
 				} else if (chance < 0.7f) {
-					sphere.crayons = new[] {
+					crayons = new[] {
 						new Color("#D60270"),
 						new Color("#9B4F96"),
 						new Color("#0038A8")
@@ -161,7 +163,7 @@ public partial class Universe : Node3D
 
 				// pansexual
 				} else if (chance < 0.8f) {
-					sphere.crayons = new[] {
+					crayons = new[] {
 						new Color("#FF1C8D"),
 						new Color("#FFD700"),
 						new Color("#1AB3FF")
@@ -169,7 +171,7 @@ public partial class Universe : Node3D
 
 				// nonbinary
 				} else if (chance < 0.9f) {
-					sphere.crayons = new[] {
+					crayons = new[] {
 						new Color("#FCF431"),
 						new Color("#FCFCFC"),
 						new Color("#9D59D2"),
@@ -178,16 +180,21 @@ public partial class Universe : Node3D
 				
 				// genderfluid
 				} else {
-					sphere.crayons = new[] {
+					crayons = new[] {
 						new Color("#FE76A2"),
 						new Color("#FFFFFF"),
 						new Color("#BF12D7"),
 						new Color("#000000"),
 						new Color("#303CBE")
 					};
+				}					
+				
+				var offset = random.RandiRange(0, crayons.Length - 1);
+				sphere.crayons = new Color[crayons.Length];
+				for (var idx = offset; idx < crayons.Length + offset; idx++) {
+					sphere.crayons[idx%crayons.Length] = crayons[idx%crayons.Length];
 				}
 
-			
 			} else {
 				sphere.crayons = new[] { 
 					colors[i%colors.Length],
