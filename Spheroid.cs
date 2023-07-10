@@ -6,17 +6,14 @@ public partial class Spheroid : Planetoid
 {
     public int radialSegments = 50;
     public int rings = 50;
-    public CollisionShape3D collisionShape;
 
     public override void Initialize()
     {
         base.Initialize();
-        if (collisionShape == null) {
-            collisionShape = new CollisionShape3D();
+        if (colliders[0].Shape == null) {
             var shape = new SphereShape3D();
             shape.Radius = Radius;
-            collisionShape.Shape = shape;
-            AddChild(collisionShape);
+            colliders[0].Shape = shape;
         }
     }
 
@@ -25,13 +22,13 @@ public partial class Spheroid : Planetoid
         base.GenerateMesh();
 
         var random = new RandomNumberGenerator();
-        random.Seed = (ulong)id;
+        random.Seed = (ulong)Id;
         var chance = random.Randf();
 
         var noise = new FastNoiseLite();
         noise.NoiseType = FastNoiseLite.NoiseTypeEnum.Simplex;
         noise.FractalOctaves = 4;
-        noise.Seed = id;
+        noise.Seed = Id;
         noise.Frequency = random.RandfRange(0.0005f, 0.001f);
         noise.DomainWarpEnabled = true;
         noise.DomainWarpFractalOctaves = 2;
@@ -151,8 +148,8 @@ public partial class Spheroid : Planetoid
 		surfaceArray[(int)Mesh.ArrayType.Normal] = normals.ToArray();
 		surfaceArray[(int)Mesh.ArrayType.Index] = indices.ToArray();
 
-		meshInstance.Mesh = new ArrayMesh();
-		(meshInstance.Mesh as ArrayMesh).AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, surfaceArray);
+		meshes[0].Mesh = new ArrayMesh();
+		(meshes[0].Mesh as ArrayMesh).AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, surfaceArray);
 
         var material = new StandardMaterial3D();
         //material.EmissionEnabled = true;
@@ -160,6 +157,6 @@ public partial class Spheroid : Planetoid
         material.VertexColorUseAsAlbedo = true;
         material.ClearcoatEnabled = true;
         //material.RimEnabled = true;
-        (meshInstance.Mesh as ArrayMesh).SurfaceSetMaterial(0, material);
+        (meshes[0].Mesh as ArrayMesh).SurfaceSetMaterial(0, material);
     }
 }

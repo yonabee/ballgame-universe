@@ -4,11 +4,11 @@ using Godot;
 
 public class TerrainFace 
 {
-    ColorGenerator colorGenerator;
-    ShapeGenerator shapeGenerator;
-    ShapeGenerator.ShapeSettings settings;
-    ArrayMesh landMesh;
-    ArrayMesh oceanMesh;
+    public ColorGenerator colorGenerator;
+    public ShapeGenerator shapeGenerator;
+    public ShapeGenerator.ShapeSettings settings;
+    public ArrayMesh landMesh;
+    public ArrayMesh oceanMesh;
     int resolution;
     Vector3 localUp;
     Vector3 axisA;
@@ -49,7 +49,9 @@ public class TerrainFace
     public void ConstructMesh()
     {
         int triIndex = 0;
-        colors = (landMesh.SurfaceGetArrayLen(0) == verts.Length) ? colors : new Color[verts.Length];
+        colors = (landMesh.GetSurfaceCount() > 0 && landMesh.SurfaceGetArrayLen(0) == verts.Length) 
+            ? colors 
+            : new Color[verts.Length];
 
 		var landSurfaceArray = new Godot.Collections.Array();
 		landSurfaceArray.Resize((int)Mesh.ArrayType.Max);
@@ -69,8 +71,6 @@ public class TerrainFace
 
                 verts[i] = pointOnUnitSphere * elevation.scaled;
                 oceanVerts[i] = pointOnUnitSphere * settings.radius;
-                colors[i] = colorGenerator.BiomeColorFromPoint(pointOnUnitSphere, elevation.unscaled);
-                oceanColors[i] = colorGenerator.OceanColorFromPoint(pointOnUnitSphere);
 
                 if (x != resolution - 1 && y != resolution - 1)
                 {
@@ -86,18 +86,36 @@ public class TerrainFace
             }
         }
 
+        colorGenerator.UpdateElevation(shapeGenerator.elevationMinMax);
+
+        for (int y = 0; y < resolution; y++) {
+            for (int x = 0; x < resolution; x++) {
+                int i = x + y * resolution;
+                Vector2 percent = new Vector2(x, y) / (resolution - 1);
+                Vector3 pointOnUnitCube = localUp + (percent.X - .5f) * 2 * axisA + (percent.Y - .5f) * 2 * axisB;
+                Vector3 pointOnUnitSphere = pointOnUnitCube.Normalized();
+
+                Elevation elevation = shapeGenerator.GetElevation(pointOnUnitSphere);
+
+                colors[i] = colorGenerator.BiomeColorFromPoint(pointOnUnitSphere, elevation.unscaled);
+                oceanColors[i] = colorGenerator.OceanColorFromPoint(pointOnUnitSphere);
+            }
+        }
+
 		landSurfaceArray[(int)Mesh.ArrayType.Vertex] = verts;
-		landSurfaceArray[(int)Mesh.ArrayType.TexUV] = colors;
+		landSurfaceArray[(int)Mesh.ArrayType.Color] = colors;
 		landSurfaceArray[(int)Mesh.ArrayType.Index] = tris;
         landMesh.ClearSurfaces();
         landMesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, landSurfaceArray);
-        landMesh.RegenNormalMaps();
+        //landMesh.RegenNormalMaps();
 
-		oceanSurfaceArray[(int)Mesh.ArrayType.Vertex] = verts;
-		oceanSurfaceArray[(int)Mesh.ArrayType.TexUV] = colors;
-		oceanSurfaceArray[(int)Mesh.ArrayType.Index] = tris;
-        oceanMesh.ClearSurfaces();
-        oceanMesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, oceanSurfaceArray);
-        oceanMesh.RegenNormalMaps();
+		// oceanSurfaceArray[(int)Mesh.ArrayType.Vertex] = verts;
+		// oceanSurfaceArray[(int)Mesh.ArrayType.Color] = colors;
+		// oceanSurfaceArray[(int)Mesh.ArrayType.Index] = tris;
+        // oceanMesh.ClearSurfaces();
+        // oceanMesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, oceanSurfaceArray);
+        //oceanMesh.RegenNormalMaps();
+
+        GD.Print("generated meshes");
     }
 }

@@ -32,11 +32,10 @@ public class ColorGenerator
         float biomeIndex = 0;
         int numBiomes = settings.biomeColourSettings.biomes.Length;
         float blendRange = settings.biomeColourSettings.blendAmount / 2f + .001f;
-
         for (int i = 0; i < numBiomes; i++)
         {
             float dst = heightPercent - settings.biomeColourSettings.biomes[i].startHeight;
-            float weight = Mathf.InverseLerp(-blendRange, blendRange, dst);
+            float weight = Mathf.Clamp(Mathf.InverseLerp(-blendRange, blendRange, dst),0,1);
             biomeIndex *= (1 - weight);
             biomeIndex += i * weight;
         }
@@ -51,6 +50,7 @@ public class ColorGenerator
             return settings.oceanColor.Sample(height - settings.elevation.Min / -settings.elevation.Min);
         } else {
             float index = BiomeIndexFromPoint(pointOnUnitSphere);
+            GD.Print(index);
             int baseIndex = Mathf.FloorToInt(index);
             float remainder = index - (float)baseIndex;
             if (settings.biomeColourSettings.biomes.Length > baseIndex + 1 && remainder > 0) {

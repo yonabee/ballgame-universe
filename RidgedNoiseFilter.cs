@@ -11,7 +11,7 @@ public class RidgedNoiseFilter : INoiseFilter {
     public RidgedNoiseFilter(NoiseSettings settings)
     {
         this.settings = settings;
-        FastNoiseLite noise = new FastNoiseLite();
+        noise = new FastNoiseLite();
         noise.NoiseType = FastNoiseLite.NoiseTypeEnum.Simplex;
         noise.Frequency = settings.baseRoughness;
         noise.FractalOctaves = 1;
