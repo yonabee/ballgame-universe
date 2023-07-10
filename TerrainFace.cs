@@ -74,13 +74,13 @@ public class TerrainFace
 
                 if (x != resolution - 1 && y != resolution - 1)
                 {
-                    tris[triIndex] = i;
+                    tris[triIndex + 2] = i;
                     tris[triIndex + 1] = i + resolution + 1; 
-                    tris[triIndex + 2] = i + resolution;
+                    tris[triIndex] = i + resolution;
 
-                    tris[triIndex + 3] = i;
+                    tris[triIndex + 5] = i;
                     tris[triIndex + 4] = i + 1;
-                    tris[triIndex + 5] = i + resolution + 1;
+                    tris[triIndex + 3] = i + resolution + 1;
                     triIndex += 6;
                 }
             }
@@ -109,11 +109,11 @@ public class TerrainFace
         landMesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, landSurfaceArray);
         //landMesh.RegenNormalMaps();
 
-		// oceanSurfaceArray[(int)Mesh.ArrayType.Vertex] = verts;
-		// oceanSurfaceArray[(int)Mesh.ArrayType.Color] = colors;
-		// oceanSurfaceArray[(int)Mesh.ArrayType.Index] = tris;
-        // oceanMesh.ClearSurfaces();
-        // oceanMesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, oceanSurfaceArray);
+		oceanSurfaceArray[(int)Mesh.ArrayType.Vertex] = verts;
+		oceanSurfaceArray[(int)Mesh.ArrayType.Color] = colors;
+		oceanSurfaceArray[(int)Mesh.ArrayType.Index] = tris;
+        oceanMesh.ClearSurfaces();
+        oceanMesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, oceanSurfaceArray);
         //oceanMesh.RegenNormalMaps();
 
         GD.Print("generated meshes");
