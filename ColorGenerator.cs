@@ -47,10 +47,9 @@ public class ColorGenerator
     public Color BiomeColorFromPoint(Vector3 pointOnUnitSphere, float height)
     {
         if (height < 0) {
-            return settings.oceanColor.Sample(height - settings.elevation.Min / -settings.elevation.Min);
+            return settings.oceanColor.Sample(height / settings.elevation.Min);
         } else {
             float index = BiomeIndexFromPoint(pointOnUnitSphere);
-            GD.Print(index);
             int baseIndex = Mathf.FloorToInt(index);
             float remainder = index - (float)baseIndex;
             if (settings.biomeColourSettings.biomes.Length > baseIndex + 1 && remainder > 0) {
@@ -64,6 +63,8 @@ public class ColorGenerator
 
     public Color OceanColorFromPoint(Vector3 pointOnUnitSphere)
     {
-        return settings.oceanColor.Sample(0.5f);
+        var color = settings.oceanColor.Sample(0.5f);
+        color.A = 0.5f;
+        return color;
     }
 }

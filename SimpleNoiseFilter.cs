@@ -14,6 +14,7 @@ public class SimpleNoiseFilter : INoiseFilter {
         noise.NoiseType = FastNoiseLite.NoiseTypeEnum.Simplex;
         noise.Frequency = settings.baseRoughness;
         noise.FractalOctaves = 1;
+        noise.Seed =(int)new RandomNumberGenerator().Randi();
     }
 
     public float Evaluate(Vector3 point)

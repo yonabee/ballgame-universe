@@ -14,7 +14,9 @@ public class TerrainFace
     Vector3 axisA;
     Vector3 axisB;
     Vector3[] verts;
+    Vector3[] normals;
     Vector3[] oceanVerts;
+    Vector3[] oceanNormals;
     Color[] colors;
     Color[] oceanColors;
     int[] tris;
@@ -40,7 +42,9 @@ public class TerrainFace
         axisB = localUp.Cross(axisA);
 
         verts = new Vector3[resolution * resolution];
+        normals = new Vector3[resolution * resolution];
         oceanVerts = new Vector3[resolution * resolution];
+        oceanNormals = new Vector3[resolution * resolution];
         colors = new Color[resolution * resolution];
         oceanColors = new Color[resolution * resolution];
         tris = new int[(resolution - 1) * (resolution - 1) * 6];
@@ -70,7 +74,9 @@ public class TerrainFace
                 Elevation elevation = shapeGenerator.GetElevation(pointOnUnitSphere);
 
                 verts[i] = pointOnUnitSphere * elevation.scaled;
+                normals[i] = verts[i].Normalized();
                 oceanVerts[i] = pointOnUnitSphere * settings.radius;
+                oceanNormals[i] = oceanVerts[i].Normalized();
 
                 if (x != resolution - 1 && y != resolution - 1)
                 {
@@ -103,18 +109,18 @@ public class TerrainFace
         }
 
 		landSurfaceArray[(int)Mesh.ArrayType.Vertex] = verts;
+        landSurfaceArray[(int)Mesh.ArrayType.Normal] = normals;
 		landSurfaceArray[(int)Mesh.ArrayType.Color] = colors;
 		landSurfaceArray[(int)Mesh.ArrayType.Index] = tris;
         landMesh.ClearSurfaces();
         landMesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, landSurfaceArray);
-        //landMesh.RegenNormalMaps();
 
-		oceanSurfaceArray[(int)Mesh.ArrayType.Vertex] = verts;
-		oceanSurfaceArray[(int)Mesh.ArrayType.Color] = colors;
+		oceanSurfaceArray[(int)Mesh.ArrayType.Vertex] = oceanVerts;
+        oceanSurfaceArray[(int)Mesh.ArrayType.Normal] = oceanNormals;
+		oceanSurfaceArray[(int)Mesh.ArrayType.Color] = oceanColors;
 		oceanSurfaceArray[(int)Mesh.ArrayType.Index] = tris;
         oceanMesh.ClearSurfaces();
         oceanMesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, oceanSurfaceArray);
-        //oceanMesh.RegenNormalMaps();
 
         GD.Print("generated meshes");
     }

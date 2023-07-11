@@ -12,7 +12,7 @@ public partial class Planetoid : RigidBody3D, HeavenlyBody
     public MeshInstance3D[] meshes;
     public CollisionShape3D[] colliders;
     public Vector3 CurrentVelocity { get; set; }
-    public int Id { get; set; }
+    public int ID { get; set; }
     public float Gravity { get; set; }
     public bool OutOfBounds { get; set; }
 

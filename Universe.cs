@@ -33,9 +33,9 @@ public partial class Universe : Node3D
 	{
 		var random = new RandomNumberGenerator();
 
-		_rotate.X = random.RandfRange(-1f, 1f);
-		_rotate.Y = random.RandfRange(-1f, 1f);
-		_rotate.Z = random.RandfRange(-1f, 1f);
+		_rotate.X = random.RandfRange(-0.3f, 0.3f);
+		_rotate.Y = random.RandfRange(-0.3f, 0.3f);
+		_rotate.Z = random.RandfRange(-0.3f, 0.3f);
 
 		// if (sun == null) {
 		// 	sun = new OmniLight3D();
@@ -48,12 +48,12 @@ public partial class Universe : Node3D
 
 		GD.Print("universe ready");
 
-		if (planet == null) {
+		if (planet == null || planet.IsQueuedForDeletion()) {
 			GD.Print("adding planet");
 			planet = new CubePlanet();
+			planet.ID = 666;
 			planet.Mass = 10000;
-			planet.Radius = 700;
-			bodies.Add(planet);
+			planet.Radius = 1000;
 			AddChild(planet);
 		}
 
@@ -64,14 +64,14 @@ public partial class Universe : Node3D
 			AddChild(otherSun);
 		}
 
-		int sphereCount = 10;
+		int sphereCount = 25;
 		int starCount = 4;
 
 		for (int i = 0; i < starCount; i++) {
 			var star = new Star();
 			star.Mass = random.RandiRange(100000, 10000000);
 			star.Radius = 0.1f;
-			star.OmniRange = 1500f;
+			star.OmniRange = 5000f;
 			star.OmniAttenuation = 0.2f;
 			star.LightIntensityLumens = 1000f;
 			star.LightColor = colors[random.RandiRange(1, 10)];
@@ -81,7 +81,7 @@ public partial class Universe : Node3D
 
 		for (int i = 0; i < sphereCount; i++) {
 			var sphere = new Spheroid();
-			sphere.Id = i;
+			sphere.ID = i;
 			sphere.Radius = random.RandiRange(10, 300);
 			sphere.rings = Mathf.FloorToInt(sphere.Radius);
 			sphere.radialSegments = sphere.rings;
@@ -235,6 +235,11 @@ public partial class Universe : Node3D
 		// 			bodies[i].Rotation.Z
 		// 		);		
 		// }
+		planet.Rotation = new Vector3(
+			Mathf.Wrap(planet.Rotation.X + (float)delta * _rotate.X, -Mathf.Pi, Mathf.Pi),
+			planet.Rotation.Y,
+			Mathf.Wrap(planet.Rotation.Z + (float)delta * _rotate.Z, -Mathf.Pi, Mathf.Pi)
+		);
 		for (int i = 0; i < bodies.Count; i++) {
 			switch(i%3) {
 				case 0:

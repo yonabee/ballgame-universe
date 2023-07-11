@@ -54,9 +54,10 @@ public partial class CubePlanet : Planetoid
             noiseLayer1.filterType = NoiseSettings.FilterType.Simple;
 
             var noiseLayer2 = new NoiseSettings();
-            noiseLayer2.strength = 5.5f;
+            noiseLayer2.strength = 4f;
             noiseLayer2.octaves = 5;
             noiseLayer2.baseRoughness = 1f;
+            noiseLayer2.roughness = 2f;
             noiseLayer2.persistence = 0.5f;
             noiseLayer2.minValue = 1.25f;
             noiseLayer2.center = center;
@@ -64,10 +65,10 @@ public partial class CubePlanet : Planetoid
             noiseLayer2.useFirstLayerAsMask = true;
 
             var noiseLayer3 = new NoiseSettings();
-            noiseLayer3.strength = 1f;
+            noiseLayer3.strength = 0.8f;
             noiseLayer3.octaves = 4;
-            noiseLayer3.baseRoughness = 3;
-            noiseLayer3.roughness = 2.5f;
+            noiseLayer3.baseRoughness = 2.5f;
+            noiseLayer3.roughness = 2f;
             noiseLayer3.persistence = 0.5f;
             noiseLayer3.minValue = 0f;
             noiseLayer3.center = center;
@@ -81,7 +82,10 @@ public partial class CubePlanet : Planetoid
         if (colorSettings == null) {
             colorSettings = new ColorSettings();
             colorSettings.oceanColor = new Gradient();
-            colorSettings.oceanColor.Colors = new[] { new Color("#000080"), new Color("#6cf")};
+            colorSettings.oceanColor.Colors = new[] { 
+                new Color("#0f80ff"),
+                new Color("#000080") 
+            };
             colorSettings.biomeColourSettings = new ColorSettings.BiomeColourSettings();
 
             var biome1 = new ColorSettings.BiomeColourSettings.Biome();
@@ -134,7 +138,7 @@ public partial class CubePlanet : Planetoid
             colorSettings.biomeColourSettings.noise = biomeNoise;
             colorSettings.biomeColourSettings.noiseOffset = 0.66f;
             colorSettings.biomeColourSettings.noiseStrength = 0.4f;
-            colorSettings.biomeColourSettings.blendAmount = 0f;
+            colorSettings.biomeColourSettings.blendAmount = 0.5f;
         }
 
         shapeGenerator.UpdateSettings(shapeSettings);
@@ -157,6 +161,8 @@ public partial class CubePlanet : Planetoid
         if (oceanRenderer == null) {
             oceanRenderer = new StandardMaterial3D();
             oceanRenderer.VertexColorUseAsAlbedo = true;
+            oceanRenderer.Transparency = StandardMaterial3D.TransparencyEnum.Alpha;
+            oceanRenderer.ClearcoatEnabled = true;
         }
 
         for (int i = 0; i < Faces; i++) {
@@ -185,6 +191,7 @@ public partial class CubePlanet : Planetoid
                 meshes[Faces + i].Mesh = terrainFaces[i].oceanMesh;
                 meshes[i].Mesh.SurfaceSetMaterial(0, landRenderer);
                 meshes[Faces + i].Mesh.SurfaceSetMaterial(0, oceanRenderer);
+                meshes[i].CreateMultipleConvexCollisions();
             }
         }
         GD.Print("rendered");
