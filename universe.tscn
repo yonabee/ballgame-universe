@@ -1,19 +1,23 @@
-[gd_scene load_steps=5 format=3 uid="uid://bfbrc8hceno8d"]
+[gd_scene load_steps=7 format=3 uid="uid://bfbrc8hceno8d"]
 
 [ext_resource type="Script" path="res://Universe.cs" id="1_wh6hk"]
+[ext_resource type="Script" path="res://Pivot.cs" id="2_7e67d"]
+[ext_resource type="Script" path="res://UniverseCamera.cs" id="3_08y0b"]
 
-[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ww3by"]
-sky_horizon_color = Color(0.384314, 0.454902, 0.54902, 1)
-ground_bottom_color = Color(0, 0, 0, 1)
-ground_horizon_color = Color(0.384314, 0.454902, 0.54902, 1)
+[sub_resource type="PhysicalSkyMaterial" id="PhysicalSkyMaterial_2n7al"]
+rayleigh_coefficient = 0.99
+rayleigh_color = Color(0.00392157, 0.00392157, 0.0431373, 1)
+mie_color = Color(0.0784314, 0.0980392, 0.133333, 1)
+ground_color = Color(0, 0, 0, 1)
 
 [sub_resource type="Sky" id="Sky_njqtj"]
-sky_material = SubResource("ProceduralSkyMaterial_ww3by")
+sky_material = SubResource("PhysicalSkyMaterial_2n7al")
 
 [sub_resource type="Environment" id="Environment_p4qy4"]
 background_mode = 2
 sky = SubResource("Sky_njqtj")
 ambient_light_source = 3
+ambient_light_color = Color(0.270588, 0.270588, 0.270588, 1)
 ambient_light_sky_contribution = 0.21
 ambient_light_energy = 0.43
 reflected_light_source = 1
@@ -28,11 +32,13 @@ script = ExtResource("1_wh6hk")
 
 [node name="Pivot" type="Marker3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0)
+script = ExtResource("2_7e67d")
 
-[node name="Camera3D" type="Camera3D" parent="Pivot"]
+[node name="UniverseCamera" type="Camera3D" parent="Pivot"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2000)
 near = 1.0
 far = 10000.0
+script = ExtResource("3_08y0b")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_p4qy4")

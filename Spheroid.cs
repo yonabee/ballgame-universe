@@ -22,13 +22,13 @@ public partial class Spheroid : Planetoid
         base.GenerateMesh();
 
         var random = new RandomNumberGenerator();
-        random.Seed = (ulong)ID;
+        random.Seed = (ulong)Seed;
         var chance = random.Randf();
 
         var noise = new FastNoiseLite();
         noise.NoiseType = FastNoiseLite.NoiseTypeEnum.Simplex;
         noise.FractalOctaves = 4;
-        noise.Seed = ID;
+        noise.Seed = Seed;
         noise.Frequency = random.RandfRange(0.0005f, 0.001f);
         noise.DomainWarpEnabled = true;
         noise.DomainWarpFractalOctaves = 2;

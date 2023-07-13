@@ -16,4 +16,5 @@ public class NoiseSettings {
     public Vector3 center;
     public float minValue;
     public float weightMultiplier = 0.8f;
+    public int seed;
 }

@@ -52,6 +52,7 @@ public partial class CubePlanet : Planetoid
             noiseLayer1.minValue = 1.1f;
             noiseLayer1.center = center;
             noiseLayer1.filterType = NoiseSettings.FilterType.Simple;
+            noiseLayer1.seed = Seed;
 
             var noiseLayer2 = new NoiseSettings();
             noiseLayer2.strength = 4f;
@@ -63,6 +64,7 @@ public partial class CubePlanet : Planetoid
             noiseLayer2.center = center;
             noiseLayer2.filterType = NoiseSettings.FilterType.Simple;
             noiseLayer2.useFirstLayerAsMask = true;
+            noiseLayer2.seed = Seed;
 
             var noiseLayer3 = new NoiseSettings();
             noiseLayer3.strength = 0.8f;
@@ -74,6 +76,7 @@ public partial class CubePlanet : Planetoid
             noiseLayer3.center = center;
             noiseLayer3.filterType = NoiseSettings.FilterType.Ridged;
             noiseLayer3.useFirstLayerAsMask = true;
+            noiseLayer3.seed = Seed;
 
             NoiseSettings[] noiseSettings = new[] { noiseLayer1, noiseLayer2, noiseLayer3 };
             shapeSettings.noiseSettings = noiseSettings;
