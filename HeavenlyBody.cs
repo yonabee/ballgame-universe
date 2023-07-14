@@ -18,7 +18,7 @@ public interface HeavenlyBody
     public void UpdateVelocity(List<HeavenlyBody> allBodies, Vector3 origin, float timeStep) 
     {
         var distance = Mathf.Abs((origin - Transform.Origin).Length());
-        if (distance < Universe.Radius * 2) {
+        if (distance < Universe.Radius) {
             foreach(var node in allBodies) 
             {
                 if (node != this)

@@ -54,7 +54,7 @@ public partial class Universe : Node3D
 			GD.Print("adding planet");
 			Planet = new CubePlanet();
 			Planet.Seed = (int)random.Randi();
-			Planet.Mass = 10000;
+			Planet.Mass = 1000000;
 			Planet.Radius = 1000;
 			AddChild(Planet);
 		}
@@ -66,7 +66,7 @@ public partial class Universe : Node3D
 			AddChild(otherSun);
 		}
 
-		int sphereCount = 40;
+		int sphereCount = 80;
 		int starCount = 4;
 
 		for (int i = 0; i < starCount; i++) {
@@ -84,7 +84,7 @@ public partial class Universe : Node3D
 		for (int i = 0; i < sphereCount; i++) {
 			var sphere = new Spheroid();
 			sphere.Seed = i;
-			sphere.Radius = random.RandiRange(10, 300);
+			sphere.Radius = random.RandiRange(50, 300);
 			sphere.rings = Mathf.FloorToInt(sphere.Radius);
 			sphere.radialSegments = sphere.rings;
 			sphere.Mass = sphere.Radius * 10000;
@@ -248,7 +248,7 @@ public partial class Universe : Node3D
 					bodies[i].RotateObjectLocal(new Vector3(1,0,0), (float)delta * _rotate.X);
 					break;
 				case 1:
-					bodies[i].RotateObjectLocal(new Vector3(1,0,1), (float)delta * _rotate.Y);
+					bodies[i].RotateObjectLocal(new Vector3(1,0,1).Normalized(), (float)delta * _rotate.Y);
 					break;
 				case 2:
 					bodies[i].RotateObjectLocal(new Vector3(0,0,1), (float)delta * _rotate.Z);
