@@ -1,7 +1,7 @@
 using Godot;
 using System;
 
-public partial class UniverseCamera : Camera3D
+public partial class Watcher : Camera3D
 {
 	public override void _PhysicsProcess(double delta)
 	{

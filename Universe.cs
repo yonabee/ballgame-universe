@@ -15,6 +15,8 @@ public partial class Universe : Node3D
 	OmniLight3D sun;
 	public static CubePlanet Planet;
 
+	RandomNumberGenerator random;
+
 	Color[] colors = {
 		new Color("#000000"),
 		new Color("#E50000"),
@@ -243,25 +245,13 @@ public partial class Universe : Node3D
 		for (int i = 0; i < bodies.Count; i++) {
 			switch(i%3) {
 				case 0:
-					bodies[i].Rotation = new Vector3(
-						Mathf.Wrap(bodies[i].Rotation.X + (float)delta * _rotate.X, -Mathf.Pi, Mathf.Pi),
-						bodies[i].Rotation.Y,
-						bodies[i].Rotation.Z
-					);
+					bodies[i].RotateObjectLocal(new Vector3(1,0,0), (float)delta * _rotate.X);
 					break;
 				case 1:
-					bodies[i].Rotation = new Vector3(
-						Mathf.Wrap(bodies[i].Rotation.X + (float)delta * _rotate.X, -Mathf.Pi, Mathf.Pi),
-						bodies[i].Rotation.Y,
-						Mathf.Wrap(bodies[i].Rotation.Z + (float)delta * _rotate.Z, -Mathf.Pi, Mathf.Pi)
-					);
+					bodies[i].RotateObjectLocal(new Vector3(1,0,1), (float)delta * _rotate.Y);
 					break;
 				case 2:
-					bodies[i].Rotation = new Vector3(
-						bodies[i].Rotation.X,
-						bodies[i].Rotation.Y,
-						Mathf.Wrap(bodies[i].Rotation.Z + (float)delta * _rotate.Z, -Mathf.Pi, Mathf.Pi)
-					);
+					bodies[i].RotateObjectLocal(new Vector3(0,0,1), (float)delta * _rotate.Z);
 					break;
 			}
 		}
