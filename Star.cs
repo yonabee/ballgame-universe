@@ -12,7 +12,7 @@ public partial class Star : OmniLight3D, HeavenlyBody
 
     public override void _Ready()
     {
-        Gravity = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle();
+        Mass = Gravity * Radius * Radius / Universe.Gravity;
         CurrentVelocity = initialVelocity;
     }
 }

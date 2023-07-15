@@ -20,9 +20,9 @@ public partial class Planetoid : RigidBody3D, HeavenlyBody
     {
         Faces = 1;
         Layers = 1;
-        Gravity = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle();
         CustomIntegrator = true;
         CurrentVelocity = initialVelocity;
+        Mass = Gravity * Radius * Radius / Universe.Gravity;
         GeneratePlanet();
     }
 

@@ -5,7 +5,8 @@ using System.Collections.Generic;
 public partial class Universe : Node3D
 {
 	List<HeavenlyBody> bodies = new List<HeavenlyBody>();
-	//DirectionalLight3D sun = new DirectionalLight3D();
+	public static CubePlanet Planet;
+	public static float Gravity;
 
 	public static int Radius = 2000;
 
@@ -13,7 +14,6 @@ public partial class Universe : Node3D
 
 	DirectionalLight3D otherSun;
 	OmniLight3D sun;
-	public static CubePlanet Planet;
 
 	RandomNumberGenerator random;
 
@@ -35,6 +35,8 @@ public partial class Universe : Node3D
 	{
 		var random = new RandomNumberGenerator();
 
+        Gravity = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle();
+
 		_rotate.X = random.RandfRange(-0.3f, 0.3f);
 		_rotate.Y = random.RandfRange(-0.3f, 0.3f);
 		_rotate.Z = random.RandfRange(-0.3f, 0.3f);
@@ -54,7 +56,7 @@ public partial class Universe : Node3D
 			GD.Print("adding planet");
 			Planet = new CubePlanet();
 			Planet.Seed = (int)random.Randi();
-			Planet.Mass = 1000000;
+			Planet.Gravity = 10;
 			Planet.Radius = 1000;
 			AddChild(Planet);
 		}
@@ -63,15 +65,17 @@ public partial class Universe : Node3D
 			otherSun = new DirectionalLight3D();
 			otherSun.LightIntensityLumens = 10;
 			otherSun.LightColor = new Color("#808080");
+			otherSun.ShadowEnabled = true;
 			AddChild(otherSun);
 		}
 
 		int sphereCount = 80;
 		int starCount = 4;
+		float maxV = 1000f;
 
 		for (int i = 0; i < starCount; i++) {
 			var star = new Star();
-			star.Mass = random.RandiRange(100000, 10000000);
+			star.Gravity = random.RandiRange(100, 1000);
 			star.Radius = 0.1f;
 			star.OmniRange = 5000f;
 			star.OmniAttenuation = 0.2f;
@@ -87,33 +91,53 @@ public partial class Universe : Node3D
 			sphere.Radius = random.RandiRange(50, 300);
 			sphere.rings = Mathf.FloorToInt(sphere.Radius);
 			sphere.radialSegments = sphere.rings;
-			sphere.Mass = sphere.Radius * 10000;
-			switch(i%8) {
-				case 0:
-					sphere.TranslateObjectLocal(new Vector3(random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius)),random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius)),random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius))));
-					break;
-				case 1:
-					sphere.TranslateObjectLocal(new Vector3(random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius)),random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius)),random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius))));
-					break;
-				case 2:
-					sphere.TranslateObjectLocal(new Vector3(random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius)),random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius)),random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius))));
-					break;
-				case 3:
-					sphere.TranslateObjectLocal(new Vector3(random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius)),random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius)),random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius))));
-					break;
-				case 4:
-					sphere.TranslateObjectLocal(new Vector3(random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius)),random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius)),random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius))));
-					break;
-				case 5:
-					sphere.TranslateObjectLocal(new Vector3(random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius)),random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius)),random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius))));
-					break;
-				case 6:
-					sphere.TranslateObjectLocal(new Vector3(random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius)),random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius)),random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius))));
-					break;
-				case 7:
-					sphere.TranslateObjectLocal(new Vector3(random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius)),random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius)),random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius))));
-					break;
+			sphere.Gravity = sphere.Radius / 10f;
+			sphere.initialVelocity = new Vector3(random.Randf() * maxV * 2 - maxV, random.Randf() * maxV * 2 - maxV, random.Randf() * maxV * 2 - maxV);
+			float transX = random.RandfRange(-Radius, Radius);
+			if (transX < 0) {
+				transX -= Planet.Radius;
+			} else {
+				transX += Planet.Radius;
 			}
+			float transY = random.RandfRange(-Radius, Radius);
+			if (transY < 0) {
+				transY -= Planet.Radius;
+			} else {
+				transY += Planet.Radius;
+			}
+			float transZ = random.RandfRange(-Radius, Radius);
+			if (transZ < 0) {
+				transZ -= Planet.Radius;
+			} else {
+				transZ += Planet.Radius;
+			}
+			sphere.Translate(new Vector3(transX, transY, transZ));
+			// switch(i%8) {
+			// 	case 0:
+			// 		sphere.TranslateObjectLocal(new Vector3(random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius)),random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius)),random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius))));
+			// 		break;
+			// 	case 1:
+			// 		sphere.TranslateObjectLocal(new Vector3(random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius)),random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius)),random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius))));
+			// 		break;
+			// 	case 2:
+			// 		sphere.TranslateObjectLocal(new Vector3(random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius)),random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius)),random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius))));
+			// 		break;
+			// 	case 3:
+			// 		sphere.TranslateObjectLocal(new Vector3(random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius)),random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius)),random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius))));
+			// 		break;
+			// 	case 4:
+			// 		sphere.TranslateObjectLocal(new Vector3(random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius)),random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius)),random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius))));
+			// 		break;
+			// 	case 5:
+			// 		sphere.TranslateObjectLocal(new Vector3(random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius)),random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius)),random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius))));
+			// 		break;
+			// 	case 6:
+			// 		sphere.TranslateObjectLocal(new Vector3(random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius)),random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius)),random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius))));
+			// 		break;
+			// 	case 7:
+			// 		sphere.TranslateObjectLocal(new Vector3(random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius)),random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius)),random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius))));
+			// 		break;
+			// }
 
 			var chance = random.Randf();
 			if (chance < 0.2f) {

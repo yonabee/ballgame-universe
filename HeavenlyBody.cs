@@ -35,6 +35,7 @@ public interface HeavenlyBody
     public void UpdatePosition(float timeStep) 
     {
         Translate(CurrentVelocity * timeStep);
+        //GD.Print(CurrentVelocity);
     }
 
     void _ApplyVelocity(Vector3 origin, float bodyMass, float bodyRadius, float timeStep) 
@@ -54,8 +55,8 @@ public interface HeavenlyBody
 
         float sqrDist = distance.LengthSquared();
         Vector3 forceDir = distance.Normalized();
-        Vector3 force = forceDir * Gravity * Mass * bodyMass / sqrDist;
-        Vector3 acceleration = (force / Mass).Normalized();
+        Vector3 force = forceDir * Gravity * bodyMass / sqrDist;
+        Vector3 acceleration = (force).Normalized();
         if (!Mathf.IsNaN(acceleration.Length())) {
             if (bodyRadius != 0 && distance.Length() > this.Radius + bodyRadius) {
                 CurrentVelocity += acceleration * timeStep;
