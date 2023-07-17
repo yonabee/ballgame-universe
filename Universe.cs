@@ -6,6 +6,7 @@ public partial class Universe : Node3D
 {
 	List<HeavenlyBody> bodies = new List<HeavenlyBody>();
 	public static CubePlanet Planet;
+	public static Camera3D PlayerCam;
 	public static float Gravity;
 
 	public static int Radius = 2000;
@@ -58,6 +59,7 @@ public partial class Universe : Node3D
 			Planet.Seed = (int)random.Randi();
 			Planet.Gravity = 10;
 			Planet.Radius = 1000;
+			//Planet.DetermineElevations();
 			AddChild(Planet);
 		}
 
@@ -67,6 +69,11 @@ public partial class Universe : Node3D
 			otherSun.LightColor = new Color("#808080");
 			otherSun.ShadowEnabled = true;
 			AddChild(otherSun);
+		}
+
+		if (PlayerCam == null) {
+			PlayerCam = new Camera3D();
+			PlayerCam.Translate(Planet.Transform.Origin + Planet.Shapes.Start * (Planet.Shapes.DetermineElevation(Planet.Shapes.Start).scaled + 10));
 		}
 
 		int sphereCount = 80;

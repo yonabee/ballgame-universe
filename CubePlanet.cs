@@ -10,8 +10,8 @@ public partial class CubePlanet : Planetoid
     public ShapeGenerator.ShapeSettings shapeSettings;
     public ColorSettings colorSettings;
 
-    ShapeGenerator shapeGenerator = new ShapeGenerator();
-    ColorGenerator colorGenerator = new ColorGenerator();
+    public ShapeGenerator Shapes = new ShapeGenerator();
+    public ColorGenerator Colors = new ColorGenerator();
 
     StandardMaterial3D landRenderer;
     StandardMaterial3D oceanRenderer;
@@ -144,8 +144,8 @@ public partial class CubePlanet : Planetoid
             colorSettings.biomeColourSettings.blendAmount = 0.5f;
         }
 
-        shapeGenerator.UpdateSettings(shapeSettings);
-        colorGenerator.UpdateSettings(colorSettings);
+        Shapes.UpdateSettings(shapeSettings);
+        Colors.UpdateSettings(colorSettings);
 
         if (landMeshes == null || landMeshes.Length == 0) {
             landMeshes = new ArrayMesh[Faces];
@@ -172,8 +172,8 @@ public partial class CubePlanet : Planetoid
             landMeshes[i] = new ArrayMesh();
             oceanMeshes[i] = new ArrayMesh();
             terrainFaces[i] = new TerrainFace(
-                colorGenerator, 
-                shapeGenerator, 
+                Colors, 
+                Shapes, 
                 shapeSettings, 
                 landMeshes[i], 
                 oceanMeshes[i], 
@@ -184,8 +184,15 @@ public partial class CubePlanet : Planetoid
         GD.Print("initialized");
     }
 
+    public void DetermineElevations()
+    {
+        for (int i = 0; i < Faces; i++) {
+            terrainFaces[i].Elevate();
+        }
+    }
     public override void GenerateMesh()
     {
+        DetermineElevations();
         for (int i = 0; i < Faces; i++) {
             bool renderFace = faceRenderMask == FaceRenderMask.All || (int)faceRenderMask - 1 == i;
             if (renderFace) {

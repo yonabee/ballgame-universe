@@ -50,6 +50,20 @@ public class TerrainFace
         tris = new int[(resolution - 1) * (resolution - 1) * 6];
     }
 
+    public void Elevate()
+    {
+        for (int y = 0; y < resolution; y++) {
+            for (int x = 0; x < resolution; x++) {
+                Vector2 percent = new Vector2(x, y) / (resolution - 1);
+                Vector3 pointOnUnitCube = localUp + (percent.X - .5f) * 2 * axisA + (percent.Y - .5f) * 2 * axisB;
+                Vector3 pointOnUnitSphere = pointOnUnitCube.Normalized();
+                // This will cache the value for later
+                shapeGenerator.DetermineElevation(pointOnUnitSphere);
+            }
+        }
+        colorGenerator.UpdateElevation(shapeGenerator.elevationMinMax);
+    }
+
     public void ConstructMesh()
     {
         int triIndex = 0;
@@ -71,12 +85,14 @@ public class TerrainFace
                 Vector3 pointOnUnitCube = localUp + (percent.X - .5f) * 2 * axisA + (percent.Y - .5f) * 2 * axisB;
                 Vector3 pointOnUnitSphere = pointOnUnitCube.Normalized();
 
-                Elevation elevation = shapeGenerator.GetElevation(pointOnUnitSphere);
+                Elevation elevation = shapeGenerator.DetermineElevation(pointOnUnitSphere);
 
                 verts[i] = pointOnUnitSphere * elevation.scaled;
                 normals[i] = verts[i].Normalized();
                 oceanVerts[i] = pointOnUnitSphere * settings.radius;
                 oceanNormals[i] = oceanVerts[i].Normalized();
+                colors[i] = colorGenerator.BiomeColorFromPoint(pointOnUnitSphere, elevation.unscaled);
+                oceanColors[i] = colorGenerator.OceanColorFromPoint(pointOnUnitSphere);
 
                 if (x != resolution - 1 && y != resolution - 1)
                 {
@@ -89,22 +105,6 @@ public class TerrainFace
                     tris[triIndex + 3] = i + resolution + 1;
                     triIndex += 6;
                 }
-            }
-        }
-
-        colorGenerator.UpdateElevation(shapeGenerator.elevationMinMax);
-
-        for (int y = 0; y < resolution; y++) {
-            for (int x = 0; x < resolution; x++) {
-                int i = x + y * resolution;
-                Vector2 percent = new Vector2(x, y) / (resolution - 1);
-                Vector3 pointOnUnitCube = localUp + (percent.X - .5f) * 2 * axisA + (percent.Y - .5f) * 2 * axisB;
-                Vector3 pointOnUnitSphere = pointOnUnitCube.Normalized();
-
-                Elevation elevation = shapeGenerator.GetElevation(pointOnUnitSphere);
-
-                colors[i] = colorGenerator.BiomeColorFromPoint(pointOnUnitSphere, elevation.unscaled);
-                oceanColors[i] = colorGenerator.OceanColorFromPoint(pointOnUnitSphere);
             }
         }
 

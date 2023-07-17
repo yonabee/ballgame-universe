@@ -13,6 +13,8 @@ public class ShapeGenerator {
     public ShapeSettings settings;
     INoiseFilter[] noiseFilters;
     public MinMax elevationMinMax;
+    public Dictionary<Vector3, Elevation> elevations = new Dictionary<Vector3, Elevation>();
+    public Vector3 Start = Vector3.Zero;
 
     [System.Serializable]
     public class ShapeSettings {
@@ -32,10 +34,17 @@ public class ShapeGenerator {
         elevationMinMax = new MinMax();
     }
 
-    public Elevation GetElevation(Vector3 pointOnUnitSphere) {
-        Elevation result = new Elevation();
-        result.unscaled = CalculateUnscaledElevation(pointOnUnitSphere);
-        result.scaled = GetScaledElevation(result.unscaled);
+    public Elevation DetermineElevation(Vector3 pointOnUnitSphere) {
+        Elevation result; 
+        if (!elevations.TryGetValue(pointOnUnitSphere, out result)) {
+            result = new Elevation();
+            result.unscaled = CalculateUnscaledElevation(pointOnUnitSphere);
+            result.scaled = GetScaledElevation(result.unscaled);
+            elevations.Add(pointOnUnitSphere, result);
+            if (Start == Vector3.Zero) {
+                Start = pointOnUnitSphere;
+            }
+        }
         return result;
     }
 
