@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public partial class CubePlanet : Planetoid
 {
-    public int resolution = 250;
+    public int resolution = 400;
     public enum FaceRenderMask { All, Top, Bottom, Left, Right, Front, Back }
     public FaceRenderMask faceRenderMask;
 

@@ -41,6 +41,7 @@ public class ShapeGenerator {
             result.unscaled = CalculateUnscaledElevation(pointOnUnitSphere);
             result.scaled = GetScaledElevation(result.unscaled);
             elevations.Add(pointOnUnitSphere, result);
+            GD.Print(pointOnUnitSphere);
             if (Start == Vector3.Zero) {
                 Start = pointOnUnitSphere;
             }

@@ -7,6 +7,7 @@ public partial class Universe : Node3D
 	List<HeavenlyBody> bodies = new List<HeavenlyBody>();
 	public static CubePlanet Planet;
 	public static Camera3D PlayerCam;
+	public static Camera3D WatcherCam;
 	public static float Gravity;
 
 	public static int Radius = 2000;
@@ -59,7 +60,6 @@ public partial class Universe : Node3D
 			Planet.Seed = (int)random.Randi();
 			Planet.Gravity = 10;
 			Planet.Radius = 1000;
-			//Planet.DetermineElevations();
 			AddChild(Planet);
 		}
 
@@ -68,12 +68,25 @@ public partial class Universe : Node3D
 			otherSun.LightIntensityLumens = 10;
 			otherSun.LightColor = new Color("#808080");
 			otherSun.ShadowEnabled = true;
+			otherSun.DirectionalShadowMode = DirectionalLight3D.ShadowMode.Parallel4Splits;
+			otherSun.ShadowBias = 1f;
 			AddChild(otherSun);
 		}
 
 		if (PlayerCam == null) {
-			PlayerCam = new Camera3D();
-			PlayerCam.Translate(Planet.Transform.Origin + Planet.Shapes.Start * (Planet.Shapes.DetermineElevation(Planet.Shapes.Start).scaled + 10));
+			PlayerCam = GetNode<Camera3D>("PlayerCam");
+			var pivot = new Pivot();
+			pivot.Speed = 0.2f;
+			pivot.OrientForward = true;
+			Planet.AddChild(pivot);
+			PlayerCam.Reparent(pivot);
+			PlayerCam.Translate(Planet.Transform.Origin + Vector3.Up * (Planet.Shapes.DetermineElevation(Vector3.Up).scaled + 50));
+			//PlayerCam.Rotate(Vector3.Right, Planet.Shapes.Start.AngleTo(Vector3.Up));
+			//GD.Print(PlayerCam.Transform.Origin);
+		}
+
+		if (WatcherCam == null) {
+			WatcherCam = GetNode<Camera3D>("Pivot/Watcher");
 		}
 
 		int sphereCount = 80;
@@ -286,6 +299,7 @@ public partial class Universe : Node3D
 					break;
 			}
 		}
+		//PlayerCam.Position = Planet.Transform.Origin + PlayerCam.ToGlobal(Vector3.Up) * (Planet.Shapes.DetermineElevation(PlayerCam.ToGlobal(Vector3.Up)).scaled + 50);
 	}
 
     public override void _Input(InputEvent @event)
@@ -295,6 +309,16 @@ public partial class Universe : Node3D
 			bodies.Clear();
 			Planet.QueueFree();
 			_Ready();
+		}
+
+		if (@event.IsActionPressed("camera_toggle")) {
+			if (PlayerCam.Current == false) {
+				PlayerCam.Current = true;
+				WatcherCam.Current = false;
+			} else {
+				PlayerCam.Current = false;
+				WatcherCam.Current = true;
+			}
 		}
     }
 }
