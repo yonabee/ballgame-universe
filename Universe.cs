@@ -103,6 +103,14 @@ public partial class Universe : Node3D
 			star.LightColor = colors[random.RandiRange(1, 10)];
 			bodies.Add(star);
 			AddChild(star);
+
+			// var starChild = new Spheroid();
+			// starChild.Radius = 25f;
+			// starChild.rings = 20;
+			// starChild.radialSegments = 20;
+			// starChild.Gravity = 10;
+			// starChild.crayons = new[] { new Color(star.LightColor.R * 10, star.LightColor.G * 10, star.LightColor.B * 10) };
+			// star.AddChild(starChild);
 		}
 
 		for (int i = 0; i < sphereCount; i++) {
@@ -282,9 +290,9 @@ public partial class Universe : Node3D
 		// 		);		
 		// }
 		Planet.Rotation = new Vector3(
-			Mathf.Wrap(Planet.Rotation.X + (float)delta * _rotate.X, -Mathf.Pi, Mathf.Pi),
+			Mathf.Wrap(Planet.Rotation.X + (float)delta * _rotate.X / 10, -Mathf.Pi, Mathf.Pi),
 			Planet.Rotation.Y,
-			Mathf.Wrap(Planet.Rotation.Z + (float)delta * _rotate.Z, -Mathf.Pi, Mathf.Pi)
+			Mathf.Wrap(Planet.Rotation.Z + (float)delta * _rotate.Z / 10, -Mathf.Pi, Mathf.Pi)
 		);
 		for (int i = 0; i < bodies.Count; i++) {
 			switch(i%3) {
