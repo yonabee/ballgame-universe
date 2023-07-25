@@ -9,6 +9,7 @@ public class TerrainFace
     public ShapeGenerator.ShapeSettings settings;
     public ArrayMesh landMesh;
     public ArrayMesh oceanMesh;
+    public Elevation[,] Elevations;
     int resolution;
     Vector3 localUp;
     Vector3 axisA;
@@ -48,6 +49,8 @@ public class TerrainFace
         colors = new Color[resolution * resolution];
         oceanColors = new Color[resolution * resolution];
         tris = new int[(resolution - 1) * (resolution - 1) * 6];
+
+        Elevations = new Elevation[resolution,resolution];
     }
 
     public void Elevate()
@@ -56,9 +59,8 @@ public class TerrainFace
             for (int x = 0; x < resolution; x++) {
                 Vector2 percent = new Vector2(x, y) / (resolution - 1);
                 Vector3 pointOnUnitCube = localUp + (percent.X - .5f) * 2 * axisA + (percent.Y - .5f) * 2 * axisB;
-                Vector3 pointOnUnitSphere = pointOnUnitCube.Normalized();
-                // This will cache the value for later
-                shapeGenerator.DetermineElevation(pointOnUnitSphere);
+                Vector3 pointOnUnitSphere = Utils.CubeToSphere(pointOnUnitCube);
+                Elevations[x,y] = shapeGenerator.DetermineElevation(pointOnUnitSphere);
             }
         }
         colorGenerator.UpdateElevation(shapeGenerator.elevationMinMax);
@@ -83,9 +85,9 @@ public class TerrainFace
                 int i = x + y * resolution;
                 Vector2 percent = new Vector2(x, y) / (resolution - 1);
                 Vector3 pointOnUnitCube = localUp + (percent.X - .5f) * 2 * axisA + (percent.Y - .5f) * 2 * axisB;
-                Vector3 pointOnUnitSphere = pointOnUnitCube.Normalized();
+                Vector3 pointOnUnitSphere = Utils.CubeToSphere(pointOnUnitCube);
 
-                Elevation elevation = shapeGenerator.DetermineElevation(pointOnUnitSphere);
+                Elevation elevation = Elevations[x,y];
 
                 verts[i] = pointOnUnitSphere * elevation.scaled;
                 normals[i] = verts[i].Normalized();
@@ -124,4 +126,5 @@ public class TerrainFace
 
         GD.Print("generated meshes");
     }
+
 }

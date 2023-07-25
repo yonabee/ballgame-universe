@@ -3,15 +3,15 @@ using System.Collections.Generic;
 
 public partial class CubePlanet : Planetoid
 {
-    public int resolution = 400;
-    public enum FaceRenderMask { All, Top, Bottom, Left, Right, Front, Back }
-    public FaceRenderMask faceRenderMask;
+    public int Resolution = 400;
+    public Utils.Face faceRenderMask;
 
     public ShapeGenerator.ShapeSettings shapeSettings;
     public ColorSettings colorSettings;
 
     public ShapeGenerator Shapes = new ShapeGenerator();
     public ColorGenerator Colors = new ColorGenerator();
+    public TerrainFace[] TerrainFaces;
 
     StandardMaterial3D landRenderer;
     StandardMaterial3D oceanRenderer;
@@ -19,13 +19,12 @@ public partial class CubePlanet : Planetoid
     ArrayMesh[] landMeshes;
     ArrayMesh[] oceanMeshes;
 
-    TerrainFace[] terrainFaces;
     Vector3[] directions = { Vector3.Up, Vector3.Down, Vector3.Left, Vector3.Right, Vector3.Forward, Vector3.Back };
 
     public override void _Ready() {
         Faces = 6;
         Layers = 2;
-        faceRenderMask = FaceRenderMask.All;
+        faceRenderMask = Utils.Face.All;
         Gravity = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle();
         CustomIntegrator = true;
         CurrentVelocity = initialVelocity;
@@ -153,8 +152,8 @@ public partial class CubePlanet : Planetoid
         if (oceanMeshes == null || oceanMeshes.Length == 0) {
             oceanMeshes = new ArrayMesh[Faces];
         }
-        if (terrainFaces == null || terrainFaces.Length == 0) {
-            terrainFaces = new TerrainFace[Faces];
+        if (TerrainFaces == null || TerrainFaces.Length == 0) {
+            TerrainFaces = new TerrainFace[Faces];
         }
 
         if (landRenderer == null) {
@@ -171,13 +170,13 @@ public partial class CubePlanet : Planetoid
         for (int i = 0; i < Faces; i++) {
             landMeshes[i] = new ArrayMesh();
             oceanMeshes[i] = new ArrayMesh();
-            terrainFaces[i] = new TerrainFace(
+            TerrainFaces[i] = new TerrainFace(
                 Colors, 
                 Shapes, 
                 shapeSettings, 
                 landMeshes[i], 
                 oceanMeshes[i], 
-                resolution, 
+                Resolution, 
                 directions[i]
             );
         }
@@ -187,18 +186,18 @@ public partial class CubePlanet : Planetoid
     public void DetermineElevations()
     {
         for (int i = 0; i < Faces; i++) {
-            terrainFaces[i].Elevate();
+            TerrainFaces[i].Elevate();
         }
     }
     public override void GenerateMesh()
     {
         DetermineElevations();
         for (int i = 0; i < Faces; i++) {
-            bool renderFace = faceRenderMask == FaceRenderMask.All || (int)faceRenderMask - 1 == i;
+            bool renderFace = faceRenderMask == Utils.Face.All || (int)faceRenderMask - 1 == i;
             if (renderFace) {
-                terrainFaces[i].ConstructMesh();
-                meshes[i].Mesh = terrainFaces[i].landMesh;
-                meshes[Faces + i].Mesh = terrainFaces[i].oceanMesh;
+                TerrainFaces[i].ConstructMesh();
+                meshes[i].Mesh = TerrainFaces[i].landMesh;
+                meshes[Faces + i].Mesh = TerrainFaces[i].oceanMesh;
                 meshes[i].Mesh.SurfaceSetMaterial(0, landRenderer);
                 meshes[Faces + i].Mesh.SurfaceSetMaterial(0, oceanRenderer);
                 meshes[i].CreateMultipleConvexCollisions();
