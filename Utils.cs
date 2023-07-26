@@ -39,7 +39,7 @@
             else if (-max == point.X) {
                 return Face.Left;
             }
-            else if (max == point.Z) {
+            else if (-max == point.Z) {
                 return Face.Front;
             }
             else {

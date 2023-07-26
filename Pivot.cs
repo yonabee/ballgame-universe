@@ -32,44 +32,50 @@ public partial class Pivot : Marker3D
 			return;
 		}
 
-		Vector3 cubemap = Utils.SphereToCube(Camera.ToGlobal(Camera.Transform.Origin));
+		Vector3 cubemap = Utils.SphereToCube(Universe.Planet.ToLocal(Camera.ToGlobal(Camera.Transform.Origin)));
 		Face face = Utils.GetFace(cubemap);
 		int x = 0;
 		int y = 0;
 		switch(face) {
 			case Face.Top:
 				x = Mathf.FloorToInt((cubemap.X + 1f) / 2f * Universe.Planet.Resolution); 
-				y = Mathf.FloorToInt((cubemap.Z + 1f) / 2f * Universe.Planet.Resolution);
+				y = Mathf.FloorToInt((1f - ((cubemap.Z + 1f) / 2f)) * Universe.Planet.Resolution);
 				GD.Print("Top");
 				break;
 			case Face.Bottom:
-				x = Mathf.FloorToInt((cubemap.Z + 1f) / 2f * Universe.Planet.Resolution); 
-				y = Mathf.FloorToInt((cubemap.X + 1f) / 2f * Universe.Planet.Resolution);
+				x = Mathf.FloorToInt((1f - ((cubemap.X + 1f) / 2f)) * Universe.Planet.Resolution); 
+				y = Mathf.FloorToInt((1f - ((cubemap.Z + 1f) / 2f)) * Universe.Planet.Resolution);
 				GD.Print("Bottom");
 				break;
 			case Face.Left:
-				x = Mathf.FloorToInt((cubemap.Y + 1f) / 2f * Universe.Planet.Resolution); 
-				y = Mathf.FloorToInt((cubemap.Z + 1f) / 2f * Universe.Planet.Resolution);
+				x = Mathf.FloorToInt((1f - ((cubemap.Z + 1f) / 2f)) * Universe.Planet.Resolution); 
+				y = Mathf.FloorToInt((1f - ((cubemap.Y + 1f) / 2f)) * Universe.Planet.Resolution);
 				GD.Print("Left");
 				break;
 			case Face.Right:
 				x = Mathf.FloorToInt((cubemap.Z + 1f) / 2f * Universe.Planet.Resolution); 
-				y = Mathf.FloorToInt((cubemap.Y + 1f) / 2f * Universe.Planet.Resolution);
+				y = Mathf.FloorToInt((1f - ((cubemap.Y + 1f) / 2f)) * Universe.Planet.Resolution);
 				GD.Print("Right");
 				break;
 			case Face.Front:
-				x = Mathf.FloorToInt((cubemap.X + 1f) / 2f * Universe.Planet.Resolution); 
-				y = Mathf.FloorToInt((cubemap.Y + 1f) / 2f * Universe.Planet.Resolution);
+				x = Mathf.FloorToInt((1f- ((cubemap.Y + 1f) / 2f)) * Universe.Planet.Resolution); 
+				y = Mathf.FloorToInt((1f - ((cubemap.X + 1f) / 2f)) * Universe.Planet.Resolution);
 				GD.Print("Front");
 				break;
 			case Face.Back:
 				x = Mathf.FloorToInt((cubemap.Y + 1f) / 2f * Universe.Planet.Resolution); 
-				y = Mathf.FloorToInt((cubemap.X + 1f) / 2f * Universe.Planet.Resolution);
+				y = Mathf.FloorToInt((1f - ((cubemap.X + 1f) / 2f)) * Universe.Planet.Resolution);
 				GD.Print("Back");
 				break;
 		}
 		GD.Print("x: " + x + "  y: " + y);
-		float offset = (Camera.Transform.Origin.Y - Universe.Planet.TerrainFaces[(int)face - 1].Elevations[x,y].scaled) * (float)delta;
+		TerrainFace terrainFace = Universe.Planet.TerrainFaces[(int)face - 1];
+		float elevation = terrainFace.Elevations[x,y].scaled;
+		GD.Print(elevation);
+		float offset = (
+				Camera.Transform.Origin.Y - 
+				(Mathf.Max(elevation, Universe.Planet.Radius) + 50f)
+			) * (float)delta * 10;
 		//GD.Print(offset);
 		Camera.TranslateObjectLocal(new Vector3(0, -offset, 0));
 	}

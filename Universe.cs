@@ -81,7 +81,8 @@ public partial class Universe : Node3D
 			Planet.AddChild(pivot);
 			PlayerCam.Reparent(pivot);
 			pivot.Camera = PlayerCam;
-			PlayerCam.Translate(Planet.Transform.Origin + Vector3.Up * (Planet.Shapes.DetermineElevation(Vector3.Up).scaled + 50));
+			PlayerCam.Translate(Planet.Transform.Origin + Vector3.Up * (Planet.Shapes.DetermineElevation(Vector3.Up).scaled + 50f));
+			pivot.RotateX(-Mathf.Pi / 2f);
 		}
 
 		if (WatcherCam == null) {
