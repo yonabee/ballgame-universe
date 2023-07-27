@@ -3,6 +3,8 @@
     
     public static class Utils {
 
+        public static float InverseSqrt2 = 0.70710676908493042f;
+
         public enum Face { All, Top, Bottom, Left, Right, Front, Back }
 
         public static string[] Crayons = new[] {
@@ -62,17 +64,149 @@
 
         public static Vector3 CubeToSphere(Vector3 point)
         {
-            return point.Normalized();
+            //return point.Normalized();
+            return new Vector3(
+                point.X * Mathf.Sqrt(1.0f - point.Y * point.Y * 0.5f - point.Z * point.Z * 0.5f + point.Y * point.Y * point.Z * point.Z / 3.0f),
+                point.Y * Mathf.Sqrt(1.0f - point.Z * point.Z * 0.5f - point.X * point.X * 0.5f + point.Z * point.Z * point.X * point.X / 3.0f),
+                point.Z * Mathf.Sqrt(1.0f - point.X * point.X * 0.5f - point.Y * point.Y * 0.5f + point.X * point.X * point.Y * point.Y / 3.0f)
+            );
         }
 
         public static Vector3 SphereToCube(Vector3 point)
         {
-            Vector3 norm = point.Normalized();
-            float max = Mathf.Max(
-                Mathf.Max(Mathf.Abs(norm.X), Mathf.Abs(norm.Y)), 
-                Mathf.Abs(norm.Z)
-            );
-            return new Vector3(norm.X/max, norm.Y/max, norm.Z/max);
+            Vector3 p = point.Normalized();
+            Vector3 result = new Vector3();
+            float fx = Mathf.Abs(p.X);
+            float fy = Mathf.Abs(p.Y);
+            float fz = Mathf.Abs(p.Z);
+
+            if (fy >= fx && fy >= fz) {
+                float a2 = p.X * p.X * 2.0f;
+                float b2 = p.Z * p.Z * 2.0f;
+                float inner = -a2 + b2 - 3f;
+                float innerSqrt = -Mathf.Sqrt((inner * inner) - 12.0f * a2);
+
+                if (p.X == 0f) {
+                    result.X = 0f;
+                } else {
+                    result.X = Mathf.Sqrt(innerSqrt + a2 - b2 + 3.0f) * InverseSqrt2;
+                }
+
+                if (p.Z == 0f) {
+                    result.Z = 0f;
+                } else {
+                    result.Z = Mathf.Sqrt(innerSqrt - a2 + b2 + 3.0f) * InverseSqrt2;
+                }
+
+                if (result.X > 1.0f) {
+                    result.X = 1.0f;
+                }
+                if (result.Z > 1.0f) {
+                    result.Z = 1.0f;
+                }
+
+                if (p.X < 0) {
+                    result.X = -result.X;
+                }
+                if (p.Z < 0) {
+                    result.Z = -result.Z;
+                }
+
+                if (p.Y > 0) {
+                    // top face
+                    result.Y = 1.0f;
+                } else {
+                    // bottom face
+                    result.Y = -1.0f;
+                }
+            }
+            else if (fx >= fy && fx >= fz) {
+                float a2 = p.Y * p.Y * 2.0f;
+                float b2 = p.Z * p.Z * 2.0f;
+                float inner = -a2 + b2 - 3f;
+                float innerSqrt = -Mathf.Sqrt((inner * inner) - 12.0f * a2);
+
+                if (p.Y == 0f) {
+                    result.Y = 0f;
+                } else {
+                    result.Y = Mathf.Sqrt(innerSqrt + a2 - b2 + 3.0f) * InverseSqrt2;
+                }
+
+                if (p.Z == 0f) {
+                    result.Z = 0f;
+                } else {
+                    result.Z = Mathf.Sqrt(innerSqrt - a2 + b2 + 3.0f) * InverseSqrt2;
+                }
+
+                if (result.Y > 1.0f) {
+                    result.Y = 1.0f;
+                }
+                if (result.Z > 1.0f) {
+                    result.Z = 1.0f;
+                }
+
+                if (p.Y < 0) {
+                    result.Y = -result.Y;
+                }
+                if (p.Z < 0) {
+                    result.Z = -result.Z;
+                }
+
+                if (p.X > 0) {
+                    // right face
+                    result.X = 1.0f;
+                } else {
+                    // bottom face
+                    result.X = -1.0f;
+                }
+            }
+            else {
+                float a2 = p.X * p.X * 2.0f;
+                float b2 = p.Y * p.Y * 2.0f;
+                float inner = -a2 + b2 - 3f;
+                float innerSqrt = -Mathf.Sqrt((inner * inner) - 12.0f * a2);
+
+                if (p.X == 0f) {
+                    result.X = 0f;
+                } else {
+                    result.X = Mathf.Sqrt(innerSqrt + a2 - b2 + 3.0f) * InverseSqrt2;
+                }
+
+                if (p.Y == 0f) {
+                    result.Y = 0f;
+                } else {
+                    result.Y = Mathf.Sqrt(innerSqrt - a2 + b2 + 3.0f) * InverseSqrt2;
+                }
+
+                if (result.X > 1.0f) {
+                    result.X = 1.0f;
+                }
+                if (result.Y > 1.0f) {
+                    result.Y = 1.0f;
+                }
+
+                if (p.X < 0) {
+                    result.X = -result.X;
+                }
+                if (p.Y < 0) {
+                    result.Y = -result.Y;
+                }
+
+                if (p.Z > 0) {
+                    // front face
+                    result.Z = 1.0f;
+                } else {
+                    // back face
+                    result.Z = -1.0f;
+                }
+            }
+
+            return result;
+            // float max = Mathf.Max(
+            //     Mathf.Max(Mathf.Abs(p.X), Mathf.Abs(p.Y)), 
+            //     Mathf.Abs(p.Z)
+            // );
+            // return new Vector3(p.X/max, p.Y/max, p.Z/max);
         }
 
         public static Face GetFace(Vector3 point)
