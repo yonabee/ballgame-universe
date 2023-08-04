@@ -43,38 +43,41 @@ public partial class Pivot : Marker3D
 			case Face.Top:
 				x = Mathf.FloorToInt((cubemap.X + 1f) / 2f * Universe.Planet.Resolution); 
 				y = Mathf.FloorToInt((1f - ((cubemap.Z + 1f) / 2f)) * Universe.Planet.Resolution);
-				GD.Print("Top");
+				// GD.Print("Top");
 				break;
 			case Face.Bottom:
 				x = Mathf.FloorToInt((1f - ((cubemap.X + 1f) / 2f)) * Universe.Planet.Resolution); 
 				y = Mathf.FloorToInt((1f - ((cubemap.Z + 1f) / 2f)) * Universe.Planet.Resolution);
-				GD.Print("Bottom");
+				// GD.Print("Bottom");
 				break;
 			case Face.Left:
 				x = Mathf.FloorToInt((1f - ((cubemap.Z + 1f) / 2f)) * Universe.Planet.Resolution); 
 				y = Mathf.FloorToInt((1f - ((cubemap.Y + 1f) / 2f)) * Universe.Planet.Resolution);
-				GD.Print("Left");
+				// GD.Print("Left");
 				break;
 			case Face.Right:
 				x = Mathf.FloorToInt((cubemap.Z + 1f) / 2f * Universe.Planet.Resolution); 
 				y = Mathf.FloorToInt((1f - ((cubemap.Y + 1f) / 2f)) * Universe.Planet.Resolution);
-				GD.Print("Right");
+				// GD.Print("Right");
 				break;
 			case Face.Front:
 				x = Mathf.FloorToInt((1f- ((cubemap.Y + 1f) / 2f)) * Universe.Planet.Resolution); 
 				y = Mathf.FloorToInt((1f - ((cubemap.X + 1f) / 2f)) * Universe.Planet.Resolution);
-				GD.Print("Front");
+				// GD.Print("Front");
 				break;
 			case Face.Back:
 				x = Mathf.FloorToInt((cubemap.Y + 1f) / 2f * Universe.Planet.Resolution); 
 				y = Mathf.FloorToInt((1f - ((cubemap.X + 1f) / 2f)) * Universe.Planet.Resolution);
-				GD.Print("Back");
+				// GD.Print("Back");
 				break;
 		}
-		GD.Print("x: " + x + "  y: " + y);
+		// GD.Print("x: " + x + "  y: " + y);
 		TerrainFace terrainFace = Universe.Planet.TerrainFaces[(int)face - 1];
+		if (x >= terrainFace.Elevations.GetLength(0) || x < 0 || y >= terrainFace.Elevations.GetLength(1) || y < 0) {
+			return;
+		}
 		float elevation = terrainFace.Elevations[x,y].scaled;
-		GD.Print(elevation);
+		// GD.Print(elevation);
 		float offset = (
 				Camera.Transform.Origin.Y - 
 				(Mathf.Max(elevation, Universe.Planet.Radius) + 50f)

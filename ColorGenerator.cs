@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Godot;
+using static ColorSettings.BiomeColourSettings;
 
 public class ColorGenerator
 {
@@ -47,16 +48,24 @@ public class ColorGenerator
     public Color BiomeColorFromPoint(Vector3 pointOnUnitSphere, float height)
     {
         height = (height + 1f) / 2f;
-
+        var min = (settings.elevation.Min + 1f) / 2f;
+        var range = settings.elevation.Max - settings.elevation.Min;
         float index = BiomeIndexFromPoint(pointOnUnitSphere);
         int baseIndex = Mathf.FloorToInt(index);
         float remainder = index - (float)baseIndex;
+        float percent = (height - min) / range;
+        Biome biome = settings.biomeColourSettings.biomes[baseIndex];
+        Color biomeColor;
+        Color tintColor;
         if (settings.biomeColourSettings.biomes.Length > baseIndex + 1 && remainder > 0) {
-            return settings.biomeColourSettings.biomes[baseIndex].gradient.Sample(height / settings.elevation.Max)
-                .Lerp(settings.biomeColourSettings.biomes[baseIndex + 1].gradient.Sample(height / settings.elevation.Max), remainder);
+            Biome nextBiome = settings.biomeColourSettings.biomes[baseIndex + 1];
+            biomeColor = biome.gradient.Sample(percent).Lerp(nextBiome.gradient.Sample(percent), remainder);
+            tintColor = biome.tint.Lerp(nextBiome.tint, remainder);
         } else {
-            return settings.biomeColourSettings.biomes[baseIndex].gradient.Sample(height / settings.elevation.Max);
+            biomeColor = biome.gradient.Sample((height - min) / range);
+            tintColor = biome.tint;
         }
+        return biomeColor.Lerp(tintColor, biome.tintPercent);
     }
 
     public Color OceanColorFromPoint(Vector3 pointOnUnitSphere)

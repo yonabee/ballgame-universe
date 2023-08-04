@@ -92,7 +92,12 @@ public partial class Universe : Node3D
 			otherSun.LightColor = new Color("#808080");
 			otherSun.ShadowEnabled = true;
 			otherSun.DirectionalShadowMode = DirectionalLight3D.ShadowMode.Parallel4Splits;
+			otherSun.LightAngularDistance = 5.0f;
 			otherSun.ShadowBias = 1f;
+			otherSun.ShadowNormalBias = 2f;
+			otherSun.DirectionalShadowPancakeSize = 0f;
+			otherSun.DirectionalShadowBlendSplits = true;
+			otherSun.DirectionalShadowMaxDistance = 500f;
 			AddChild(otherSun);
 		}
 

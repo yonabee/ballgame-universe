@@ -96,6 +96,7 @@ public partial class CubePlanet : Planetoid
             var biome1 = new ColorSettings.BiomeColourSettings.Biome();
             //biome1.tint = new Color("#6ff");
             biome1.tint = new Color(Crayons[Random.RandiRange(0,47)]);
+            biome1.tintPercent = 0.3f;
             biome1.startHeight = 0f;
             biome1.gradient = new Gradient();
             // biome1.gradient.Colors = new[] {
@@ -106,9 +107,11 @@ public partial class CubePlanet : Planetoid
             //     new Color("#804003")
             // };
             biome1.gradient.Colors = _CreateBiomeGradient();
+            biome1.gradient.Offsets = new[] { 0f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 1f };
             
             var biome2 = new ColorSettings.BiomeColourSettings.Biome();
             biome2.tint = new Color(Crayons[Random.RandiRange(0,47)]);
+            biome2.tintPercent = 0.3f;
             biome2.startHeight = 0.333f;
             biome2.gradient = new Gradient();
             // biome2.gradient.Colors = new[] {
@@ -119,9 +122,11 @@ public partial class CubePlanet : Planetoid
             //     new Color("#804003")
             // };
             biome2.gradient.Colors = _CreateBiomeGradient();
+            biome2.gradient.Offsets = new[] { 0f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 1f };
 
             var biome3 = new ColorSettings.BiomeColourSettings.Biome();
             biome3.tint =  new Color(Crayons[Random.RandiRange(0,47)]);
+            biome3.tintPercent = 0.3f;
             biome3.startHeight = 0.666f;
             biome3.gradient = new Gradient();
             // biome3.gradient.Colors = new[] {
@@ -132,6 +137,7 @@ public partial class CubePlanet : Planetoid
             //     new Color("#108080")
             // };
             biome3.gradient.Colors = _CreateBiomeGradient();
+            biome3.gradient.Offsets = new[] { 0f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 1f };
 
             colorSettings.biomeColourSettings.biomes = new[] { biome1, biome2, biome3 };
 
@@ -166,6 +172,7 @@ public partial class CubePlanet : Planetoid
         if (landRenderer == null) {
             landRenderer = new StandardMaterial3D();
             landRenderer.VertexColorUseAsAlbedo = true;
+            landRenderer.TextureFilter = StandardMaterial3D.TextureFilterEnum.Nearest;
         }
         if (oceanRenderer == null) {
             oceanRenderer = new StandardMaterial3D();
