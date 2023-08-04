@@ -6,14 +6,15 @@ public partial class Spheroid : Planetoid
 {
     public int radialSegments = 50;
     public int rings = 50;
+    public Color[] crayons = { Colors.Red };
 
     public override void Initialize()
     {
         base.Initialize();
-        if (colliders[0].Shape == null) {
+        if (Colliders[0].Shape == null) {
             var shape = new SphereShape3D();
             shape.Radius = Radius;
-            colliders[0].Shape = shape;
+            Colliders[0].Shape = shape;
         }
     }
 
@@ -148,8 +149,8 @@ public partial class Spheroid : Planetoid
 		surfaceArray[(int)Mesh.ArrayType.Normal] = normals.ToArray();
 		surfaceArray[(int)Mesh.ArrayType.Index] = indices.ToArray();
 
-		meshes[0].Mesh = new ArrayMesh();
-		(meshes[0].Mesh as ArrayMesh).AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, surfaceArray);
+		Meshes[0].Mesh = new ArrayMesh();
+		(Meshes[0].Mesh as ArrayMesh).AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, surfaceArray);
 
         var material = new StandardMaterial3D();
         //material.EmissionEnabled = true;
@@ -157,6 +158,6 @@ public partial class Spheroid : Planetoid
         material.VertexColorUseAsAlbedo = true;
         material.ClearcoatEnabled = true;
         //material.RimEnabled = true;
-        (meshes[0].Mesh as ArrayMesh).SurfaceSetMaterial(0, material);
+        (Meshes[0].Mesh as ArrayMesh).SurfaceSetMaterial(0, material);
     }
 }

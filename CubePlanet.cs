@@ -1,5 +1,6 @@
 using Godot;
 using System.Collections.Generic;
+using static Utils;
 
 public partial class CubePlanet : Planetoid
 {
@@ -24,10 +25,12 @@ public partial class CubePlanet : Planetoid
     public override void _Ready() {
         Faces = 6;
         Layers = 2;
-        faceRenderMask = Utils.Face.All;
+        faceRenderMask = Face.All;
         Gravity = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle();
         CustomIntegrator = true;
         CurrentVelocity = initialVelocity;
+        Random = new RandomNumberGenerator();
+        Random.Seed = (ulong)Seed;
         GeneratePlanet();
     }
 
@@ -91,40 +94,44 @@ public partial class CubePlanet : Planetoid
             colorSettings.biomeColourSettings = new ColorSettings.BiomeColourSettings();
 
             var biome1 = new ColorSettings.BiomeColourSettings.Biome();
-            biome1.tint = new Color("#6ff");
+            //biome1.tint = new Color("#6ff");
+            biome1.tint = new Color(Crayons[Random.RandiRange(0,47)]);
             biome1.startHeight = 0f;
             biome1.gradient = new Gradient();
-            biome1.gradient.Colors = new[] {
-                new Color("#6cf"),
-                new Color("#cf6"),
-                new Color("#118040"),
-                new Color("#fd8008"),
-                new Color("#804003")
-            };
+            // biome1.gradient.Colors = new[] {
+            //     new Color("#6cf"),
+            //     new Color("#cf6"),
+            //     new Color("#118040"),
+            //     new Color("#fd8008"),
+            //     new Color("#804003")
+            // };
+            biome1.gradient.Colors = _CreateBiomeGradient();
             
             var biome2 = new ColorSettings.BiomeColourSettings.Biome();
-            biome2.tint = new Color("#118002");
+            biome2.tint = new Color(Crayons[Random.RandiRange(0,47)]);
             biome2.startHeight = 0.333f;
             biome2.gradient = new Gradient();
-            biome2.gradient.Colors = new[] {
-                new Color("#6cf"),
-                new Color("#fc66ff"),
-                new Color("#8000ff"),
-                new Color("#7f7f7f"),
-                new Color("#804003")
-            };
+            // biome2.gradient.Colors = new[] {
+            //     new Color("#6cf"),
+            //     new Color("#fc66ff"),
+            //     new Color("#8000ff"),
+            //     new Color("#7f7f7f"),
+            //     new Color("#804003")
+            // };
+            biome2.gradient.Colors = _CreateBiomeGradient();
 
             var biome3 = new ColorSettings.BiomeColourSettings.Biome();
-            biome3.tint = new Color("#c6f");
+            biome3.tint =  new Color(Crayons[Random.RandiRange(0,47)]);
             biome3.startHeight = 0.666f;
             biome3.gradient = new Gradient();
-            biome3.gradient.Colors = new[] {
-                new Color("#6cf"),
-                new Color("#ccc"),
-                new Color("#ffff0a"),
-                new Color("#808004"),
-                new Color("#108080")
-            };
+            // biome3.gradient.Colors = new[] {
+            //     new Color("#6cf"),
+            //     new Color("#ccc"),
+            //     new Color("#ffff0a"),
+            //     new Color("#808004"),
+            //     new Color("#108080")
+            // };
+            biome3.gradient.Colors = _CreateBiomeGradient();
 
             colorSettings.biomeColourSettings.biomes = new[] { biome1, biome2, biome3 };
 
@@ -193,16 +200,62 @@ public partial class CubePlanet : Planetoid
     {
         DetermineElevations();
         for (int i = 0; i < Faces; i++) {
-            bool renderFace = faceRenderMask == Utils.Face.All || (int)faceRenderMask - 1 == i;
+            bool renderFace = faceRenderMask == Face.All || (int)faceRenderMask - 1 == i;
             if (renderFace) {
                 TerrainFaces[i].ConstructMesh();
-                meshes[i].Mesh = TerrainFaces[i].landMesh;
-                meshes[Faces + i].Mesh = TerrainFaces[i].oceanMesh;
-                meshes[i].Mesh.SurfaceSetMaterial(0, landRenderer);
-                meshes[Faces + i].Mesh.SurfaceSetMaterial(0, oceanRenderer);
-                meshes[i].CreateMultipleConvexCollisions();
+                Meshes[i].Mesh = TerrainFaces[i].landMesh;
+                Meshes[Faces + i].Mesh = TerrainFaces[i].oceanMesh;
+                Meshes[i].Mesh.SurfaceSetMaterial(0, landRenderer);
+                Meshes[Faces + i].Mesh.SurfaceSetMaterial(0, oceanRenderer);
+                Meshes[i].CreateMultipleConvexCollisions();
             }
         }
         GD.Print("rendered");
+    }
+
+    Color[] _CreateBiomeGradient()
+    {
+        var gradient = new Color[7];
+        Color grey = new Color(Crayons[Crayons.Length + Random.RandiRange(0, 11) - 12]);
+        if (grey.V < 0.5f) {
+            gradient[6] = grey;
+            var darkIdx = Crayons.Length + Random.RandiRange(0, 11) - 24;
+            gradient[5] = new Color(Crayons[darkIdx]);
+            var darkOffsetIdx = 24 + ((darkIdx - 24 + _Offset()) % 12);
+            gradient[4] = new Color(Crayons[darkOffsetIdx]);
+            var mediumIdx =  12 + ((darkIdx - 24 + _Offset()) % 12);
+            gradient[3] = new Color(Crayons[mediumIdx]);
+            var mediumOffsetIdx = 12 + ((mediumIdx - 12 + _Offset()) % 12);
+            gradient[2] = new Color(Crayons[mediumOffsetIdx]);
+            var lightIdx = (mediumIdx - 12 + _Offset()) % 12;
+            gradient[1] = new Color(Crayons[lightIdx]);
+            var lightOffsetIdx = Mathf.Abs((lightIdx + _Offset()) % 12);
+            gradient[0] = new Color(Crayons[lightOffsetIdx]);
+        } else {
+            gradient[0] = grey;
+            var lightIdx = Random.RandiRange(0, 11);
+            gradient[1] = new Color(Crayons[lightIdx]);
+            var lightOffsetIdx = Mathf.Abs((lightIdx + _Offset()) % 12);
+            gradient[2] = new Color(Crayons[lightOffsetIdx]);
+            var medIdx = 12 + ((lightIdx + _Offset()) % 12);
+            gradient[3] = new Color(Crayons[medIdx]);
+            var mediumOffsetIdx = 12 + ((medIdx - 12 + _Offset()) % 12);
+            gradient[4] = new Color(Crayons[mediumOffsetIdx]);
+            var darkIdx = 24 + ((medIdx - 12 + _Offset()) % 12);
+            gradient[5] = new Color(Crayons[darkIdx]);
+            var darkOffsetIdx =  24 + ((darkIdx - 24 + _Offset()) % 12);
+            gradient[6] = new Color(Crayons[darkOffsetIdx]);
+        }
+        return gradient;
+    }
+
+    // Returns a number from -3 to 3 excluding 0;
+    int _Offset()
+    {
+        var offset = Random.RandiRange(1, 6) - 3;
+        if (offset <=0) {
+            offset -=1;
+        }
+        return offset;
     }
 }

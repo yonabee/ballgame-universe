@@ -8,10 +8,10 @@ public partial class Planetoid : RigidBody3D, HeavenlyBody
     public float Radius { get; set; }
     public int Faces { get; set; }
     public int Layers { get; set; }
-    public Color[] crayons = { Colors.Red };
-    public MeshInstance3D[] meshes;
-    public CollisionShape3D[] colliders;
+    public MeshInstance3D[] Meshes;
+    public CollisionShape3D[] Colliders;
     public Vector3 CurrentVelocity { get; set; }
+    public RandomNumberGenerator Random;
     public int Seed { get; set; }
     public float Gravity { get; set; }
     public bool OutOfBounds { get; set; }
@@ -23,6 +23,8 @@ public partial class Planetoid : RigidBody3D, HeavenlyBody
         CustomIntegrator = true;
         CurrentVelocity = initialVelocity;
         Mass = Gravity * Radius * Radius / Universe.Gravity;
+        Random = new RandomNumberGenerator();
+        Random.Seed = (ulong)Seed;
         GeneratePlanet();
     }
 
@@ -33,13 +35,13 @@ public partial class Planetoid : RigidBody3D, HeavenlyBody
     }
 
     public virtual void Initialize() {
-		meshes = new MeshInstance3D[Faces * Layers];
-        colliders = new CollisionShape3D[Faces * Layers];
+		Meshes = new MeshInstance3D[Faces * Layers];
+        Colliders = new CollisionShape3D[Faces * Layers];
         for (int i = 0; i < Faces * Layers; i++) {
-            meshes[i] = new MeshInstance3D();
-            colliders[i] = new CollisionShape3D();
-            AddChild(meshes[i]);
-            AddChild(colliders[i]);
+            Meshes[i] = new MeshInstance3D();
+            Colliders[i] = new CollisionShape3D();
+            AddChild(Meshes[i]);
+            AddChild(Colliders[i]);
         }
     }
 
