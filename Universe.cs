@@ -6,6 +6,7 @@ public partial class Universe : Node3D
 {
 	List<HeavenlyBody> bodies = new List<HeavenlyBody>();
 	public static CubePlanet Planet;
+	public static Pivot PlayerPivot;
 	public static Camera3D PlayerCam;
 	public static Camera3D WatcherCam;
 	public static float Gravity;
@@ -61,6 +62,28 @@ public partial class Universe : Node3D
 			Planet.Gravity = 10;
 			Planet.Radius = 1000;
 			AddChild(Planet);
+
+			if (PlayerCam == null) {
+				PlayerCam = GetNode<Camera3D>("PlayerCam");
+			} else {
+				PlayerCam.Reparent(GetParent());
+				Transform3D trans = PlayerCam.Transform;
+				trans.Basis = Basis.Identity;
+				trans.Origin = Planet.Transform.Origin;
+				PlayerCam.Transform = trans;
+			}
+			PlayerCam.Translate(Planet.Transform.Origin + Vector3.Up * (Planet.Shapes.DetermineElevation(Vector3.Up).scaled + 50f));
+
+			PlayerPivot = new Pivot();
+			PlayerPivot.Speed = 0.2f;
+			PlayerPivot.OrientForward = true;
+			Planet.AddChild(PlayerPivot);
+			PlayerCam.Reparent(PlayerPivot);
+			// Transform3D transform = PlayerCam.Transform;
+			// transform.Basis = Basis.Identity;
+			// PlayerCam.Transform = transform;
+			PlayerPivot.Camera = PlayerCam;
+			//PlayerPivot.RotateX(-Mathf.Pi / 2f);
 		}
 
 		if (otherSun == null) {
@@ -71,18 +94,6 @@ public partial class Universe : Node3D
 			otherSun.DirectionalShadowMode = DirectionalLight3D.ShadowMode.Parallel4Splits;
 			otherSun.ShadowBias = 1f;
 			AddChild(otherSun);
-		}
-
-		if (PlayerCam == null) {
-			PlayerCam = GetNode<Camera3D>("PlayerCam");
-			var pivot = new Pivot();
-			pivot.Speed = 0.2f;
-			pivot.OrientForward = true;
-			Planet.AddChild(pivot);
-			PlayerCam.Reparent(pivot);
-			pivot.Camera = PlayerCam;
-			PlayerCam.Translate(Planet.Transform.Origin + Vector3.Up * (Planet.Shapes.DetermineElevation(Vector3.Up).scaled + 50f));
-			pivot.RotateX(-Mathf.Pi / 2f);
 		}
 
 		if (WatcherCam == null) {

@@ -227,7 +227,7 @@ public partial class CubePlanet : Planetoid
             gradient[3] = new Color(Crayons[mediumIdx]);
             var mediumOffsetIdx = 12 + ((mediumIdx - 12 + _Offset()) % 12);
             gradient[2] = new Color(Crayons[mediumOffsetIdx]);
-            var lightIdx = (mediumIdx - 12 + _Offset()) % 12;
+            var lightIdx = Mathf.Abs((mediumIdx - 12 + _Offset()) % 12);
             gradient[1] = new Color(Crayons[lightIdx]);
             var lightOffsetIdx = Mathf.Abs((lightIdx + _Offset()) % 12);
             gradient[0] = new Color(Crayons[lightOffsetIdx]);

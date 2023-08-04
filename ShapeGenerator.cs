@@ -37,13 +37,14 @@ public class ShapeGenerator {
         Elevation result; 
         result = new Elevation();
         result.unscaled = CalculateUnscaledElevation(pointOnUnitSphere);
-        result.scaled = GetScaledElevation(result.unscaled);
+        result.scaled = CalculateScaledElevation(result.unscaled);
         if (Start == Vector3.Zero) {
             Start = pointOnUnitSphere;
         }
         return result;
     }
 
+    // Elevation as a float from -1 to 1
     float CalculateUnscaledElevation(Vector3 pointOnUnitSphere)
     {
         float firstLayerValue = 0;
@@ -71,7 +72,8 @@ public class ShapeGenerator {
         return elevation;
     }
 
-    float GetScaledElevation(float unscaledElevation) 
+    // Elevation in units above sea level.
+    float CalculateScaledElevation(float unscaledElevation) 
     {
         float elevation = Mathf.Max(0, unscaledElevation);
         elevation = settings.radius * (1 + unscaledElevation);

@@ -10,6 +10,9 @@ public partial class Pivot : Marker3D
 
 	public override void _PhysicsProcess(double delta)
 	{
+		if (Universe.Planet.IsQueuedForDeletion()) {
+			return;
+		}
 		if (Input.IsActionPressed("camera_right")) {
 			RotateObjectLocal(OrientForward ? Vector3.Down : Vector3.Up, (float)delta * (OrientForward ? 1f : Speed));
 		}
