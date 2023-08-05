@@ -23,15 +23,18 @@ public partial class CubePlanet : Planetoid
     Vector3[] directions = { Vector3.Up, Vector3.Down, Vector3.Left, Vector3.Right, Vector3.Forward, Vector3.Back };
 
     public override void _Ready() {
+        Configure();
+        GeneratePlanet();
+    }
+
+    public override void Configure() {
+        Gravity = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle();
+
+        base.Configure();
+
         Faces = 6;
         Layers = 2;
         faceRenderMask = Face.All;
-        Gravity = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle();
-        CustomIntegrator = true;
-        CurrentVelocity = initialVelocity;
-        Random = new RandomNumberGenerator();
-        Random.Seed = (ulong)Seed;
-        GeneratePlanet();
     }
 
     public override void Initialize()
@@ -86,26 +89,14 @@ public partial class CubePlanet : Planetoid
 
         if (colorSettings == null) {
             colorSettings = new ColorSettings();
-            colorSettings.oceanColor = new Gradient();
-            colorSettings.oceanColor.Colors = new[] { 
-                new Color("#0f80ff"),
-                new Color("#000080") 
-            };
+            colorSettings.oceanColor = new Color(Crayons[Random.RandiRange(0,35)]); 
             colorSettings.biomeColourSettings = new ColorSettings.BiomeColourSettings();
 
             var biome1 = new ColorSettings.BiomeColourSettings.Biome();
-            //biome1.tint = new Color("#6ff");
             biome1.tint = new Color(Crayons[Random.RandiRange(0,47)]);
             biome1.tintPercent = 0.3f;
             biome1.startHeight = 0f;
             biome1.gradient = new Gradient();
-            // biome1.gradient.Colors = new[] {
-            //     new Color("#6cf"),
-            //     new Color("#cf6"),
-            //     new Color("#118040"),
-            //     new Color("#fd8008"),
-            //     new Color("#804003")
-            // };
             biome1.gradient.Colors = _CreateBiomeGradient();
             biome1.gradient.Offsets = new[] { 0f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 1f };
             
@@ -114,13 +105,6 @@ public partial class CubePlanet : Planetoid
             biome2.tintPercent = 0.3f;
             biome2.startHeight = 0.333f;
             biome2.gradient = new Gradient();
-            // biome2.gradient.Colors = new[] {
-            //     new Color("#6cf"),
-            //     new Color("#fc66ff"),
-            //     new Color("#8000ff"),
-            //     new Color("#7f7f7f"),
-            //     new Color("#804003")
-            // };
             biome2.gradient.Colors = _CreateBiomeGradient();
             biome2.gradient.Offsets = new[] { 0f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 1f };
 
@@ -129,13 +113,6 @@ public partial class CubePlanet : Planetoid
             biome3.tintPercent = 0.3f;
             biome3.startHeight = 0.666f;
             biome3.gradient = new Gradient();
-            // biome3.gradient.Colors = new[] {
-            //     new Color("#6cf"),
-            //     new Color("#ccc"),
-            //     new Color("#ffff0a"),
-            //     new Color("#808004"),
-            //     new Color("#108080")
-            // };
             biome3.gradient.Colors = _CreateBiomeGradient();
             biome3.gradient.Offsets = new[] { 0f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 1f };
 

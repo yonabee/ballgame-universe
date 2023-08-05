@@ -4,17 +4,15 @@ using System.Collections.Generic;
 
 public partial class Universe : Node3D
 {
-	List<HeavenlyBody> bodies = new List<HeavenlyBody>();
+	public static List<HeavenlyBody> Bodies = new List<HeavenlyBody>();
 	public static CubePlanet Planet;
 	public static Pivot PlayerPivot;
 	public static Camera3D PlayerCam;
 	public static Camera3D WatcherCam;
 	public static float Gravity;
-
 	public static int Radius = 2000;
 
 	Vector3 _rotate = Vector3.Zero;
-
 	DirectionalLight3D otherSun;
 	OmniLight3D sun;
 
@@ -44,15 +42,6 @@ public partial class Universe : Node3D
 		_rotate.Y = random.RandfRange(-0.3f, 0.3f);
 		_rotate.Z = random.RandfRange(-0.3f, 0.3f);
 
-		// if (sun == null) {
-		// 	sun = new OmniLight3D();
-		// 	sun.OmniRange = 2500f;
-		// 	sun.OmniAttenuation = 0.2f;
-		// 	sun.LightIntensityLumens = 1000;
-		// 	sun.ShadowEnabled = true;
-		// 	AddChild(sun);
-		// }
-
 		GD.Print("universe ready");
 
 		if (Planet == null || Planet.IsQueuedForDeletion()) {
@@ -73,15 +62,11 @@ public partial class Universe : Node3D
 				PlayerCam.Transform = trans;
 			}
 			PlayerCam.Translate(Planet.Transform.Origin + Vector3.Up * (Planet.Shapes.DetermineElevation(Vector3.Up).scaled + 50f));
-
 			PlayerPivot = new Pivot();
 			PlayerPivot.Speed = 0.2f;
 			PlayerPivot.OrientForward = true;
 			Planet.AddChild(PlayerPivot);
 			PlayerCam.Reparent(PlayerPivot);
-			// Transform3D transform = PlayerCam.Transform;
-			// transform.Basis = Basis.Identity;
-			// PlayerCam.Transform = transform;
 			PlayerPivot.Camera = PlayerCam;
 			//PlayerPivot.RotateX(-Mathf.Pi / 2f);
 		}
@@ -117,7 +102,7 @@ public partial class Universe : Node3D
 			star.OmniAttenuation = 0.2f;
 			star.LightIntensityLumens = 1000f;
 			star.LightColor = colors[random.RandiRange(1, 10)];
-			bodies.Add(star);
+			Bodies.Add(star);
 			AddChild(star);
 
 			// var starChild = new Spheroid();
@@ -156,32 +141,6 @@ public partial class Universe : Node3D
 				transZ += Planet.Radius;
 			}
 			sphere.Translate(new Vector3(transX, transY, transZ));
-			// switch(i%8) {
-			// 	case 0:
-			// 		sphere.TranslateObjectLocal(new Vector3(random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius)),random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius)),random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius))));
-			// 		break;
-			// 	case 1:
-			// 		sphere.TranslateObjectLocal(new Vector3(random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius)),random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius)),random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius))));
-			// 		break;
-			// 	case 2:
-			// 		sphere.TranslateObjectLocal(new Vector3(random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius)),random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius)),random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius))));
-			// 		break;
-			// 	case 3:
-			// 		sphere.TranslateObjectLocal(new Vector3(random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius)),random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius)),random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius))));
-			// 		break;
-			// 	case 4:
-			// 		sphere.TranslateObjectLocal(new Vector3(random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius)),random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius)),random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius))));
-			// 		break;
-			// 	case 5:
-			// 		sphere.TranslateObjectLocal(new Vector3(random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius)),random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius)),random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius))));
-			// 		break;
-			// 	case 6:
-			// 		sphere.TranslateObjectLocal(new Vector3(random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius)),random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius)),random.RandiRange(-Radius, -Mathf.FloorToInt(Planet.Radius))));
-			// 		break;
-			// 	case 7:
-			// 		sphere.TranslateObjectLocal(new Vector3(random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius)),random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius)),random.RandiRange(Radius, Mathf.FloorToInt(Planet.Radius))));
-			// 		break;
-			// }
 
 			var chance = random.Randf();
 			if (chance < 0.2f) {
@@ -283,7 +242,7 @@ public partial class Universe : Node3D
 					colors[(i + random.RandiRange(1, 32))%colors.Length]
 				};
 			}
-			bodies.Add(sphere);
+			Bodies.Add(sphere);
 			AddChild(sphere);
 		}
 	}
@@ -291,46 +250,41 @@ public partial class Universe : Node3D
 	public override void _PhysicsProcess(double delta)
 	{
 		base._PhysicsProcess(delta);
-		bodies.ForEach(body => body.UpdateVelocity(bodies, Transform.Origin, (float)delta));
-		bodies.ForEach(body => body.UpdatePosition((float)delta));
+		Bodies.ForEach(body => body.UpdateVelocity(Bodies, Transform.Origin, (float)delta));
+		Bodies.ForEach(body => body.UpdatePosition((float)delta));
+
 		otherSun.Rotation = new Vector3(
-			Mathf.Wrap(otherSun.Rotation.X + (float)delta / 4, -Mathf.Pi, Mathf.Pi), 
-			Mathf.Wrap(otherSun.Rotation.Y + (float)delta / 8, -Mathf.Pi, Mathf.Pi), 
-			Mathf.Wrap(otherSun.Rotation.Z + (float)delta / 20, -Mathf.Pi, Mathf.Pi) 
+			Mathf.Wrap(otherSun.Rotation.X + (float)delta / 16, -Mathf.Pi, Mathf.Pi), 
+			Mathf.Wrap(otherSun.Rotation.Y + (float)delta / 32, -Mathf.Pi, Mathf.Pi), 
+			Mathf.Wrap(otherSun.Rotation.Z + (float)delta / 96, -Mathf.Pi, Mathf.Pi) 
 		);
-		// for (int i = 0; i < bodies.Count; i++) {
-		// 	bodies[i].Rotation = new Vector3(
-		// 			Mathf.Wrap(bodies[i].Rotation.X + (float)delta * _rotate.X, -Mathf.Pi, Mathf.Pi),
-		// 			bodies[i].Rotation.Y,
-		// 			bodies[i].Rotation.Z
-		// 		);		
-		// }
+
 		Planet.Rotation = new Vector3(
 			Mathf.Wrap(Planet.Rotation.X + (float)delta * _rotate.X / 10, -Mathf.Pi, Mathf.Pi),
 			Planet.Rotation.Y,
 			Mathf.Wrap(Planet.Rotation.Z + (float)delta * _rotate.Z / 10, -Mathf.Pi, Mathf.Pi)
 		);
-		for (int i = 0; i < bodies.Count; i++) {
+
+		for (int i = 0; i < Bodies.Count; i++) {
 			switch(i%3) {
 				case 0:
-					bodies[i].RotateObjectLocal(new Vector3(1,0,0), (float)delta * _rotate.X);
+					Bodies[i].RotateObjectLocal(new Vector3(1,0,0), (float)delta * _rotate.X);
 					break;
 				case 1:
-					bodies[i].RotateObjectLocal(new Vector3(1,0,1).Normalized(), (float)delta * _rotate.Y);
+					Bodies[i].RotateObjectLocal(new Vector3(1,0,1).Normalized(), (float)delta * _rotate.Y);
 					break;
 				case 2:
-					bodies[i].RotateObjectLocal(new Vector3(0,0,1), (float)delta * _rotate.Z);
+					Bodies[i].RotateObjectLocal(new Vector3(0,0,1), (float)delta * _rotate.Z);
 					break;
 			}
 		}
-		//PlayerCam.Position = Planet.Transform.Origin + PlayerCam.ToGlobal(Vector3.Up) * (Planet.Shapes.DetermineElevation(PlayerCam.ToGlobal(Vector3.Up)).scaled + 50);
 	}
 
     public override void _Input(InputEvent @event)
     {
         if (@event.IsActionPressed("jump")) {
-			bodies.ForEach(body => body.QueueFree());
-			bodies.Clear();
+			Bodies.ForEach(body => body.QueueFree());
+			Bodies.Clear();
 			Planet.QueueFree();
 			_Ready();
 		}

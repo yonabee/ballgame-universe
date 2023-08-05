@@ -7,7 +7,7 @@ public class ColorSettings
     public StandardMaterial3D planetMaterial;
     public StandardMaterial3D oceanMaterial;
     public BiomeColourSettings biomeColourSettings;
-    public Gradient oceanColor;
+    public Color oceanColor;
     public MinMax elevation;
 
     [System.Serializable]

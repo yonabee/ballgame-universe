@@ -70,7 +70,7 @@ public class ColorGenerator
 
     public Color OceanColorFromPoint(Vector3 pointOnUnitSphere)
     {
-        var color = settings.oceanColor.Sample(0.5f);
+        var color = settings.oceanColor;
         color.A = 0.5f;
         return color;
     }

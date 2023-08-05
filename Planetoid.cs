@@ -18,6 +18,12 @@ public partial class Planetoid : RigidBody3D, HeavenlyBody
 
     public override void _Ready()
     {
+        Configure();
+        GeneratePlanet();
+    }
+
+    public virtual void Configure()
+    {
         Faces = 1;
         Layers = 1;
         CustomIntegrator = true;
@@ -25,7 +31,6 @@ public partial class Planetoid : RigidBody3D, HeavenlyBody
         Mass = Gravity * Radius * Radius / Universe.Gravity;
         Random = new RandomNumberGenerator();
         Random.Seed = (ulong)Seed;
-        GeneratePlanet();
     }
 
     public void GeneratePlanet()
