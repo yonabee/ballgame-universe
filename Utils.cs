@@ -236,8 +236,88 @@
             }
         }
 
-        public static Face GetFace() {
-            Vector3 cubemap = Utils.SphereToCube(Universe.Planet.ToLocal(Universe.PlayerCam.ToGlobal(Universe.PlayerCam.Transform.Origin)));
-            return GetFace(cubemap);
+        public static Face[] GetFaces(Face face)
+        {
+            var loc = Universe.Location;
+            var faces = new Face[4];
+            faces[0] = face;
+            var halfway = Universe.Planet.Resolution / 2f;
+            switch(face) {
+                case Face.Top:
+                    if (loc.X <= halfway) {
+                        faces[1] = Face.Left;
+                    } else {
+                        faces[1] = Face.Right;
+                    }
+                    if (loc.Y <= halfway) {
+                        faces[2] = Face.Back;
+                    } else {
+                        faces[2] = Face.Front;
+                    }
+                    break;
+                case Face.Bottom:
+                    if (loc.X <= halfway) {
+                        faces[1] = Face.Right;
+                    } else {
+                        faces[1] = Face.Left;
+                    }
+                    if (loc.Y <= halfway) {
+                        faces[2] = Face.Back;
+                    } else {
+                        faces[2] = Face.Front;
+                    }
+                    break;
+                case Face.Left:
+                    if (loc.X <= halfway) {
+                        faces[1] = Face.Bottom;
+                    } else {
+                        faces[1] = Face.Top;
+                    }
+                    if (loc.Y <= halfway) {
+                        faces[2] = Face.Back;
+                    } else {
+                        faces[2] = Face.Front;
+                    }
+                    break;
+                case Face.Right:
+                    if (loc.X <= halfway) {
+                        faces[1] = Face.Top;
+                    } else {
+                        faces[1] = Face.Bottom;
+                    }
+                    if (loc.Y <= halfway) {
+                        faces[2] = Face.Front;
+                    } else {
+                        faces[2] = Face.Back;
+                    }
+                    break;
+                case Face.Front:
+                    if (loc.X <= halfway) {
+                        faces[1] = Face.Top;
+                    } else {
+                        faces[1] = Face.Bottom;
+                    }
+                    if (loc.Y <= halfway) {
+                        faces[2] = Face.Left;
+                    } else {
+                        faces[2] = Face.Right;
+                    }
+                    break;
+                case Face.Back:
+                    if (loc.X <= halfway) {
+                        faces[1] = Face.Bottom;
+                    } else {
+                        faces[1] = Face.Top;
+                    }
+                    if (loc.Y <= halfway) {
+                        faces[2] = Face.Left;
+                    } else {
+                        faces[2] = Face.Right;
+                    }
+                    break;
+
+            }
+            //GD.Print(faces[0] + " " + faces[1] + " " + faces[2]);
+            return faces;
         }
     }

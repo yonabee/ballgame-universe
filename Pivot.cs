@@ -71,7 +71,9 @@ public partial class Pivot : Marker3D
 				// GD.Print("Back");
 				break;
 		}
-		// GD.Print("x: " + x + "  y: " + y);
+		Universe.CurrentFace = face;
+		Universe.Location = new Vector2(x,y);
+		GD.Print(Universe.CurrentFace + ": " + Universe.Location);
 		TerrainFace terrainFace = Universe.Planet.TerrainFaces[(int)face - 1];
 		if (x >= terrainFace.Elevations.GetLength(0) || x < 0 || y >= terrainFace.Elevations.GetLength(1) || y < 0) {
 			return;

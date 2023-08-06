@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using static Utils;
 
 public partial class Universe : Node3D
 {
@@ -13,6 +14,8 @@ public partial class Universe : Node3D
 	public static int Radius = 2000;
 	public static RandomNumberGenerator Random;
 	public static int Seed;
+	public static Face CurrentFace;
+	public static Vector2 Location;
 
 	Vector3 _rotate = Vector3.Zero;
 	DirectionalLight3D otherSun;
@@ -39,6 +42,7 @@ public partial class Universe : Node3D
 		Random.Randomize();
 
         Gravity = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle();
+		CurrentFace = Face.Top;
 
 		_rotate.X = Random.RandfRange(-0.3f, 0.3f);
 		_rotate.Y = Random.RandfRange(-0.3f, 0.3f);
@@ -92,7 +96,7 @@ public partial class Universe : Node3D
 			WatcherCam = GetNode<Camera3D>("Pivot/Watcher");
 		}
 
-		int sphereCount = 80;
+		int sphereCount = 25;
 		int starCount = 4;
 		float maxV = 1000f;
 

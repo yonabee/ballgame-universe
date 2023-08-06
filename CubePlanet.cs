@@ -198,11 +198,8 @@ public partial class CubePlanet : Planetoid
         }
 
         if (Universe.PlayerCam.Current) {
-            var face = Utils.GetFace();
-            if (!faceRenderMask.Contains(face)) {
-                faceRenderMask.Clear();
-                faceRenderMask.Add(face);
-            }
+            faceRenderMask.Clear();
+            faceRenderMask.AddRange(GetFaces(Universe.CurrentFace));
         } else if (!faceRenderMask.Contains(Face.All)) {
             faceRenderMask.Clear();
             faceRenderMask.Add(Face.All);
