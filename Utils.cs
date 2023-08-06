@@ -235,4 +235,9 @@
                 return Face.Back;
             }
         }
+
+        public static Face GetFace() {
+            Vector3 cubemap = Utils.SphereToCube(Universe.Planet.ToLocal(Universe.PlayerCam.ToGlobal(Universe.PlayerCam.Transform.Origin)));
+            return GetFace(cubemap);
+        }
     }

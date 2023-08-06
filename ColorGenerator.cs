@@ -48,12 +48,15 @@ public class ColorGenerator
     public Color BiomeColorFromPoint(Vector3 pointOnUnitSphere, float height)
     {
         height = (height + 1f) / 2f;
+        height += biomeNoiseFilter.Evaluate(pointOnUnitSphere) * 0.1f; //settings.biomeColourSettings.noiseStrength;
         var min = (settings.elevation.Min + 1f) / 2f;
         var range = settings.elevation.Max - settings.elevation.Min;
         float index = BiomeIndexFromPoint(pointOnUnitSphere);
         int baseIndex = Mathf.FloorToInt(index);
         float remainder = index - (float)baseIndex;
         float percent = (height - min) / range;
+        //percent += biomeNoiseFilter.Evaluate(pointOnUnitSphere) * settings.biomeColourSettings.noiseStrength;
+        Mathf.Clamp(percent, 0f, 1f);
         Biome biome = settings.biomeColourSettings.biomes[baseIndex];
         Color biomeColor;
         Color tintColor;

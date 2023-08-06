@@ -1,11 +1,12 @@
 using Godot;
+using System;
 using System.Collections.Generic;
 using static Utils;
 
 public partial class CubePlanet : Planetoid
 {
     public int Resolution = 400;
-    public Utils.Face faceRenderMask;
+    public List<Face> faceRenderMask;
 
     public ShapeGenerator.ShapeSettings shapeSettings;
     public ColorSettings colorSettings;
@@ -34,7 +35,7 @@ public partial class CubePlanet : Planetoid
 
         Faces = 6;
         Layers = 2;
-        faceRenderMask = Face.All;
+        faceRenderMask = new List<Face>{ Face.All };
     }
 
     public override void Initialize()
@@ -156,6 +157,7 @@ public partial class CubePlanet : Planetoid
             oceanRenderer.VertexColorUseAsAlbedo = true;
             oceanRenderer.Transparency = StandardMaterial3D.TransparencyEnum.Alpha;
             oceanRenderer.ClearcoatEnabled = true;
+            oceanRenderer.ClearcoatRoughness = 1.0f;
         }
 
         for (int i = 0; i < Faces; i++) {
@@ -174,6 +176,34 @@ public partial class CubePlanet : Planetoid
         GD.Print("initialized");
     }
 
+    public override void _Process(double delta)
+    {
+        base._Process(delta);
+
+        if (TerrainFaces == null) {
+            return;
+        }
+
+        if (Universe.PlayerCam.Current) {
+            var face = Utils.GetFace();
+            if (!faceRenderMask.Contains(face)) {
+                faceRenderMask.Clear();
+                faceRenderMask.Add(face);
+            }
+        } else if (!faceRenderMask.Contains(Face.All)) {
+            faceRenderMask.Clear();
+            faceRenderMask.Add(Face.All);
+        }
+
+        for (int i = 0; i < Faces; i++) {
+            if (faceRenderMask.Contains(Face.All) || faceRenderMask.Contains((Face)i + 1)) {
+                Meshes[i].Show();
+            } else {
+                Meshes[i].Hide();
+            }
+        }
+    }
+
     public void DetermineElevations()
     {
         for (int i = 0; i < Faces; i++) {
@@ -184,7 +214,7 @@ public partial class CubePlanet : Planetoid
     {
         DetermineElevations();
         for (int i = 0; i < Faces; i++) {
-            bool renderFace = faceRenderMask == Face.All || (int)faceRenderMask - 1 == i;
+            bool renderFace = faceRenderMask.Contains(Face.All) || faceRenderMask.Contains((Face)i + 1);
             if (renderFace) {
                 TerrainFaces[i].ConstructMesh();
                 Meshes[i].Mesh = TerrainFaces[i].landMesh;
@@ -229,6 +259,9 @@ public partial class CubePlanet : Planetoid
             gradient[5] = new Color(Crayons[darkIdx]);
             var darkOffsetIdx =  24 + ((darkIdx - 24 + _Offset()) % 12);
             gradient[6] = new Color(Crayons[darkOffsetIdx]);
+        }
+        if (Random.Randf() >= 0.5f) {
+            Array.Reverse(gradient);
         }
         return gradient;
     }

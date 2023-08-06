@@ -157,6 +157,8 @@ public partial class Spheroid : Planetoid
         //material.AlbedoColor = color;
         material.VertexColorUseAsAlbedo = true;
         material.ClearcoatEnabled = true;
+        material.ClearcoatRoughness = 1.0f;
+        material.Roughness = 1.0f;
         //material.RimEnabled = true;
         (Meshes[0].Mesh as ArrayMesh).SurfaceSetMaterial(0, material);
     }
