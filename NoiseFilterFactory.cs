@@ -12,6 +12,8 @@ public static class NoiseFilterFactory
                 return new SimpleNoiseFilter(settings);
             case NoiseSettings.FilterType.Ridged:
                 return new RidgedNoiseFilter(settings);
+            case NoiseSettings.FilterType.Warped:
+                return new WarpedNoiseFilter(settings);
         }
         return null;
     }

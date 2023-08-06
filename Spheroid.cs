@@ -22,18 +22,16 @@ public partial class Spheroid : Planetoid
     {
         base.GenerateMesh();
 
-        var random = new RandomNumberGenerator();
-        random.Seed = (ulong)Seed;
-        var chance = random.Randf();
+        var chance = Random.Randf();
 
         var noise = new FastNoiseLite();
         noise.NoiseType = FastNoiseLite.NoiseTypeEnum.Simplex;
         noise.FractalOctaves = 4;
         noise.Seed = Seed;
-        noise.Frequency = random.RandfRange(0.0005f, 0.001f);
+        noise.Frequency = Random.RandfRange(0.0005f, 0.001f);
         noise.DomainWarpEnabled = true;
         noise.DomainWarpFractalOctaves = 2;
-        noise.DomainWarpFrequency = random.RandfRange(0.0005f, 0.005f);
+        noise.DomainWarpFrequency = Random.RandfRange(0.0005f, 0.005f);
 
 		var verts = new List<Vector3>();
 		var uvs = new List<Vector2>();

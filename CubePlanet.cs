@@ -52,7 +52,7 @@ public partial class CubePlanet : Planetoid
             var noiseLayer1 = new NoiseSettings();
             noiseLayer1.strength = 0.15f;
             noiseLayer1.octaves = 4;
-            noiseLayer1.baseRoughness = 0.5f;
+            noiseLayer1.frequency = 0.5f;
             noiseLayer1.roughness = 2.35f;
             noiseLayer1.persistence = 0.5f;
             noiseLayer1.minValue = 1.1f;
@@ -63,7 +63,7 @@ public partial class CubePlanet : Planetoid
             var noiseLayer2 = new NoiseSettings();
             noiseLayer2.strength = 4f;
             noiseLayer2.octaves = 5;
-            noiseLayer2.baseRoughness = 1f;
+            noiseLayer2.frequency = 1f;
             noiseLayer2.roughness = 2f;
             noiseLayer2.persistence = 0.5f;
             noiseLayer2.minValue = 1.25f;
@@ -75,7 +75,7 @@ public partial class CubePlanet : Planetoid
             var noiseLayer3 = new NoiseSettings();
             noiseLayer3.strength = 0.8f;
             noiseLayer3.octaves = 4;
-            noiseLayer3.baseRoughness = 2.5f;
+            noiseLayer3.frequency = 2.5f;
             noiseLayer3.roughness = 2f;
             noiseLayer3.persistence = 0.5f;
             noiseLayer3.minValue = 0f;
@@ -99,7 +99,7 @@ public partial class CubePlanet : Planetoid
             biome1.startHeight = 0f;
             biome1.gradient = new Gradient();
             biome1.gradient.Colors = _CreateBiomeGradient();
-            biome1.gradient.Offsets = new[] { 0f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 1f };
+            biome1.gradient.Offsets = new[] { 0f, 0.3f, 0.45f, 0.5f, 0.55f, 0.7f, 1f };
             
             var biome2 = new ColorSettings.BiomeColourSettings.Biome();
             biome2.tint = new Color(Crayons[Random.RandiRange(0,47)]);
@@ -107,7 +107,7 @@ public partial class CubePlanet : Planetoid
             biome2.startHeight = 0.333f;
             biome2.gradient = new Gradient();
             biome2.gradient.Colors = _CreateBiomeGradient();
-            biome2.gradient.Offsets = new[] { 0f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 1f };
+            biome2.gradient.Offsets = new[] { 0f, 0.3f, 0.45f, 0.5f, 0.55f, 0.7f, 1f };
 
             var biome3 = new ColorSettings.BiomeColourSettings.Biome();
             biome3.tint =  new Color(Crayons[Random.RandiRange(0,47)]);
@@ -115,7 +115,7 @@ public partial class CubePlanet : Planetoid
             biome3.startHeight = 0.666f;
             biome3.gradient = new Gradient();
             biome3.gradient.Colors = _CreateBiomeGradient();
-            biome3.gradient.Offsets = new[] { 0f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 1f };
+            biome3.gradient.Offsets = new[] { 0f, 0.3f, 0.45f, 0.5f, 0.55f, 0.7f, 1f };
 
             colorSettings.biomeColourSettings.biomes = new[] { biome1, biome2, biome3 };
 
@@ -123,15 +123,28 @@ public partial class CubePlanet : Planetoid
             biomeNoise.filterType = NoiseSettings.FilterType.Simple;
             biomeNoise.strength = 1f;
             biomeNoise.octaves = 3;
-            biomeNoise.baseRoughness = 1;
+            biomeNoise.frequency = 1;
             biomeNoise.roughness = 2;
             biomeNoise.persistence = 0.5f;
             biomeNoise.minValue = 0f;
 
-            colorSettings.biomeColourSettings.noise = biomeNoise;
-            colorSettings.biomeColourSettings.noiseOffset = 0.66f;
-            colorSettings.biomeColourSettings.noiseStrength = 0.4f;
-            colorSettings.biomeColourSettings.blendAmount = 0.5f;
+            colorSettings.biomeColourSettings.biomeNoise = biomeNoise;
+            colorSettings.biomeColourSettings.biomeNoiseOffset = 0.66f;
+            colorSettings.biomeColourSettings.biomeNoiseStrength = 0.4f;
+            colorSettings.biomeColourSettings.biomeBlendAmount = 0.5f;
+
+            var heightMapNoise = new NoiseSettings();
+            heightMapNoise.filterType = NoiseSettings.FilterType.Warped;
+            heightMapNoise.strength = 1f;
+            heightMapNoise.octaves = 5;
+            heightMapNoise.frequency = Random.RandfRange(0.1f, 1f);
+            heightMapNoise.roughness = Random.RandfRange(1f,3f);
+            heightMapNoise.persistence = Random.RandfRange(0.3f, 0.7f);
+            heightMapNoise.minValue = 0f;
+            heightMapNoise.warpFrequency = Random.RandfRange(0.1f, 1f);
+
+            colorSettings.biomeColourSettings.heightMapNoise = heightMapNoise;
+            colorSettings.biomeColourSettings.heightMapNoiseStrength = Random.RandfRange(0.2f, 0.5f);
         }
 
         Shapes.UpdateSettings(shapeSettings);

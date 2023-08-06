@@ -12,7 +12,7 @@ public class SimpleNoiseFilter : INoiseFilter {
         this.settings = settings;
         noise = new FastNoiseLite();
         noise.NoiseType = FastNoiseLite.NoiseTypeEnum.Simplex;
-        noise.Frequency = settings.baseRoughness;
+        noise.Frequency = settings.frequency;
         noise.FractalOctaves = 1;
         noise.Seed = settings.seed;
     }
@@ -20,7 +20,7 @@ public class SimpleNoiseFilter : INoiseFilter {
     public float Evaluate(Vector3 point)
     {
         float noiseValue = 0;
-        float frequency = settings.baseRoughness;
+        float frequency = settings.frequency;
         float amplitude = 1;
 
         for (int i = 0; i < settings.octaves; i++)

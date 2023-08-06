@@ -29,8 +29,7 @@ public partial class Planetoid : RigidBody3D, HeavenlyBody
         CustomIntegrator = true;
         CurrentVelocity = initialVelocity;
         Mass = Gravity * Radius * Radius / Universe.Gravity;
-        Random = new RandomNumberGenerator();
-        Random.Seed = (ulong)Seed;
+        Random = Universe.Random;
     }
 
     public void GeneratePlanet()

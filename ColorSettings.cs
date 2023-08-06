@@ -14,10 +14,13 @@ public class ColorSettings
     public class BiomeColourSettings
     {
         public Biome[] biomes;
-        public NoiseSettings noise;
-        public float noiseOffset;
-        public float noiseStrength;
-        public float blendAmount;
+        public NoiseSettings biomeNoise;
+        public float biomeNoiseOffset;
+        public float biomeNoiseStrength;
+        public float biomeBlendAmount;
+
+        public NoiseSettings heightMapNoise;
+        public float heightMapNoiseStrength;
 
         [System.Serializable]
         public class Biome

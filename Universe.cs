@@ -11,12 +11,12 @@ public partial class Universe : Node3D
 	public static Camera3D WatcherCam;
 	public static float Gravity;
 	public static int Radius = 2000;
+	public static RandomNumberGenerator Random;
+	public static int Seed;
 
 	Vector3 _rotate = Vector3.Zero;
 	DirectionalLight3D otherSun;
 	OmniLight3D sun;
-
-	RandomNumberGenerator random;
 
 	Color[] colors = {
 		new Color("#000000"),
@@ -34,20 +34,22 @@ public partial class Universe : Node3D
 
 	public override void _Ready() 
 	{
-		var random = new RandomNumberGenerator();
+		Random = new RandomNumberGenerator();
+		//Random.Seed = 123456;
+		Random.Randomize();
 
         Gravity = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle();
 
-		_rotate.X = random.RandfRange(-0.3f, 0.3f);
-		_rotate.Y = random.RandfRange(-0.3f, 0.3f);
-		_rotate.Z = random.RandfRange(-0.3f, 0.3f);
+		_rotate.X = Random.RandfRange(-0.3f, 0.3f);
+		_rotate.Y = Random.RandfRange(-0.3f, 0.3f);
+		_rotate.Z = Random.RandfRange(-0.3f, 0.3f);
 
 		GD.Print("universe ready");
 
 		if (Planet == null || Planet.IsQueuedForDeletion()) {
 			GD.Print("adding planet");
 			Planet = new CubePlanet();
-			Planet.Seed = (int)random.Randi();
+			Planet.Seed = (int)Random.Randi();
 			Planet.Gravity = 10;
 			Planet.Radius = 1000;
 			AddChild(Planet);
@@ -96,12 +98,12 @@ public partial class Universe : Node3D
 
 		for (int i = 0; i < starCount; i++) {
 			var star = new Star();
-			star.Gravity = random.RandiRange(100, 1000);
+			star.Gravity = Random.RandiRange(100, 1000);
 			star.Radius = 0.1f;
 			star.OmniRange = 5000f;
 			star.OmniAttenuation = 0.2f;
 			star.LightIntensityLumens = 1000f;
-			star.LightColor = colors[random.RandiRange(1, 10)];
+			star.LightColor = colors[Random.RandiRange(1, 10)];
 			Bodies.Add(star);
 			AddChild(star);
 
@@ -117,24 +119,24 @@ public partial class Universe : Node3D
 		for (int i = 0; i < sphereCount; i++) {
 			var sphere = new Spheroid();
 			sphere.Seed = i;
-			sphere.Radius = random.RandiRange(50, 300);
+			sphere.Radius = Random.RandiRange(50, 300);
 			sphere.rings = Mathf.FloorToInt(sphere.Radius);
 			sphere.radialSegments = sphere.rings;
 			sphere.Gravity = sphere.Radius / 10f;
-			sphere.initialVelocity = new Vector3(random.Randf() * maxV * 2 - maxV, random.Randf() * maxV * 2 - maxV, random.Randf() * maxV * 2 - maxV);
-			float transX = random.RandfRange(-Radius, Radius);
+			sphere.initialVelocity = new Vector3(Random.Randf() * maxV * 2 - maxV, Random.Randf() * maxV * 2 - maxV, Random.Randf() * maxV * 2 - maxV);
+			float transX = Random.RandfRange(-Radius, Radius);
 			if (transX < 0) {
 				transX -= Planet.Radius;
 			} else {
 				transX += Planet.Radius;
 			}
-			float transY = random.RandfRange(-Radius, Radius);
+			float transY = Random.RandfRange(-Radius, Radius);
 			if (transY < 0) {
 				transY -= Planet.Radius;
 			} else {
 				transY += Planet.Radius;
 			}
-			float transZ = random.RandfRange(-Radius, Radius);
+			float transZ = Random.RandfRange(-Radius, Radius);
 			if (transZ < 0) {
 				transZ -= Planet.Radius;
 			} else {
@@ -142,9 +144,9 @@ public partial class Universe : Node3D
 			}
 			sphere.Translate(new Vector3(transX, transY, transZ));
 
-			var chance = random.Randf();
+			var chance = Random.Randf();
 			if (chance < 0.2f) {
-				chance = random.Randf();
+				chance = Random.Randf();
 				Color[] crayons;
 				// classic rainbow
 				if (chance < 0.15f) {
@@ -230,7 +232,7 @@ public partial class Universe : Node3D
 					};
 				}					
 				
-				var offset = random.RandiRange(0, crayons.Length - 1);
+				var offset = Random.RandiRange(0, crayons.Length - 1);
 				sphere.crayons = new Color[crayons.Length];
 				for (var idx = offset; idx < crayons.Length + offset; idx++) {
 					sphere.crayons[idx%crayons.Length] = crayons[idx%crayons.Length];
@@ -239,7 +241,7 @@ public partial class Universe : Node3D
 			} else {
 				sphere.crayons = new[] { 
 					colors[i%colors.Length],
-					colors[(i + random.RandiRange(1, 32))%colors.Length]
+					colors[(i + Random.RandiRange(1, 32))%colors.Length]
 				};
 			}
 			Bodies.Add(sphere);
