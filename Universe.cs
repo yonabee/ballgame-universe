@@ -11,7 +11,7 @@ public partial class Universe : Node3D
 	public static Camera3D PlayerCam;
 	public static Camera3D WatcherCam;
 	public static float Gravity;
-	public static int Radius = 2000;
+	public static int Radius = 7500;
 	public static RandomNumberGenerator Random;
 	public static int Seed;
 	public static Face CurrentFace;
@@ -54,8 +54,8 @@ public partial class Universe : Node3D
 			GD.Print("adding planet");
 			Planet = new CubePlanet();
 			Planet.Seed = (int)Random.Randi();
-			Planet.Gravity = 10;
 			Planet.Radius = 1000;
+			Planet.Resolution = 400;
 			AddChild(Planet);
 
 			if (PlayerCam == null) {
@@ -84,8 +84,8 @@ public partial class Universe : Node3D
 			otherSun.ShadowEnabled = true;
 			otherSun.DirectionalShadowMode = DirectionalLight3D.ShadowMode.Parallel4Splits;
 			otherSun.LightAngularDistance = 5.0f;
-			otherSun.ShadowBias = 1f;
-			otherSun.ShadowNormalBias = 2f;
+			otherSun.ShadowBias = 0.1f;
+			otherSun.ShadowNormalBias = 1f;
 			otherSun.DirectionalShadowPancakeSize = 0f;
 			otherSun.DirectionalShadowBlendSplits = true;
 			otherSun.DirectionalShadowMaxDistance = 500f;
@@ -96,7 +96,7 @@ public partial class Universe : Node3D
 			WatcherCam = GetNode<Camera3D>("Pivot/Watcher");
 		}
 
-		int sphereCount = 25;
+		int sphereCount = 40;
 		int starCount = 4;
 		float maxV = 1000f;
 

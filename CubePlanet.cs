@@ -18,9 +18,6 @@ public partial class CubePlanet : Planetoid
     StandardMaterial3D landRenderer;
     StandardMaterial3D oceanRenderer;
 
-    ArrayMesh[] landMeshes;
-    ArrayMesh[] oceanMeshes;
-
     Vector3[] directions = { Vector3.Up, Vector3.Down, Vector3.Left, Vector3.Right, Vector3.Forward, Vector3.Back };
 
     public override void _Ready() {
@@ -150,12 +147,6 @@ public partial class CubePlanet : Planetoid
         Shapes.UpdateSettings(shapeSettings);
         Colors.UpdateSettings(colorSettings);
 
-        if (landMeshes == null || landMeshes.Length == 0) {
-            landMeshes = new ArrayMesh[Faces];
-        }
-        if (oceanMeshes == null || oceanMeshes.Length == 0) {
-            oceanMeshes = new ArrayMesh[Faces];
-        }
         if (TerrainFaces == null || TerrainFaces.Length == 0) {
             TerrainFaces = new TerrainFace[Faces];
         }
@@ -174,16 +165,13 @@ public partial class CubePlanet : Planetoid
         }
 
         for (int i = 0; i < Faces; i++) {
-            landMeshes[i] = new ArrayMesh();
-            oceanMeshes[i] = new ArrayMesh();
             TerrainFaces[i] = new TerrainFace(
                 Colors, 
                 Shapes, 
                 shapeSettings, 
-                landMeshes[i], 
-                oceanMeshes[i], 
                 Resolution, 
-                directions[i]
+                directions[i],
+                (Face)i + 1
             );
         }
         GD.Print("initialized");
@@ -207,9 +195,9 @@ public partial class CubePlanet : Planetoid
 
         for (int i = 0; i < Faces; i++) {
             if (faceRenderMask.Contains(Face.All) || faceRenderMask.Contains((Face)i + 1)) {
-                Meshes[i].Show();
+                TerrainFaces[i].Show();
             } else {
-                Meshes[i].Hide();
+                TerrainFaces[i].Hide();
             }
         }
     }
@@ -227,11 +215,16 @@ public partial class CubePlanet : Planetoid
             bool renderFace = faceRenderMask.Contains(Face.All) || faceRenderMask.Contains((Face)i + 1);
             if (renderFace) {
                 TerrainFaces[i].ConstructMesh();
-                Meshes[i].Mesh = TerrainFaces[i].landMesh;
-                Meshes[Faces + i].Mesh = TerrainFaces[i].oceanMesh;
-                Meshes[i].Mesh.SurfaceSetMaterial(0, landRenderer);
-                Meshes[Faces + i].Mesh.SurfaceSetMaterial(0, oceanRenderer);
-                Meshes[i].CreateMultipleConvexCollisions();
+                for (int j = 0; j < TerrainFaces[i].LandMeshes.Length; j++) {
+                    if (TerrainFaces[i].LandMeshes[j] != null) {
+                        TerrainFaces[i].LandMeshes[j].Mesh.SurfaceSetMaterial(0, landRenderer);
+                        TerrainFaces[i].LandMeshes[j].CreateMultipleConvexCollisions();
+                    }
+                    if (TerrainFaces[i].OceanMeshes.Length > j && TerrainFaces[i].OceanMeshes[j] != null) {
+                        TerrainFaces[i].OceanMeshes[j].Mesh.SurfaceSetMaterial(0, oceanRenderer);
+                        TerrainFaces[i].OceanMeshes[j].CreateMultipleConvexCollisions();
+                    }
+                } 
             }
         }
         GD.Print("rendered");

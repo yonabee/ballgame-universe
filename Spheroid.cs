@@ -7,10 +7,20 @@ public partial class Spheroid : Planetoid
     public int radialSegments = 50;
     public int rings = 50;
     public Color[] crayons = { Colors.Red };
+    public MeshInstance3D[] Meshes;
+    public CollisionShape3D[] Colliders;
 
     public override void Initialize()
     {
         base.Initialize();
+		Meshes = new MeshInstance3D[Faces * Layers];
+        Colliders = new CollisionShape3D[Faces * Layers];
+        for (int i = 0; i < Faces * Layers; i++) {
+            Meshes[i] = new MeshInstance3D();
+            Colliders[i] = new CollisionShape3D();
+            AddChild(Meshes[i]);
+            AddChild(Colliders[i]);
+        }
         if (Colliders[0].Shape == null) {
             var shape = new SphereShape3D();
             shape.Radius = Radius;

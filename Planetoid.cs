@@ -8,8 +8,6 @@ public partial class Planetoid : RigidBody3D, HeavenlyBody
     public float Radius { get; set; }
     public int Faces { get; set; }
     public int Layers { get; set; }
-    public MeshInstance3D[] Meshes;
-    public CollisionShape3D[] Colliders;
     public Vector3 CurrentVelocity { get; set; }
     public RandomNumberGenerator Random;
     public int Seed { get; set; }
@@ -39,14 +37,6 @@ public partial class Planetoid : RigidBody3D, HeavenlyBody
     }
 
     public virtual void Initialize() {
-		Meshes = new MeshInstance3D[Faces * Layers];
-        Colliders = new CollisionShape3D[Faces * Layers];
-        for (int i = 0; i < Faces * Layers; i++) {
-            Meshes[i] = new MeshInstance3D();
-            Colliders[i] = new CollisionShape3D();
-            AddChild(Meshes[i]);
-            AddChild(Colliders[i]);
-        }
     }
 
     public virtual void GenerateMesh() {}

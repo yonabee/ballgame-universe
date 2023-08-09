@@ -23,14 +23,14 @@ public partial class Pivot : Marker3D
 		}
 		if (Input.IsActionPressed("camera_left")) {
 			if (Universe.PlayerCam.Current) {
-				RotateObjectLocal(Vector3.Back, (float)delta * Speed);
+				RotateObjectLocal(Vector3.Back, (float)delta * Speed / (Universe.Planet.Radius / 1000f));
 			} else {
 				RotateObjectLocal(OrientForward ? Vector3.Up : Vector3.Down, (float)delta * (OrientForward ? 1f : Speed));
 			}
 		}
 		if (Input.IsActionPressed("camera_right")) {
 			if (Universe.PlayerCam.Current) {
-				RotateObjectLocal(Vector3.Forward, (float)delta * Speed);
+				RotateObjectLocal(Vector3.Forward, (float)delta * Speed / (Universe.Planet.Radius / 1000f));
 			} else {
 				RotateObjectLocal(OrientForward ? Vector3.Down : Vector3.Up, (float)delta * (OrientForward ? 1f : Speed));
 			}
