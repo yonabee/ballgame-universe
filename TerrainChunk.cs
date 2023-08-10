@@ -8,7 +8,7 @@ public class TerrainChunk
     public ColorGenerator colorGenerator;
     public ShapeGenerator shapeGenerator;
     public ShapeGenerator.ShapeSettings settings;
-    public ArrayMesh landMesh;
+    public MeshInstance3D landMesh;
     public TerrainFace face; 
     int chunkX;
     int chunkY;
@@ -19,13 +19,14 @@ public class TerrainChunk
     Vector3[] normals;
     Color[] colors;
     int[] tris;
+    int overlap = 1;
 
     public TerrainChunk(
         TerrainFace face,
         ColorGenerator colorGenerator,
         ShapeGenerator shapeGenerator, 
         ShapeGenerator.ShapeSettings settings,
-        ArrayMesh landMesh,
+        MeshInstance3D landMesh,
         int chunkX,
         int chunkY
     ) {
@@ -43,22 +44,23 @@ public class TerrainChunk
 
         int dX = chunkResolution;
         int dY = chunkResolution;
-        // if (chunkX == 0 && chunkY == 0) {
-        //     dX = chunkResolution;
-        //     dY = chunkResolution;
-        // } else if (chunkX == 0 || chunkY == 0) {
-        //     dX = chunkResolution + 1;
-        //     dY = chunkResolution;
-        // } else {
-        //     dX = chunkResolution + 1;
-        //     dY = chunkResolution + 1;
-        // }
+
+        if (chunkX == 0 && chunkY == 0) {
+            dX = chunkResolution;
+            dY = chunkResolution;
+        } else if (chunkX == 0 || chunkY == 0) {
+            dX = chunkResolution + overlap;
+            dY = chunkResolution;
+        } else {
+            dX = chunkResolution + overlap;
+            dY = chunkResolution + overlap;
+        }
 
         // if (chunkX != face.resolution - face.chunkResolution && chunkY != face.resolution - face.chunkResolution) {
-        //     dX++;
-        //     dY++;
+        //     dX += overlap;
+        //     dY += overlap;
         // } else if (chunkX != face.resolution - face.chunkResolution || chunkY != face.resolution - face.chunkResolution) {
-        //     dX++;
+        //     dX += overlap;
         // }
 
         verts = new Vector3[dX * dY];
@@ -70,10 +72,6 @@ public class TerrainChunk
     public void ConstructMesh()
     {
         int triIndex = 0;
-        colors = (landMesh.GetSurfaceCount() > 0 && landMesh.SurfaceGetArrayLen(0) == verts.Length) 
-            ? colors 
-            : new Color[verts.Length];
-
 		var landSurfaceArray = new Godot.Collections.Array();
 		landSurfaceArray.Resize((int)Mesh.ArrayType.Max);
 
@@ -82,38 +80,33 @@ public class TerrainChunk
         var endY = startY + chunkResolution;
         var endX = startX + chunkResolution;
 
-        // if (iY != 0) {
-        //     iY--;
-        // }
-        // if (iX != 0) {
-        //     iX--;
-        // }
-
-        // if (eY != face.resolution) {
-        //     eY++;
-        // }
-        // if (eX != face.resolution) {
-        //     eX++;
-        // }
-
-        //GD.Print(iX + "," + eX + " " + iY + " " + eY);
+        var arrays = face.LandMeshes[0].Mesh.SurfaceGetArrays(0);
+        var arrayVerts = arrays[(int)Mesh.ArrayType.Vertex].AsVector3Array();
+        var arrayNorms = arrays[(int)Mesh.ArrayType.Normal].AsVector3Array();
+        var arrayColors = arrays[(int)Mesh.ArrayType.Color].AsColorArray();
 
         for (int y = startY; y < endY; y++)
         {
             for (int x = startX; x < endX; x++)
             {
-                int chunkX = x - startX;
-                int chunkY = y - startY;
-                int i = chunkX + (chunkY * chunkResolution);
-                Vector2 percent = new Vector2(x, y) / (float)(face.resolution - 1);
-                Vector3 pointOnUnitCube = face.Up + (percent.X - .5f) * 2 * axisA + (percent.Y - .5f) * 2 * axisB;
-                Vector3 pointOnUnitSphere = Utils.CubeToSphere(pointOnUnitCube);
+                int currentChunkX = x - startX;
+                int currentChunkY = y - startY;
+                int i = currentChunkX + (currentChunkY * chunkResolution);
 
-                Elevation elevation = face.Elevations[x,y];
+                // // var percentX = x / (float)(face.resolution - 1);
+                // // var percentY = y / (float)(face.resolution - 1);
+                // float percentX = (currentChunkX / (float)(chunkResolution - 1f) / face.numChunks) + (chunkX * chunkResolution / (face.resolution - 1f));
+                // float percentY = (currentChunkY / (float)(chunkResolution - 1f) / face.numChunks) + (chunkY * chunkResolution / (face.resolution - 1f));
 
-                verts[i] = pointOnUnitSphere * elevation.scaled;
-                normals[i] = verts[i].Normalized();
-                colors[i] = colorGenerator.BiomeColorFromPoint(pointOnUnitSphere, elevation.unscaled);
+                // // GD.Print(percentX + " " + percentY);
+                // Vector3 pointOnUnitCube = face.Up + (percentX - .5f) * 2 * axisA + (percentY - .5f) * 2 * axisB;
+                // Vector3 pointOnUnitSphere = Utils.CubeToSphere(pointOnUnitCube);
+
+                // Elevation elevation = face.Elevations[x,y];
+                int arrayIndex = x + (y * face.resolution);
+                verts[i] = arrayVerts[arrayIndex];
+                normals[i] = arrayNorms[arrayIndex];
+                colors[i] = arrayColors[arrayIndex];
 
                 if (x != endX - 1 && y != endY - 1)
                 {
@@ -133,8 +126,7 @@ public class TerrainChunk
         landSurfaceArray[(int)Mesh.ArrayType.Normal] = normals;
 		landSurfaceArray[(int)Mesh.ArrayType.Color] = colors;
 		landSurfaceArray[(int)Mesh.ArrayType.Index] = tris;
-        landMesh.ClearSurfaces();
-        landMesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, landSurfaceArray);
+        (landMesh.Mesh as ArrayMesh).AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, landSurfaceArray);
 
         GD.Print("generated meshes for face " + face.Face + " and chunk " + chunkX + "," + chunkY);
     }

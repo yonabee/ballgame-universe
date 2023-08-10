@@ -217,8 +217,10 @@ public partial class CubePlanet : Planetoid
                 TerrainFaces[i].ConstructMesh();
                 for (int j = 0; j < TerrainFaces[i].LandMeshes.Length; j++) {
                     if (TerrainFaces[i].LandMeshes[j] != null) {
-                        TerrainFaces[i].LandMeshes[j].Mesh.SurfaceSetMaterial(0, landRenderer);
-                        TerrainFaces[i].LandMeshes[j].CreateMultipleConvexCollisions();
+                        for (int k = 0; k < TerrainFaces[i].LandMeshes[j].Mesh.GetSurfaceCount(); k++) {
+                            TerrainFaces[i].LandMeshes[j].Mesh.SurfaceSetMaterial(k, landRenderer);
+                        }
+                        //TerrainFaces[i].LandMeshes[j].CreateMultipleConvexCollisions();
                     }
                     if (TerrainFaces[i].OceanMeshes.Length > j && TerrainFaces[i].OceanMeshes[j] != null) {
                         TerrainFaces[i].OceanMeshes[j].Mesh.SurfaceSetMaterial(0, oceanRenderer);

@@ -54,8 +54,8 @@ public partial class Universe : Node3D
 			GD.Print("adding planet");
 			Planet = new CubePlanet();
 			Planet.Seed = (int)Random.Randi();
-			Planet.Radius = 1000;
-			Planet.Resolution = 400;
+			Planet.Radius = 2000;
+			Planet.Resolution = 600;
 			AddChild(Planet);
 
 			if (PlayerCam == null) {

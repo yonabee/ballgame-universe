@@ -12,8 +12,8 @@ public class TerrainFace
     public Elevation[,] Elevations;
     public Vector3 Up;
     public Utils.Face Face;
-    public int numChunks = 8;
-    public int chunkResolution = 50;
+    public int numChunks = 6;
+    public int chunkResolution = 100;
     public int resolution;
     Vector3 axisA;
     Vector3 axisB;
@@ -41,7 +41,7 @@ public class TerrainFace
         this.Up = localUp;
         this.Face = face;
 
-        LandMeshes = new MeshInstance3D[(numChunks * numChunks) + 1];
+        LandMeshes = new MeshInstance3D[2];
         OceanMeshes = new MeshInstance3D[1];
         Chunks = new TerrainChunk[numChunks * numChunks];
 
@@ -130,7 +130,8 @@ public class TerrainFace
         (OceanMeshes[0].Mesh as ArrayMesh).ClearSurfaces();
         (OceanMeshes[0].Mesh as ArrayMesh).AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, oceanSurfaceArray);
 
-        Universe.Planet.AddChild(LandMeshes[0]);
+        //Universe.Planet.AddChild(LandMeshes[0]);
+        ConstructChunks();
         Universe.Planet.AddChild(OceanMeshes[0]);
 
         GD.Print("generated meshes");
@@ -138,25 +139,24 @@ public class TerrainFace
 
     public void ConstructChunks()
     {
+        LandMeshes[1] = new MeshInstance3D();
+        LandMeshes[1].Mesh = new ArrayMesh();
         for (int y = 0; y < numChunks; y++) {
             for (int x = 0; x < numChunks; x++) {
                 int i = x + (y * numChunks);
-                LandMeshes[i + 1] = new MeshInstance3D();
-                LandMeshes[i + 1].Mesh = new ArrayMesh();
                 Chunks[i] = new TerrainChunk(
                     this, 
                     colorGenerator, 
                     shapeGenerator, 
                     settings, 
-                    LandMeshes[i + 1].Mesh as ArrayMesh, 
+                    LandMeshes[1], 
                     x, 
                     y
                 );
                 Chunks[i].ConstructMesh();
-                Universe.Planet.AddChild(LandMeshes[i + 1]);
-                Universe.Planet.AddChild(OceanMeshes[i + 1]);
             }
         } 
+        Universe.Planet.AddChild(LandMeshes[1]);
     }
 
     public void Show()
