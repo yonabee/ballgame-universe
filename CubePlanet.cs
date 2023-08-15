@@ -3,6 +3,11 @@ using System;
 using System.Collections.Generic;
 using static Utils;
 
+public enum LOD {
+    Planet,
+    Orbit
+}
+
 public partial class CubePlanet : Planetoid
 {
     public int Resolution = 400;
@@ -14,6 +19,7 @@ public partial class CubePlanet : Planetoid
     public ShapeGenerator Shapes = new ShapeGenerator();
     public ColorGenerator Colors = new ColorGenerator();
     public TerrainFace[] TerrainFaces;
+    public LOD LOD;
 
     StandardMaterial3D landRenderer;
     StandardMaterial3D oceanRenderer;
@@ -33,6 +39,7 @@ public partial class CubePlanet : Planetoid
         Faces = 6;
         Layers = 2;
         faceRenderMask = new List<Face>{ Face.All };
+        LOD = LOD.Orbit;
     }
 
     public override void Initialize()
@@ -188,9 +195,11 @@ public partial class CubePlanet : Planetoid
         if (Universe.PlayerCam.Current) {
             faceRenderMask.Clear();
             faceRenderMask.AddRange(GetFaces(Universe.CurrentFace));
+            LOD = LOD.Planet;
         } else if (!faceRenderMask.Contains(Face.All)) {
             faceRenderMask.Clear();
             faceRenderMask.Add(Face.All);
+            LOD = LOD.Orbit;
         }
 
         for (int i = 0; i < Faces; i++) {
@@ -215,18 +224,25 @@ public partial class CubePlanet : Planetoid
             bool renderFace = faceRenderMask.Contains(Face.All) || faceRenderMask.Contains((Face)i + 1);
             if (renderFace) {
                 TerrainFaces[i].ConstructMesh();
-                for (int j = 0; j < TerrainFaces[i].LandMeshes.Length; j++) {
-                    if (TerrainFaces[i].LandMeshes[j] != null) {
-                        for (int k = 0; k < TerrainFaces[i].LandMeshes[j].Mesh.GetSurfaceCount(); k++) {
-                            TerrainFaces[i].LandMeshes[j].Mesh.SurfaceSetMaterial(k, landRenderer);
+                for (int j = 0; j < TerrainFaces[i].LandMesh.Mesh.GetSurfaceCount(); j++) {
+                    TerrainFaces[i].LandMesh.Mesh.SurfaceSetMaterial(j, landRenderer);
+                }
+                for (int j = 0; j < TerrainFaces[i].Chunks.Length; j++) {
+                    var chunk = TerrainFaces[i].Chunks[j];
+                    for (int k = 0; k < chunk.Meshes.Length; k++) {
+                        if (chunk.Meshes[k] != null) {
+                            chunk.Meshes[k].Mesh.SurfaceSetMaterial(0, landRenderer);
+                            if (chunk.ActiveMesh == k) {
+                                chunk.Meshes[k].CreateMultipleConvexCollisions();
+                            }
                         }
-                        //TerrainFaces[i].LandMeshes[j].CreateMultipleConvexCollisions();
-                    }
-                    if (TerrainFaces[i].OceanMeshes.Length > j && TerrainFaces[i].OceanMeshes[j] != null) {
-                        TerrainFaces[i].OceanMeshes[j].Mesh.SurfaceSetMaterial(0, oceanRenderer);
-                        TerrainFaces[i].OceanMeshes[j].CreateMultipleConvexCollisions();
-                    }
-                } 
+                    } 
+                }
+                for (int j = 0; j < TerrainFaces[i].OceanMesh.Mesh.GetSurfaceCount(); j++) {
+                    TerrainFaces[i].OceanMesh.Mesh.SurfaceSetMaterial(j, oceanRenderer);
+                    TerrainFaces[i].OceanMesh.CreateMultipleConvexCollisions();
+                }
+                TerrainFaces[i].Show();
             }
         }
         GD.Print("rendered");

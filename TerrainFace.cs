@@ -2,22 +2,22 @@ using System.Collections;
 using System.Collections.Generic;
 using Godot;
 
+
 public class TerrainFace 
 {
     public ColorGenerator colorGenerator;
     public ShapeGenerator shapeGenerator;
     public ShapeGenerator.ShapeSettings settings;
-    public MeshInstance3D[] LandMeshes;
-    public MeshInstance3D[] OceanMeshes;
+    public MeshInstance3D LandMesh;
+    public MeshInstance3D OceanMesh;
     public Elevation[,] Elevations;
     public Vector3 Up;
     public Utils.Face Face;
-    public int numChunks = 6;
-    public int chunkResolution = 100;
+    public int chunkDimension = 1;
     public int resolution;
+    public TerrainChunk[] Chunks;
     Vector3 axisA;
     Vector3 axisB;
-    TerrainChunk[] Chunks;
     Vector3[] verts;
     Vector3[] normals;
     Vector3[] oceanVerts;
@@ -41,9 +41,9 @@ public class TerrainFace
         this.Up = localUp;
         this.Face = face;
 
-        LandMeshes = new MeshInstance3D[2];
-        OceanMeshes = new MeshInstance3D[1];
-        Chunks = new TerrainChunk[numChunks * numChunks];
+        LandMesh = new MeshInstance3D();
+        OceanMesh = new MeshInstance3D();
+        Chunks = new TerrainChunk[chunkDimension * chunkDimension];
 
         axisA = new Vector3(localUp.Y, localUp.Z, localUp.X);
         axisB = localUp.Cross(axisA);
@@ -116,66 +116,74 @@ public class TerrainFace
         landSurfaceArray[(int)Mesh.ArrayType.Normal] = normals;
 		landSurfaceArray[(int)Mesh.ArrayType.Color] = colors;
 		landSurfaceArray[(int)Mesh.ArrayType.Index] = tris;
-        LandMeshes[0] = new MeshInstance3D();
-        LandMeshes[0].Mesh = new ArrayMesh();
-        (LandMeshes[0].Mesh as ArrayMesh).ClearSurfaces();
-        (LandMeshes[0].Mesh as ArrayMesh).AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, landSurfaceArray);
+        LandMesh = new MeshInstance3D();
+        LandMesh.Mesh = new ArrayMesh();
+        (LandMesh.Mesh as ArrayMesh).ClearSurfaces();
+        (LandMesh.Mesh as ArrayMesh).AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, landSurfaceArray);
 
 		oceanSurfaceArray[(int)Mesh.ArrayType.Vertex] = oceanVerts;
         oceanSurfaceArray[(int)Mesh.ArrayType.Normal] = oceanNormals;
 		oceanSurfaceArray[(int)Mesh.ArrayType.Color] = oceanColors;
 		oceanSurfaceArray[(int)Mesh.ArrayType.Index] = tris;
-        OceanMeshes[0] = new MeshInstance3D();
-        OceanMeshes[0].Mesh = new ArrayMesh();
-        (OceanMeshes[0].Mesh as ArrayMesh).ClearSurfaces();
-        (OceanMeshes[0].Mesh as ArrayMesh).AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, oceanSurfaceArray);
+        OceanMesh = new MeshInstance3D();
+        OceanMesh.Mesh = new ArrayMesh();
+        (OceanMesh.Mesh as ArrayMesh).ClearSurfaces();
+        (OceanMesh.Mesh as ArrayMesh).AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, oceanSurfaceArray);
 
-        //Universe.Planet.AddChild(LandMeshes[0]);
+        Universe.Planet.AddChild(LandMesh);
+        Universe.Planet.AddChild(OceanMesh);
         ConstructChunks();
-        Universe.Planet.AddChild(OceanMeshes[0]);
 
         GD.Print("generated meshes");
     }
 
     public void ConstructChunks()
     {
-        LandMeshes[1] = new MeshInstance3D();
-        LandMeshes[1].Mesh = new ArrayMesh();
-        for (int y = 0; y < numChunks; y++) {
-            for (int x = 0; x < numChunks; x++) {
-                int i = x + (y * numChunks);
+        for (int y = 0; y < chunkDimension; y++) {
+            for (int x = 0; x < chunkDimension; x++) {
+                int i = x + (y * chunkDimension);
                 Chunks[i] = new TerrainChunk(
                     this, 
                     colorGenerator, 
                     shapeGenerator, 
                     settings, 
-                    LandMeshes[1], 
-                    x, 
-                    y
+                    x,
+                    y,
+                    y == chunkDimension - 1 || x == chunkDimension - 1
                 );
-                Chunks[i].ConstructMesh();
+                Chunks[i].ConstructMeshes();
             }
         } 
-        Universe.Planet.AddChild(LandMeshes[1]);
+
+        GD.Print("constructed " + (chunkDimension * chunkDimension) + " chunks");
     }
 
     public void Show()
     {
-        for (int i = 0; i < LandMeshes.Length; i++) {
-            if (LandMeshes[i] != null) {
-                LandMeshes[i].Show();
-                LandMeshes[i].ProcessMode = Node.ProcessModeEnum.Inherit;
+        if (Universe.Planet.LOD == LOD.Orbit) {
+            LandMesh.Show();
+            LandMesh.ProcessMode = Node.ProcessModeEnum.Inherit;
+            for (int i = 0; i < Chunks.Length; i++) {
+                Chunks[i].Hide();
             }
+        } else {
+            LandMesh.Hide();
+            LandMesh.ProcessMode = Node.ProcessModeEnum.Disabled;
+            for (int i = 0; i < Chunks.Length; i++) {
+                Chunks[i].Show();
+            } 
         }
     }
 
     public void Hide()
     {
-        for (int i = 0; i < LandMeshes.Length; i++) {
-            if (LandMeshes[i] != null) {
-                LandMeshes[i].Hide();
-                LandMeshes[i].ProcessMode = Node.ProcessModeEnum.Disabled;
-            }
+        if (Universe.Planet.LOD == LOD.Orbit) {
+            LandMesh.Hide();
+            LandMesh.ProcessMode = Node.ProcessModeEnum.Disabled;
+        } else {
+            for (int i = 0; i < Chunks.Length; i++) {
+                Chunks[i].Hide();
+            } 
         }
     }
 }
