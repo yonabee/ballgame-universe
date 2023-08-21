@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using static Utils;
 
 public enum LOD {
@@ -230,9 +231,10 @@ public partial class CubePlanet : Planetoid
                 for (int j = 0; j < TerrainFaces[i].Chunks.Length; j++) {
                     var chunk = TerrainFaces[i].Chunks[j];
                     for (int k = 0; k < chunk.Meshes.Length; k++) {
-                        if (chunk.Meshes[k] != null) {
+                        if (chunk.Meshes[k] != null && chunk.Meshes[k].Mesh != null) {
                             chunk.Meshes[k].Mesh.SurfaceSetMaterial(0, landRenderer);
                             if (chunk.ActiveMesh == k) {
+                                //Task.Run(() => chunk.Meshes[k].CreateMultipleConvexCollisions());
                                 chunk.Meshes[k].CreateMultipleConvexCollisions();
                             }
                         }
@@ -240,6 +242,7 @@ public partial class CubePlanet : Planetoid
                 }
                 for (int j = 0; j < TerrainFaces[i].OceanMesh.Mesh.GetSurfaceCount(); j++) {
                     TerrainFaces[i].OceanMesh.Mesh.SurfaceSetMaterial(j, oceanRenderer);
+                    //Task.Run(() => TerrainFaces[i].OceanMesh.CreateMultipleConvexCollisions());
                     TerrainFaces[i].OceanMesh.CreateMultipleConvexCollisions();
                 }
                 TerrainFaces[i].Show();

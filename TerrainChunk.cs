@@ -60,6 +60,12 @@ public class TerrainChunk
     {
         for (int y = 0; y < chunkDimension; y++) {
             for (int x = 0; x < chunkDimension; x++) {
+                if (x <= 1 && y <=1) {
+                    continue;
+                }
+                if (endChunk && (x >= chunkDimension - 2 || y >= chunkDimension - 2)) {
+                    continue;
+                } 
                 int i = x + (y * chunkDimension);
                 Meshes[i] = new MeshInstance3D();
                 Meshes[i].Mesh = new ArrayMesh();
@@ -70,11 +76,30 @@ public class TerrainChunk
             }
         }
 
-        GD.Print("constructed " + chunkDimension + " by " + chunkDimension + " meshes for chunk at " + chunkX + "," + chunkY);
+        GD.Print("processed " + chunkDimension + " by " + chunkDimension + " meshes for chunk at " + chunkX + "," + chunkY);
     }
 
     public void ConstructChunkMesh(int xIndex, int yIndex, MeshInstance3D mesh)
     {
+        if (xIndex <= 1 && yIndex <=1) {
+            return;
+        }
+        if (endChunk && (xIndex >= chunkDimension - 2 || yIndex >= chunkDimension - 2)) {
+            return;
+        } 
+        var offsetY = (((yIndex + 1) * chunkStep) - chunkSize) + chunkY;
+        var offsetX = (((xIndex + 1) * chunkStep) - chunkSize) + chunkX;
+        var startY = Mathf.Max(offsetY, 0);
+        var startX = Mathf.Max(offsetX, 0);
+        var endY = Mathf.Min(offsetY + chunkSize, face.resolution);
+        var endX = Mathf.Min(offsetX + chunkSize, face.resolution);
+
+        // skipping the corners as we don't need them
+        if ((endX - startX) * (endY - startY) < chunkSize * chunkStep) {
+            GD.Print("skipping " + xIndex + "," + yIndex);
+            return;
+        }
+
         int dX = chunkSize;
         int dY = chunkSize;
 
@@ -87,12 +112,6 @@ public class TerrainChunk
 		var landSurfaceArray = new Godot.Collections.Array();
 		landSurfaceArray.Resize((int)Mesh.ArrayType.Max);
 
-        var offsetY = (((yIndex + 1) * chunkStep) - chunkSize) + chunkY;
-        var offsetX = (((xIndex + 1) * chunkStep) - chunkSize) + chunkX;
-        var startY = Mathf.Max(offsetY, 0);
-        var startX = Mathf.Max(offsetX, 0);
-        var endY = Mathf.Min(offsetY + chunkSize, face.resolution);
-        var endX = Mathf.Min(offsetX + chunkSize, face.resolution);
 
         for (int y = startY; y < endY; y++)
         {
@@ -138,6 +157,9 @@ public class TerrainChunk
         // Check where within chunk.
 
         for (int i = 0; i < Meshes.Length; i++) {
+            if (Meshes[i] == null) {
+                continue;
+            }
             if (i == ActiveMesh) {
                 Meshes[i].Show();
                 Meshes[i].ProcessMode = Node.ProcessModeEnum.Inherit;

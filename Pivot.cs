@@ -92,7 +92,7 @@ public partial class Pivot : Marker3D
 		float elevation = terrainFace.Elevations[x,y].scaled;
 		float offset = (
 				Camera.Transform.Origin.Y - 
-				(Mathf.Max(elevation, Universe.Planet.Radius) + 50f)
+				(Mathf.Max(elevation, Universe.Planet.Radius) + 100f)
 			) * (float)delta * 10;
 
 		Camera.TranslateObjectLocal(new Vector3(0, -offset, 0));
