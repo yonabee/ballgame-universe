@@ -13,7 +13,7 @@ public class TerrainFace
     public Elevation[,] Elevations;
     public Vector3 Up;
     public Utils.Face Face;
-    public int chunkDimension = 1;
+    public static int ChunkDimension = 1;
     public int resolution;
     public TerrainChunk[] Chunks;
     Vector3 axisA;
@@ -43,7 +43,7 @@ public class TerrainFace
 
         LandMesh = new MeshInstance3D();
         OceanMesh = new MeshInstance3D();
-        Chunks = new TerrainChunk[chunkDimension * chunkDimension];
+        Chunks = new TerrainChunk[ChunkDimension * ChunkDimension];
 
         axisA = new Vector3(localUp.Y, localUp.Z, localUp.X);
         axisB = localUp.Cross(axisA);
@@ -130,8 +130,8 @@ public class TerrainFace
         (OceanMesh.Mesh as ArrayMesh).ClearSurfaces();
         (OceanMesh.Mesh as ArrayMesh).AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, oceanSurfaceArray);
 
-        Universe.Planet.AddChild(LandMesh);
-        Universe.Planet.AddChild(OceanMesh);
+        Universe.Planet.CallDeferred(Node.MethodName.AddChild, LandMesh);
+        Universe.Planet.CallDeferred(Node.MethodName.AddChild, OceanMesh);
         ConstructChunks();
 
         GD.Print("generated meshes");
@@ -139,9 +139,9 @@ public class TerrainFace
 
     public void ConstructChunks()
     {
-        for (int y = 0; y < chunkDimension; y++) {
-            for (int x = 0; x < chunkDimension; x++) {
-                int i = x + (y * chunkDimension);
+        for (int y = 0; y < ChunkDimension; y++) {
+            for (int x = 0; x < ChunkDimension; x++) {
+                int i = x + (y * ChunkDimension);
                 Chunks[i] = new TerrainChunk(
                     this, 
                     colorGenerator, 
@@ -149,28 +149,28 @@ public class TerrainFace
                     settings, 
                     x,
                     y,
-                    y == chunkDimension - 1 || x == chunkDimension - 1
+                    y == ChunkDimension - 1 || x == ChunkDimension - 1
                 );
                 Chunks[i].ConstructMeshes();
             }
         } 
 
-        GD.Print("constructed " + (chunkDimension * chunkDimension) + " chunks");
+        GD.Print("constructed " + (ChunkDimension * ChunkDimension) + " chunks");
     }
 
     public void Show()
     {
         if (Universe.Planet.LOD == LOD.Orbit) {
-            LandMesh.Show();
-            LandMesh.ProcessMode = Node.ProcessModeEnum.Inherit;
+            LandMesh.CallDeferred(Node3D.MethodName.Show);
+            LandMesh.SetDeferred(Node.PropertyName.ProcessMode, (int)Node.ProcessModeEnum.Inherit);
             for (int i = 0; i < Chunks.Length; i++) {
-                Chunks[i].Hide();
+                Chunks[i]?.Hide();
             }
         } else {
-            LandMesh.Hide();
-            LandMesh.ProcessMode = Node.ProcessModeEnum.Disabled;
+            LandMesh.CallDeferred(Node3D.MethodName.Hide);
+            LandMesh.SetDeferred(Node.PropertyName.ProcessMode, (int)Node.ProcessModeEnum.Disabled);
             for (int i = 0; i < Chunks.Length; i++) {
-                Chunks[i].Show();
+                Chunks[i]?.Show();
             } 
         }
     }
@@ -178,11 +178,11 @@ public class TerrainFace
     public void Hide()
     {
         if (Universe.Planet.LOD == LOD.Orbit) {
-            LandMesh.Hide();
-            LandMesh.ProcessMode = Node.ProcessModeEnum.Disabled;
+            LandMesh.CallDeferred(Node3D.MethodName.Hide);
+            LandMesh.SetDeferred(Node.PropertyName.ProcessMode, (int)Node.ProcessModeEnum.Disabled);
         } else {
             for (int i = 0; i < Chunks.Length; i++) {
-                Chunks[i].Hide();
+                Chunks[i]?.Hide();
             } 
         }
     }

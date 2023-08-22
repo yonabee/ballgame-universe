@@ -1,6 +1,8 @@
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Godot;
 
 public class TerrainChunk 
@@ -11,6 +13,7 @@ public class TerrainChunk
     public TerrainFace face; 
     public MeshInstance3D[] Meshes;
     public int ActiveMesh = -1;
+    public List<int> SkippedChunks = new List<int>();
     Vector3 axisA;
     Vector3 axisB;
     Vector3[] faceVerts;
@@ -20,8 +23,9 @@ public class TerrainChunk
     int chunkY;
     int chunkSize;
     int chunkStep;
-    int chunkDimension;
+    public int ChunkDimension;
     bool endChunk;
+    // List<Action> meshActions = new List<Action>();
 
     public TerrainChunk(
         TerrainFace face,
@@ -47,58 +51,95 @@ public class TerrainChunk
         faceColors = arrays[(int)Mesh.ArrayType.Color].AsColorArray();
 
         // The chunk size must always be evenly divisible by 3.
-        chunkSize = face.resolution / face.chunkDimension;
+        chunkSize = face.resolution / TerrainFace.ChunkDimension;
         this.chunkX = chunkX * chunkSize;
         this.chunkY = chunkY * chunkSize;
         chunkStep = chunkSize / 3;
 
-        chunkDimension = endChunk ? 5 : 3;
-        Meshes = new MeshInstance3D[chunkDimension * chunkDimension];
+        ChunkDimension = endChunk ? 5 : 3;
+        Meshes = new MeshInstance3D[ChunkDimension * ChunkDimension];
     }
 
     public void ConstructMeshes()
     {
-        for (int y = 0; y < chunkDimension; y++) {
-            for (int x = 0; x < chunkDimension; x++) {
-                if (x <= 1 && y <=1) {
-                    continue;
-                }
-                if (endChunk && (x >= chunkDimension - 2 || y >= chunkDimension - 2)) {
-                    continue;
-                } 
-                int i = x + (y * chunkDimension);
-                Meshes[i] = new MeshInstance3D();
-                Meshes[i].Mesh = new ArrayMesh();
-                ConstructChunkMesh(x, y, Meshes[i]);
+        SkippedChunks.Clear();
+        _ConstructMesh(2,2);
+        for (int y = 0; y < ChunkDimension; y++) {
+            for (int x = 0; x < ChunkDimension; x++) {
                 if (x == 2 && y == 2) {
-                    ActiveMesh = i;
+                    continue;
                 }
+                _ConstructMesh(x,y);
             }
         }
 
-        GD.Print("processed " + chunkDimension + " by " + chunkDimension + " meshes for chunk at " + chunkX + "," + chunkY);
+        GD.Print("processed " + ChunkDimension + " by " + ChunkDimension + " meshes for chunk at " + chunkX + "," + chunkY);
     }
 
-    public void ConstructChunkMesh(int xIndex, int yIndex, MeshInstance3D mesh)
+    public async void ConstructChunkMesh(int xIndex, int yIndex, MeshInstance3D mesh)
     {
-        if (xIndex <= 1 && yIndex <=1) {
+        var task = Task.Run(() => _ConstructChunkMesh(xIndex, yIndex, mesh));
+        await task;
+       //_ConstructChunkMesh(xIndex, yIndex, mesh);
+        Universe.Planet.CallDeferred(Node.MethodName.AddChild, mesh);
+    }
+
+    public void Show() {
+
+        // _RunNextMeshAction();
+        // Is player within chunk?
+
+        // Check where within chunk.
+
+        for (int i = 0; i < Meshes.Length; i++) {
+            if (Meshes[i] == null || Meshes[i].Mesh == null) {
+                continue;
+            }
+            if (i == ActiveMesh) {
+                Meshes[i].CallDeferred(Node3D.MethodName.Show);
+                Meshes[i].SetDeferred(Node.PropertyName.ProcessMode, (int)Node.ProcessModeEnum.Inherit);
+            } else {
+                Meshes[i].CallDeferred(Node3D.MethodName.Hide);
+                Meshes[i].SetDeferred(Node.PropertyName.ProcessMode, (int)Node.ProcessModeEnum.Disabled);
+            }
+        }
+    }
+
+    public void Hide() {
+        for (int i = 0; i < Meshes.Length; i++) {
+            if (Meshes[i] != null) {
+                Meshes[i].CallDeferred(Node3D.MethodName.Hide);
+                Meshes[i].SetDeferred(Node.PropertyName.ProcessMode, (int)Node.ProcessModeEnum.Disabled);
+            }
+        }
+    }
+
+    void _ConstructMesh(int x, int y) {
+        int i = x + (y * ChunkDimension);
+        if (x <= 1 && y <=1) {
+            SkippedChunks.Add(i);
             return;
         }
-        if (endChunk && (xIndex >= chunkDimension - 2 || yIndex >= chunkDimension - 2)) {
+        if (endChunk && (x >= ChunkDimension - 2 || y >= ChunkDimension - 2)) {
+            SkippedChunks.Add(i);
             return;
         } 
+        Meshes[i] = new MeshInstance3D();
+        // meshActions.Add(() => ConstructChunkMesh(x, y, Meshes[i]));
+        ConstructChunkMesh(x, y, Meshes[i]);
+        if (x == 2 && y == 2) {
+            ActiveMesh = i;
+        }
+
+    }
+
+    void _ConstructChunkMesh(int xIndex, int yIndex, MeshInstance3D mesh) {
         var offsetY = (((yIndex + 1) * chunkStep) - chunkSize) + chunkY;
         var offsetX = (((xIndex + 1) * chunkStep) - chunkSize) + chunkX;
         var startY = Mathf.Max(offsetY, 0);
         var startX = Mathf.Max(offsetX, 0);
         var endY = Mathf.Min(offsetY + chunkSize, face.resolution);
         var endX = Mathf.Min(offsetX + chunkSize, face.resolution);
-
-        // skipping the corners as we don't need them
-        if ((endX - startX) * (endY - startY) < chunkSize * chunkStep) {
-            GD.Print("skipping " + xIndex + "," + yIndex);
-            return;
-        }
 
         int dX = chunkSize;
         int dY = chunkSize;
@@ -144,38 +185,18 @@ public class TerrainChunk
         landSurfaceArray[(int)Mesh.ArrayType.Normal] = normals;
 		landSurfaceArray[(int)Mesh.ArrayType.Color] = colors;
 		landSurfaceArray[(int)Mesh.ArrayType.Index] = tris;
+        mesh.Mesh = new ArrayMesh();
         (mesh.Mesh as ArrayMesh).AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, landSurfaceArray);
-
-        Universe.Planet.AddChild(mesh);
-
-        GD.Print("generated " + (endX - startX) + " by " + (endY - startY) + " mesh for face " + face.Face + " and chunk " + chunkX + "," + chunkY + " at subindex " + xIndex + "," + yIndex);
     }
 
-    public void Show() {
-        // Is player within chunk?
-
-        // Check where within chunk.
-
-        for (int i = 0; i < Meshes.Length; i++) {
-            if (Meshes[i] == null) {
-                continue;
-            }
-            if (i == ActiveMesh) {
-                Meshes[i].Show();
-                Meshes[i].ProcessMode = Node.ProcessModeEnum.Inherit;
-            } else {
-                Meshes[i].Hide();
-                Meshes[i].ProcessMode = Node.ProcessModeEnum.Disabled;
-            }
-        }
-    }
-
-    public void Hide() {
-        for (int i = 0; i < Meshes.Length; i++) {
-            if (Meshes[i] != null) {
-                Meshes[i].Hide();
-                Meshes[i].ProcessMode = Node.ProcessModeEnum.Disabled;
-            }
-        }
-    }
+    // void _RunNextMeshAction() {
+    //     if (meshActions.Count > 0) {
+    //         var action = meshActions[0];
+    //         action();
+    //         meshActions.RemoveAt(0);
+    //         // if (meshActions.Count == 0) {
+    //         //     Universe.Planet.GetTree().ProcessFrame -= _RunNextMeshAction;
+    //         // }
+    //     }
+    // }
 }

@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using static Utils;
 
@@ -27,6 +28,8 @@ public partial class CubePlanet : Planetoid
 
     Vector3[] directions = { Vector3.Up, Vector3.Down, Vector3.Left, Vector3.Right, Vector3.Forward, Vector3.Back };
 
+    List<int>[] _stillNeedsRendering;
+
     public override void _Ready() {
         Configure();
         GeneratePlanet();
@@ -41,6 +44,7 @@ public partial class CubePlanet : Planetoid
         Layers = 2;
         faceRenderMask = new List<Face>{ Face.All };
         LOD = LOD.Orbit;
+
     }
 
     public override void Initialize()
@@ -48,105 +52,131 @@ public partial class CubePlanet : Planetoid
         base.Initialize();
 
         if (shapeSettings == null) {
-            shapeSettings = new ShapeGenerator.ShapeSettings();
-            shapeSettings.mass = Mass;
-            shapeSettings.radius = Radius;
+            shapeSettings = new ShapeGenerator.ShapeSettings
+            {
+                mass = Mass,
+                radius = Radius
+            };
 
             var center = ToGlobal(Transform.Origin);
 
-            var noiseLayer1 = new NoiseSettings();
-            noiseLayer1.strength = 0.15f;
-            noiseLayer1.octaves = 4;
-            noiseLayer1.frequency = 0.5f;
-            noiseLayer1.roughness = 2.35f;
-            noiseLayer1.persistence = 0.5f;
-            noiseLayer1.minValue = 1.1f;
-            noiseLayer1.center = center;
-            noiseLayer1.filterType = NoiseSettings.FilterType.Simple;
-            noiseLayer1.seed = Seed;
+            var noiseLayer1 = new NoiseSettings
+            {
+                strength = 0.15f,
+                octaves = 4,
+                frequency = 0.5f,
+                roughness = 2.35f,
+                persistence = 0.5f,
+                minValue = 1.1f,
+                center = center,
+                filterType = NoiseSettings.FilterType.Simple,
+                seed = Seed
+            };
 
-            var noiseLayer2 = new NoiseSettings();
-            noiseLayer2.strength = 4f;
-            noiseLayer2.octaves = 5;
-            noiseLayer2.frequency = 1f;
-            noiseLayer2.roughness = 2f;
-            noiseLayer2.persistence = 0.5f;
-            noiseLayer2.minValue = 1.25f;
-            noiseLayer2.center = center;
-            noiseLayer2.filterType = NoiseSettings.FilterType.Simple;
-            noiseLayer2.useFirstLayerAsMask = true;
-            noiseLayer2.seed = Seed;
+            var noiseLayer2 = new NoiseSettings
+            {
+                strength = 4f,
+                octaves = 5,
+                frequency = 1f,
+                roughness = 2f,
+                persistence = 0.5f,
+                minValue = 1.25f,
+                center = center,
+                filterType = NoiseSettings.FilterType.Simple,
+                useFirstLayerAsMask = true,
+                seed = Seed
+            };
 
-            var noiseLayer3 = new NoiseSettings();
-            noiseLayer3.strength = 0.8f;
-            noiseLayer3.octaves = 4;
-            noiseLayer3.frequency = 2.5f;
-            noiseLayer3.roughness = 2f;
-            noiseLayer3.persistence = 0.5f;
-            noiseLayer3.minValue = 0f;
-            noiseLayer3.center = center;
-            noiseLayer3.filterType = NoiseSettings.FilterType.Ridged;
-            noiseLayer3.useFirstLayerAsMask = true;
-            noiseLayer3.seed = Seed;
+            var noiseLayer3 = new NoiseSettings
+            {
+                strength = 0.8f,
+                octaves = 4,
+                frequency = 2.5f,
+                roughness = 2f,
+                persistence = 0.5f,
+                minValue = 0f,
+                center = center,
+                filterType = NoiseSettings.FilterType.Ridged,
+                useFirstLayerAsMask = true,
+                seed = Seed
+            };
 
             NoiseSettings[] noiseSettings = new[] { noiseLayer1, noiseLayer2, noiseLayer3 };
             shapeSettings.noiseSettings = noiseSettings;
         }
 
         if (colorSettings == null) {
-            colorSettings = new ColorSettings();
-            colorSettings.oceanColor = new Color(Crayons[Random.RandiRange(0,35)]); 
-            colorSettings.biomeColourSettings = new ColorSettings.BiomeColourSettings();
+            colorSettings = new ColorSettings
+            {
+                oceanColor = new Color(Crayons[Random.RandiRange(0, 35)]),
+                biomeColourSettings = new ColorSettings.BiomeColourSettings()
+            };
 
-            var biome1 = new ColorSettings.BiomeColourSettings.Biome();
-            biome1.tint = new Color(Crayons[Random.RandiRange(0,47)]);
-            biome1.tintPercent = 0.3f;
-            biome1.startHeight = 0f;
-            biome1.gradient = new Gradient();
-            biome1.gradient.Colors = _CreateBiomeGradient();
-            biome1.gradient.Offsets = new[] { 0f, 0.3f, 0.45f, 0.5f, 0.55f, 0.7f, 1f };
-            
-            var biome2 = new ColorSettings.BiomeColourSettings.Biome();
-            biome2.tint = new Color(Crayons[Random.RandiRange(0,47)]);
-            biome2.tintPercent = 0.3f;
-            biome2.startHeight = 0.333f;
-            biome2.gradient = new Gradient();
-            biome2.gradient.Colors = _CreateBiomeGradient();
-            biome2.gradient.Offsets = new[] { 0f, 0.3f, 0.45f, 0.5f, 0.55f, 0.7f, 1f };
+            var biome1 = new ColorSettings.BiomeColourSettings.Biome
+            {
+                tint = new Color(Crayons[Random.RandiRange(0, 47)]),
+                tintPercent = 0.3f,
+                startHeight = 0f,
+                gradient = new Gradient
+                {
+                    Colors = _CreateBiomeGradient(),
+                    Offsets = new[] { 0f, 0.3f, 0.45f, 0.5f, 0.55f, 0.7f, 1f }
+                }
+            };
 
-            var biome3 = new ColorSettings.BiomeColourSettings.Biome();
-            biome3.tint =  new Color(Crayons[Random.RandiRange(0,47)]);
-            biome3.tintPercent = 0.3f;
-            biome3.startHeight = 0.666f;
-            biome3.gradient = new Gradient();
-            biome3.gradient.Colors = _CreateBiomeGradient();
-            biome3.gradient.Offsets = new[] { 0f, 0.3f, 0.45f, 0.5f, 0.55f, 0.7f, 1f };
+            var biome2 = new ColorSettings.BiomeColourSettings.Biome
+            {
+                tint = new Color(Crayons[Random.RandiRange(0, 47)]),
+                tintPercent = 0.3f,
+                startHeight = 0.333f,
+                gradient = new Gradient
+                {
+                    Colors = _CreateBiomeGradient(),
+                    Offsets = new[] { 0f, 0.3f, 0.45f, 0.5f, 0.55f, 0.7f, 1f }
+                }
+            };
+
+            var biome3 = new ColorSettings.BiomeColourSettings.Biome
+            {
+                tint = new Color(Crayons[Random.RandiRange(0, 47)]),
+                tintPercent = 0.3f,
+                startHeight = 0.666f,
+                gradient = new Gradient
+                {
+                    Colors = _CreateBiomeGradient(),
+                    Offsets = new[] { 0f, 0.3f, 0.45f, 0.5f, 0.55f, 0.7f, 1f }
+                }
+            };
 
             colorSettings.biomeColourSettings.biomes = new[] { biome1, biome2, biome3 };
 
-            var biomeNoise = new NoiseSettings();
-            biomeNoise.filterType = NoiseSettings.FilterType.Simple;
-            biomeNoise.strength = 1f;
-            biomeNoise.octaves = 3;
-            biomeNoise.frequency = 1;
-            biomeNoise.roughness = 2;
-            biomeNoise.persistence = 0.5f;
-            biomeNoise.minValue = 0f;
+            var biomeNoise = new NoiseSettings
+            {
+                filterType = NoiseSettings.FilterType.Simple,
+                strength = 1f,
+                octaves = 3,
+                frequency = 1,
+                roughness = 2,
+                persistence = 0.5f,
+                minValue = 0f
+            };
 
             colorSettings.biomeColourSettings.biomeNoise = biomeNoise;
             colorSettings.biomeColourSettings.biomeNoiseOffset = 0.66f;
             colorSettings.biomeColourSettings.biomeNoiseStrength = 0.4f;
             colorSettings.biomeColourSettings.biomeBlendAmount = 0.5f;
 
-            var heightMapNoise = new NoiseSettings();
-            heightMapNoise.filterType = NoiseSettings.FilterType.Warped;
-            heightMapNoise.strength = 1f;
-            heightMapNoise.octaves = 5;
-            heightMapNoise.frequency = Random.RandfRange(0.1f, 1f);
-            heightMapNoise.roughness = Random.RandfRange(1f,3f);
-            heightMapNoise.persistence = Random.RandfRange(0.3f, 0.7f);
-            heightMapNoise.minValue = 0f;
-            heightMapNoise.warpFrequency = Random.RandfRange(0.1f, 1f);
+            var heightMapNoise = new NoiseSettings
+            {
+                filterType = NoiseSettings.FilterType.Warped,
+                strength = 1f,
+                octaves = 5,
+                frequency = Random.RandfRange(0.1f, 1f),
+                roughness = Random.RandfRange(1f, 3f),
+                persistence = Random.RandfRange(0.3f, 0.7f),
+                minValue = 0f,
+                warpFrequency = Random.RandfRange(0.1f, 1f)
+            };
 
             colorSettings.biomeColourSettings.heightMapNoise = heightMapNoise;
             colorSettings.biomeColourSettings.heightMapNoiseStrength = Random.RandfRange(0.2f, 0.5f);
@@ -160,16 +190,20 @@ public partial class CubePlanet : Planetoid
         }
 
         if (landRenderer == null) {
-            landRenderer = new StandardMaterial3D();
-            landRenderer.VertexColorUseAsAlbedo = true;
-            landRenderer.TextureFilter = StandardMaterial3D.TextureFilterEnum.Nearest;
+            landRenderer = new StandardMaterial3D
+            {
+                VertexColorUseAsAlbedo = true,
+                TextureFilter = StandardMaterial3D.TextureFilterEnum.Nearest
+            };
         }
         if (oceanRenderer == null) {
-            oceanRenderer = new StandardMaterial3D();
-            oceanRenderer.VertexColorUseAsAlbedo = true;
-            oceanRenderer.Transparency = StandardMaterial3D.TransparencyEnum.Alpha;
-            oceanRenderer.ClearcoatEnabled = true;
-            oceanRenderer.ClearcoatRoughness = 1.0f;
+            oceanRenderer = new StandardMaterial3D
+            {
+                VertexColorUseAsAlbedo = true,
+                Transparency = StandardMaterial3D.TransparencyEnum.Alpha,
+                ClearcoatEnabled = true,
+                ClearcoatRoughness = 1.0f
+            };
         }
 
         for (int i = 0; i < Faces; i++) {
@@ -182,6 +216,12 @@ public partial class CubePlanet : Planetoid
                 (Face)i + 1
             );
         }
+
+        _stillNeedsRendering = new List<int>[Faces * TerrainFace.ChunkDimension];
+        for(int i = 0; i < _stillNeedsRendering.Length; i++) {
+            _stillNeedsRendering[i] = new List<int>();
+        }
+
         GD.Print("initialized");
     }
 
@@ -212,43 +252,74 @@ public partial class CubePlanet : Planetoid
         }
     }
 
-    public void DetermineElevations()
+    public async Task DetermineElevations()
     {
+        var tasks = new List<Task>();
         for (int i = 0; i < Faces; i++) {
-            TerrainFaces[i].Elevate();
+            var face = TerrainFaces[i];
+            tasks.Add(Task.Run(() => face.Elevate()));
+        }
+        await Task.WhenAll(tasks);
+    }
+
+    public override async void GenerateMesh()
+    {
+        await DetermineElevations();
+        var tasks = new List<Task>();
+        for (int i = 0; i < Faces; i++) {
+            var j = i;
+            tasks.Add(Task.Run(() => _GenerateMeshForFace(j)));
+            // CallDeferred("_GenerateMeshForFace", i);
+        }
+        GD.Print("queued rendering");
+        await Task.WhenAll(tasks);
+    }
+
+    void _GenerateMeshForFace(int i) {
+        bool renderFace = faceRenderMask.Contains(Face.All) || faceRenderMask.Contains((Face)i + 1);
+        if (renderFace) {
+            TerrainFaces[i].ConstructMesh();
+            // Planet LODs
+            for (int j = 0; j < TerrainFaces[i].LandMesh.Mesh.GetSurfaceCount(); j++) {
+                TerrainFaces[i].LandMesh.Mesh.CallDeferred(Mesh.MethodName.SurfaceSetMaterial, j, landRenderer);
+            }
+            // Surface LODs
+            for (int j = 0; j < TerrainFaces[i].Chunks.Length; j++) {
+                var chunk = TerrainFaces[i].Chunks[j];
+                CallDeferred("_CheckForCompletedChunks", i, j, Enumerable.Range(0, chunk.ChunkDimension * chunk.ChunkDimension).ToArray());
+            }
+            for (int j = 0; j < TerrainFaces[i].OceanMesh.Mesh.GetSurfaceCount(); j++) {
+                TerrainFaces[i].OceanMesh.Mesh.CallDeferred(Mesh.MethodName.SurfaceSetMaterial, j, oceanRenderer);
+                TerrainFaces[i].OceanMesh.CallDeferred(MeshInstance3D.MethodName.CreateMultipleConvexCollisions);
+            }
+            TerrainFaces[i].Show();
         }
     }
-    public override void GenerateMesh()
-    {
-        DetermineElevations();
-        for (int i = 0; i < Faces; i++) {
-            bool renderFace = faceRenderMask.Contains(Face.All) || faceRenderMask.Contains((Face)i + 1);
-            if (renderFace) {
-                TerrainFaces[i].ConstructMesh();
-                for (int j = 0; j < TerrainFaces[i].LandMesh.Mesh.GetSurfaceCount(); j++) {
-                    TerrainFaces[i].LandMesh.Mesh.SurfaceSetMaterial(j, landRenderer);
+
+    // Call with a list of the indices of the chunk meshes that have not finished rendering
+    void _CheckForCompletedChunks(int faceIndex, int chunkIndex, int[] remaining) {
+        int rI = faceIndex + (chunkIndex * TerrainFace.ChunkDimension);
+        _stillNeedsRendering[rI].Clear();
+        var chunk = TerrainFaces[faceIndex].Chunks[chunkIndex];
+        for (int i = 0; i < remaining.Length; i++) {
+            var mesh = chunk.Meshes[remaining[i]];
+            if (mesh != null && mesh.Mesh != null && mesh.Mesh.GetSurfaceCount() > 0) {
+                mesh.Mesh.SurfaceSetMaterial(0, landRenderer);
+
+                // TODO: Make all of these
+                if (chunk.ActiveMesh == remaining[i]) {
+                    mesh.CallDeferred(MeshInstance3D.MethodName.CreateMultipleConvexCollisions);
                 }
-                for (int j = 0; j < TerrainFaces[i].Chunks.Length; j++) {
-                    var chunk = TerrainFaces[i].Chunks[j];
-                    for (int k = 0; k < chunk.Meshes.Length; k++) {
-                        if (chunk.Meshes[k] != null && chunk.Meshes[k].Mesh != null) {
-                            chunk.Meshes[k].Mesh.SurfaceSetMaterial(0, landRenderer);
-                            if (chunk.ActiveMesh == k) {
-                                //Task.Run(() => chunk.Meshes[k].CreateMultipleConvexCollisions());
-                                chunk.Meshes[k].CreateMultipleConvexCollisions();
-                            }
-                        }
-                    } 
-                }
-                for (int j = 0; j < TerrainFaces[i].OceanMesh.Mesh.GetSurfaceCount(); j++) {
-                    TerrainFaces[i].OceanMesh.Mesh.SurfaceSetMaterial(j, oceanRenderer);
-                    //Task.Run(() => TerrainFaces[i].OceanMesh.CreateMultipleConvexCollisions());
-                    TerrainFaces[i].OceanMesh.CreateMultipleConvexCollisions();
-                }
-                TerrainFaces[i].Show();
+
+                GD.Print("completed chunk mesh " + rI);
+            } else if (!chunk.SkippedChunks.Contains(remaining[i])) {
+                _stillNeedsRendering[rI].Add(remaining[i]);
             }
         }
-        GD.Print("rendered");
+
+        if (_stillNeedsRendering[rI].Count > 0) {
+            CallDeferred("_CheckForCompletedChunks", faceIndex, chunkIndex, _stillNeedsRendering[rI].ToArray());
+        } 
     }
 
     Color[] _CreateBiomeGradient()
