@@ -258,20 +258,18 @@ public partial class CubePlanet : Planetoid
     public override async void GenerateMesh()
     {
         await DetermineElevations();
-        var tasks = new List<Task>();
         for (int i = 0; i < Faces; i++) {
             var j = i;
-            tasks.Add(Task.Run(() => _GenerateMeshForFace(j)));
+            await Task.Run(() => _GenerateMeshForFace(j));
+            GD.Print("Generated mesh for face " + j);
         }
-        GD.Print("queued rendering");
-        await Task.WhenAll(tasks);
     }
 
     public void OnChunkMeshCompleted(MeshInstance3D mesh, bool makeColliders = false) 
     {
         mesh.Mesh.CallDeferred(Mesh.MethodName.SurfaceSetMaterial, 0, landRenderer);
         if (makeColliders) {
-            mesh.CallDeferred(MeshInstance3D.MethodName.CreateMultipleConvexCollisions);
+            //mesh.CallDeferred(MeshInstance3D.MethodName.CreateMultipleConvexCollisions);
         }
         GD.Print("completed chunk mesh " + (makeColliders ? "and built colliders" : ""));
     }

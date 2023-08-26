@@ -137,7 +137,7 @@ public class TerrainFace
         GD.Print("generated meshes");
     }
 
-    public void ConstructChunks()
+    public async void ConstructChunks()
     {
         for (int y = 0; y < ChunkDimension; y++) {
             for (int x = 0; x < ChunkDimension; x++) {
@@ -151,7 +151,7 @@ public class TerrainFace
                     y,
                     y == ChunkDimension - 1 || x == ChunkDimension - 1
                 );
-                Chunks[i].ConstructMeshes();
+                await Chunks[i].ConstructMeshes();
             }
         } 
 

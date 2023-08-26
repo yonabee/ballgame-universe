@@ -60,29 +60,20 @@ public class TerrainChunk
         Meshes = new MeshInstance3D[ChunkDimension * ChunkDimension];
     }
 
-    public void ConstructMeshes()
+    public async Task ConstructMeshes()
     {
         SkippedChunks.Clear();
-        _ConstructMesh(2,2);
-        for (int y = 0; y < ChunkDimension; y++) {
-            for (int x = 0; x < ChunkDimension; x++) {
-                if (x == 2 && y == 2) {
-                    continue;
-                }
-                _ConstructMesh(x,y);
-            }
-        }
+        await _ConstructMesh(2,2);
+        // for (int y = 0; y < ChunkDimension; y++) {
+        //     for (int x = 0; x < ChunkDimension; x++) {
+        //         if (x == 2 && y == 2) {
+        //             continue;
+        //         }
+        //         await _ConstructMesh(x,y);
+        //     }
+        // }
 
         GD.Print("processed " + ChunkDimension + " by " + ChunkDimension + " meshes for chunk at " + chunkX + "," + chunkY);
-    }
-
-    public async void ConstructChunkMesh(int xIndex, int yIndex, MeshInstance3D mesh)
-    {
-        var task = Task.Run(() => _ConstructChunkMesh(xIndex, yIndex, mesh));
-        await task;
-       //_ConstructChunkMesh(xIndex, yIndex, mesh);
-        Universe.Planet.CallDeferred(Node.MethodName.AddChild, mesh);
-        Universe.Planet.CallDeferred("OnChunkMeshCompleted", mesh, xIndex == 2 && yIndex == 2);
     }
 
     public void Show() {
@@ -115,7 +106,7 @@ public class TerrainChunk
         }
     }
 
-    void _ConstructMesh(int x, int y) {
+    async Task _ConstructMesh(int x, int y) {
         int i = x + (y * ChunkDimension);
         if (x <= 1 && y <=1) {
             SkippedChunks.Add(i);
@@ -126,12 +117,15 @@ public class TerrainChunk
             return;
         } 
         Meshes[i] = new MeshInstance3D();
-        // meshActions.Add(() => ConstructChunkMesh(x, y, Meshes[i]));
-        ConstructChunkMesh(x, y, Meshes[i]);
+
+        var task = Task.Run(() => _ConstructChunkMesh(x, y, Meshes[i]));
+        await task;
+        
+        Universe.Planet.CallDeferred(Node.MethodName.AddChild, Meshes[i]);
+        Universe.Planet.CallDeferred("OnChunkMeshCompleted", Meshes[i], x == 2 && y == 2);
         if (x == 2 && y == 2) {
             ActiveMesh = i;
         }
-
     }
 
     void _ConstructChunkMesh(int xIndex, int yIndex, MeshInstance3D mesh) {
