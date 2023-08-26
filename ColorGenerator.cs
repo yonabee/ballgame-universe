@@ -9,7 +9,6 @@ public class ColorGenerator
     const int textureResolution = 50;
     INoiseFilter biomeNoiseFilter;
     INoiseFilter heightMapNoiseFilter;
-    Image _image;
 
     public void UpdateSettings(ColorSettings settings)
     {

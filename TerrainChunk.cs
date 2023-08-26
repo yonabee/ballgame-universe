@@ -82,6 +82,7 @@ public class TerrainChunk
         await task;
        //_ConstructChunkMesh(xIndex, yIndex, mesh);
         Universe.Planet.CallDeferred(Node.MethodName.AddChild, mesh);
+        Universe.Planet.CallDeferred("OnChunkMeshCompleted", mesh, xIndex == 2 && yIndex == 2);
     }
 
     public void Show() {

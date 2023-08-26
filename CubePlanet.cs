@@ -28,8 +28,6 @@ public partial class CubePlanet : Planetoid
 
     Vector3[] directions = { Vector3.Up, Vector3.Down, Vector3.Left, Vector3.Right, Vector3.Forward, Vector3.Back };
 
-    List<int>[] _stillNeedsRendering;
-
     public override void _Ready() {
         Configure();
         GeneratePlanet();
@@ -217,11 +215,6 @@ public partial class CubePlanet : Planetoid
             );
         }
 
-        _stillNeedsRendering = new List<int>[Faces * TerrainFace.ChunkDimension];
-        for(int i = 0; i < _stillNeedsRendering.Length; i++) {
-            _stillNeedsRendering[i] = new List<int>();
-        }
-
         GD.Print("initialized");
     }
 
@@ -269,13 +262,22 @@ public partial class CubePlanet : Planetoid
         for (int i = 0; i < Faces; i++) {
             var j = i;
             tasks.Add(Task.Run(() => _GenerateMeshForFace(j)));
-            // CallDeferred("_GenerateMeshForFace", i);
         }
         GD.Print("queued rendering");
         await Task.WhenAll(tasks);
     }
 
-    void _GenerateMeshForFace(int i) {
+    public void OnChunkMeshCompleted(MeshInstance3D mesh, bool makeColliders = false) 
+    {
+        mesh.Mesh.CallDeferred(Mesh.MethodName.SurfaceSetMaterial, 0, landRenderer);
+        if (makeColliders) {
+            mesh.CallDeferred(MeshInstance3D.MethodName.CreateMultipleConvexCollisions);
+        }
+        GD.Print("completed chunk mesh " + (makeColliders ? "and built colliders" : ""));
+    }
+
+    void _GenerateMeshForFace(int i) 
+    {
         bool renderFace = faceRenderMask.Contains(Face.All) || faceRenderMask.Contains((Face)i + 1);
         if (renderFace) {
             TerrainFaces[i].ConstructMesh();
@@ -284,42 +286,12 @@ public partial class CubePlanet : Planetoid
                 TerrainFaces[i].LandMesh.Mesh.CallDeferred(Mesh.MethodName.SurfaceSetMaterial, j, landRenderer);
             }
             // Surface LODs
-            for (int j = 0; j < TerrainFaces[i].Chunks.Length; j++) {
-                var chunk = TerrainFaces[i].Chunks[j];
-                CallDeferred("_CheckForCompletedChunks", i, j, Enumerable.Range(0, chunk.ChunkDimension * chunk.ChunkDimension).ToArray());
-            }
             for (int j = 0; j < TerrainFaces[i].OceanMesh.Mesh.GetSurfaceCount(); j++) {
                 TerrainFaces[i].OceanMesh.Mesh.CallDeferred(Mesh.MethodName.SurfaceSetMaterial, j, oceanRenderer);
                 TerrainFaces[i].OceanMesh.CallDeferred(MeshInstance3D.MethodName.CreateMultipleConvexCollisions);
             }
             TerrainFaces[i].Show();
         }
-    }
-
-    // Call with a list of the indices of the chunk meshes that have not finished rendering
-    void _CheckForCompletedChunks(int faceIndex, int chunkIndex, int[] remaining) {
-        int rI = faceIndex + (chunkIndex * TerrainFace.ChunkDimension);
-        _stillNeedsRendering[rI].Clear();
-        var chunk = TerrainFaces[faceIndex].Chunks[chunkIndex];
-        for (int i = 0; i < remaining.Length; i++) {
-            var mesh = chunk.Meshes[remaining[i]];
-            if (mesh != null && mesh.Mesh != null && mesh.Mesh.GetSurfaceCount() > 0) {
-                mesh.Mesh.SurfaceSetMaterial(0, landRenderer);
-
-                // TODO: Make all of these
-                if (chunk.ActiveMesh == remaining[i]) {
-                    mesh.CallDeferred(MeshInstance3D.MethodName.CreateMultipleConvexCollisions);
-                }
-
-                GD.Print("completed chunk mesh " + rI);
-            } else if (!chunk.SkippedChunks.Contains(remaining[i])) {
-                _stillNeedsRendering[rI].Add(remaining[i]);
-            }
-        }
-
-        if (_stillNeedsRendering[rI].Count > 0) {
-            CallDeferred("_CheckForCompletedChunks", faceIndex, chunkIndex, _stillNeedsRendering[rI].ToArray());
-        } 
     }
 
     Color[] _CreateBiomeGradient()
