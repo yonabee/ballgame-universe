@@ -36,6 +36,7 @@ script = ExtResource("2_7e67d")
 
 [node name="Watcher" type="Camera3D" parent="Pivot"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4000)
+current = true
 near = 1.0
 far = 10000.0
 script = ExtResource("3_3ebdc")
@@ -44,6 +45,5 @@ script = ExtResource("3_3ebdc")
 environment = SubResource("Environment_p4qy4")
 
 [node name="PlayerCam" type="Camera3D" parent="."]
-current = true
 near = 1.0
 far = 10000.0

@@ -19,7 +19,6 @@ public partial class Universe : Node3D
 
 	Vector3 _rotate = Vector3.Zero;
 	DirectionalLight3D otherSun;
-	OmniLight3D sun;
 
 	Color[] colors = {
 		new Color("#000000"),
@@ -52,11 +51,13 @@ public partial class Universe : Node3D
 
 		if (Planet == null || Planet.IsQueuedForDeletion()) {
 			GD.Print("adding planet");
-			Planet = new CubePlanet();
-			Planet.Seed = (int)Random.Randi();
-			Planet.Radius = 2000;
-			Planet.Resolution = 600;
-			AddChild(Planet);
+            Planet = new CubePlanet
+            {
+                Seed = (int)Random.Randi(),
+                Radius = 2000,
+                Resolution = 600
+            };
+            AddChild(Planet);
 
 			if (PlayerCam == null) {
 				PlayerCam = GetNode<Camera3D>("PlayerCam");
@@ -68,28 +69,31 @@ public partial class Universe : Node3D
 				PlayerCam.Transform = trans;
 			}
 			PlayerCam.Translate(Planet.Transform.Origin + Vector3.Up * (Planet.Shapes.DetermineElevation(Vector3.Up).scaled + 50f));
-			PlayerPivot = new Pivot();
-			PlayerPivot.Speed = 0.2f;
-			PlayerPivot.OrientForward = true;
-			Planet.AddChild(PlayerPivot);
+            PlayerPivot = new Pivot
+            {
+                Speed = 0.2f,
+                OrientForward = true
+            };
+            Planet.AddChild(PlayerPivot);
 			PlayerCam.Reparent(PlayerPivot);
 			PlayerPivot.Camera = PlayerCam;
-			//PlayerPivot.RotateX(-Mathf.Pi / 2f);
 		}
 
 		if (otherSun == null) {
-			otherSun = new DirectionalLight3D();
-			otherSun.LightIntensityLumens = 10;
-			otherSun.LightColor = new Color("#808080");
-			otherSun.ShadowEnabled = true;
-			otherSun.DirectionalShadowMode = DirectionalLight3D.ShadowMode.Parallel4Splits;
-			otherSun.LightAngularDistance = 5.0f;
-			otherSun.ShadowBias = 0.1f;
-			otherSun.ShadowNormalBias = 1f;
-			otherSun.DirectionalShadowPancakeSize = 0f;
-			otherSun.DirectionalShadowBlendSplits = true;
-			otherSun.DirectionalShadowMaxDistance = 500f;
-			AddChild(otherSun);
+            otherSun = new DirectionalLight3D
+            {
+                LightIntensityLumens = 10,
+                LightColor = new Color("#808080"),
+                ShadowEnabled = true,
+                DirectionalShadowMode = DirectionalLight3D.ShadowMode.Parallel4Splits,
+                LightAngularDistance = 5.0f,
+                ShadowBias = 0.1f,
+                ShadowNormalBias = 1f,
+                DirectionalShadowPancakeSize = 0f,
+                DirectionalShadowBlendSplits = true,
+                DirectionalShadowMaxDistance = 500f
+            };
+            AddChild(otherSun);
 		}
 
 		if (WatcherCam == null) {
@@ -101,30 +105,26 @@ public partial class Universe : Node3D
 		float maxV = 1000f;
 
 		for (int i = 0; i < starCount; i++) {
-			var star = new Star();
-			star.Gravity = Random.RandiRange(100, 1000);
-			star.Radius = 0.1f;
-			star.OmniRange = 5000f;
-			star.OmniAttenuation = 0.2f;
-			star.LightIntensityLumens = 1000f;
-			star.LightColor = colors[Random.RandiRange(1, 10)];
-			Bodies.Add(star);
+            var star = new Star
+            {
+                Gravity = Random.RandiRange(100, 1000),
+                Radius = 0.1f,
+                OmniRange = 5000f,
+                OmniAttenuation = 0.2f,
+                LightIntensityLumens = 1000f,
+                LightColor = colors[Random.RandiRange(1, 10)]
+            };
+            Bodies.Add(star);
 			AddChild(star);
-
-			// var starChild = new Spheroid();
-			// starChild.Radius = 25f;
-			// starChild.rings = 20;
-			// starChild.radialSegments = 20;
-			// starChild.Gravity = 10;
-			// starChild.crayons = new[] { new Color(star.LightColor.R * 10, star.LightColor.G * 10, star.LightColor.B * 10) };
-			// star.AddChild(starChild);
 		}
 
 		for (int i = 0; i < sphereCount; i++) {
-			var sphere = new Spheroid();
-			sphere.Seed = i;
-			sphere.Radius = Random.RandiRange(50, 300);
-			sphere.rings = Mathf.FloorToInt(sphere.Radius);
+            var sphere = new Spheroid
+            {
+                Seed = i,
+                Radius = Random.RandiRange(50, 300)
+            };
+            sphere.rings = Mathf.FloorToInt(sphere.Radius);
 			sphere.radialSegments = sphere.rings;
 			sphere.Gravity = sphere.Radius / 10f;
 			sphere.initialVelocity = new Vector3(Random.Randf() * maxV * 2 - maxV, Random.Randf() * maxV * 2 - maxV, Random.Randf() * maxV * 2 - maxV);
