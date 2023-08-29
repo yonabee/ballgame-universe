@@ -84,4 +84,6 @@ camera_strafe_right={
 
 lights_and_shadows/directional_shadow/size=8192
 lights_and_shadows/directional_shadow/soft_shadow_filter_quality=4
+anti_aliasing/screen_space_roughness_limiter/enabled=false
+2d/snap/snap_2d_transforms_to_pixel=true
 lights_and_shadows/positional_shadow/atlas_size=8192

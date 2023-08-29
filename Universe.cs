@@ -8,6 +8,7 @@ public partial class Universe : Node3D
 	public static List<HeavenlyBody> Bodies = new List<HeavenlyBody>();
 	public static CubePlanet Planet;
 	public static Pivot PlayerPivot;
+	public static Label InfoText;
 	public static Camera3D PlayerCam;
 	public static Camera3D WatcherCam;
 	public static float Gravity;
@@ -98,6 +99,10 @@ public partial class Universe : Node3D
 
 		if (WatcherCam == null) {
 			WatcherCam = GetNode<Camera3D>("Pivot/Watcher");
+		}
+
+		if (InfoText == null) {
+			InfoText = GetNode<Label>("InfoText");
 		}
 
 		int sphereCount = 40;

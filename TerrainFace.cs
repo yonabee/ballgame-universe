@@ -94,14 +94,14 @@ public class TerrainFace
             int landMeshIndex = 0;
             float far = 12000f;
             float near = 5000f;
-            if (lod == LOD.FarOrbit) {
+            if (lod == LOD.Orbit) {
                 landMeshIndex = 1;
                 far = 5000f;
-                near = 2000f;
+                near = 1500f;
             }
-            else if (lod == LOD.Orbit) {
+            else if (lod == LOD.NearOrbit) {
                 landMeshIndex = 2;
-                far = 2000f;
+                far = 1500f;
                 near = 1f;
             }
 
@@ -248,10 +248,10 @@ public class TerrainFace
     }
 
     int _GetScale(LOD lod) {
-        if (lod == LOD.FarOrbit) {
+        if (lod == LOD.Orbit) {
             return 3;
         }
-        if (lod == LOD.Orbit) {
+        if (lod == LOD.NearOrbit) {
             return 1;
         }
         return 10;

@@ -7,8 +7,8 @@ using static Utils;
 
 public enum LOD {
     Planet,
+    NearOrbit,
     Orbit,
-    FarOrbit,
     Space,
 }
 
@@ -45,7 +45,7 @@ public partial class CubePlanet : Planetoid
         Faces = 6;
         Layers = 2;
         faceRenderMask = new List<Face>{ Face.All };
-        LOD = LOD.Orbit;
+        LOD = LOD.NearOrbit;
 
     }
 
@@ -230,10 +230,13 @@ public partial class CubePlanet : Planetoid
             return;
         }
 
-        if (Universe.PlayerCam.Current && LOD != LOD.Planet) {
-            faceRenderMask.Clear();
-            faceRenderMask.AddRange(GetFaces(Universe.CurrentFace));
-            LOD = LOD.Planet;
+        if (Universe.PlayerCam.Current) {
+            if (LOD != LOD.Planet) {
+                faceRenderMask.Clear();
+                faceRenderMask.AddRange(GetFaces(Universe.CurrentFace));
+                LOD = LOD.Planet;
+            }
+            Universe.InfoText.Text = string.Format("{0} {1} {2}x{3}", LOD, Universe.CurrentFace, Universe.Location.X, Universe.Location.Y);
         } else if (Universe.WatcherCam.Current) {
             if (LOD == LOD.Planet) {
                 faceRenderMask.Clear();
@@ -242,11 +245,12 @@ public partial class CubePlanet : Planetoid
             var cameraZ = Universe.WatcherCam.Transform.Origin.Z - Universe.Planet.Radius;
             if (cameraZ >= 5000f) {
                 LOD = LOD.Space;
-            } else if (cameraZ < 5000f && cameraZ > 2000f) {
-                LOD = LOD.FarOrbit;
-            } else {
+            } else if (cameraZ < 5000f && cameraZ > 1500f) {
                 LOD = LOD.Orbit;
+            } else {
+                LOD = LOD.NearOrbit;
             }
+            Universe.InfoText.Text = String.Format("{0}", LOD);
         }
 
         //GD.Print(LOD);
@@ -285,8 +289,8 @@ public partial class CubePlanet : Planetoid
         };
 
         await generateLOD(LOD.Space);
-        await generateLOD(LOD.FarOrbit);
         await generateLOD(LOD.Orbit);
+        await generateLOD(LOD.NearOrbit);
     }
 
     public void OnChunkMeshCompleted(MeshInstance3D mesh, bool makeColliders = false) 
