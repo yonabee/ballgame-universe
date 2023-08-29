@@ -274,6 +274,8 @@ public partial class CubePlanet : Planetoid
         };
 
         await generateLOD(LOD.Space);
+        await generateLOD(LOD.FarOrbit);
+        await generateLOD(LOD.Orbit);
     }
 
     public void OnChunkMeshCompleted(MeshInstance3D mesh, bool makeColliders = false) 

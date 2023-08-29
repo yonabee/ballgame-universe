@@ -58,23 +58,14 @@ public class TerrainFace
         tris = new int[(resolution - 1) * (resolution - 1) * 6];
     }
 
+
     public void Elevate(LOD lod)
     {
-        int scale = 20;
-        if (lod == LOD.FarOrbit) {
-            scale = 10;
-        } else if (lod == LOD.Orbit) {
-            scale = 2;
-        }
-
+        int scale = _GetScale(lod);
         int res = resolution / scale;
-
         var doXY = (int x, int y) => {
             int scaledX = x == res - 1 ? resolution - 1 : x * scale;
             int scaledY = y == res - 1 ? resolution - 1 : y * scale;
-            if (Elevations[scaledX, scaledY].scaled != 0) {
-                return;
-            } 
             Vector2 percent = new Vector2(x, y) / (res - 1);
             Vector3 pointOnUnitCube = Up + (percent.X - .5f) * 2 * axisA + (percent.Y - .5f) * 2 * axisB;
             Vector3 pointOnUnitSphere = Utils.CubeToSphere(pointOnUnitCube);
@@ -99,20 +90,18 @@ public class TerrainFace
             var oceanSurfaceArray = new Godot.Collections.Array();
             oceanSurfaceArray.Resize((int)Mesh.ArrayType.Max);
 
-            int scale = 20;
+            int scale = _GetScale(lod);
             int landMeshIndex = 0;
             float far = 12000f;
             float near = 5000f;
             if (lod == LOD.FarOrbit) {
-                scale = 10;
                 landMeshIndex = 1;
                 far = 5000f;
-                near = 2000f;
+                near = 3000f;
             }
             else if (lod == LOD.Orbit) {
-                scale = 2;
                 landMeshIndex = 2;
-                far = 2000f;
+                far = 3000f;
                 near = 1f;
             }
 
@@ -174,7 +163,7 @@ public class TerrainFace
             LandMeshes[landMeshIndex].Mesh.CallDeferred(Mesh.MethodName.SurfaceSetMaterial, 0, Universe.Planet.LandRenderer);
             Universe.Planet.CallDeferred(Node.MethodName.AddChild, LandMeshes[landMeshIndex]);
 
-            if (lod == LOD.FarOrbit) {
+            if (lod == LOD.Space) {
                 oceanSurfaceArray[(int)Mesh.ArrayType.Vertex] = oceanVerts;
                 oceanSurfaceArray[(int)Mesh.ArrayType.Normal] = oceanNormals;
                 oceanSurfaceArray[(int)Mesh.ArrayType.Color] = oceanColors;
@@ -186,7 +175,7 @@ public class TerrainFace
                 };
                 (OceanMesh.Mesh as ArrayMesh).AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, oceanSurfaceArray);
                 OceanMesh.Mesh.CallDeferred(Mesh.MethodName.SurfaceSetMaterial, 0, Universe.Planet.OceanRenderer);
-                OceanMesh.CallDeferred(MeshInstance3D.MethodName.CreateMultipleConvexCollisions);
+                // OceanMesh.CallDeferred(MeshInstance3D.MethodName.CreateMultipleConvexCollisions);
                 Universe.Planet.CallDeferred(Node.MethodName.AddChild, OceanMesh);
             }
 
@@ -233,7 +222,7 @@ public class TerrainFace
             for (int i = 0; i < LandMeshes.Length; i++) {
                 if (LandMeshes[i] != null) {
                     LandMeshes[i].CallDeferred(Node3D.MethodName.Hide);
-                    LandMeshes[i].ProcessMode = Node.ProcessModeEnum.Disabled; 
+                    //LandMeshes[i].ProcessMode = Node.ProcessModeEnum.Disabled; 
                 }
             }
             for (int i = 0; i < Chunks.Length; i++) {
@@ -248,7 +237,7 @@ public class TerrainFace
             for (int i = 0; i < LandMeshes.Length; i++) {
                 if (LandMeshes[i] != null) {
                     LandMeshes[i].CallDeferred(Node3D.MethodName.Hide);
-                    LandMeshes[i].ProcessMode = Node.ProcessModeEnum.Disabled;
+                    //LandMeshes[i].ProcessMode = Node.ProcessModeEnum.Disabled;
                 }
             }
         } else {
@@ -256,5 +245,15 @@ public class TerrainFace
                 Chunks[i]?.Hide();
             } 
         }
+    }
+
+    int _GetScale(LOD lod) {
+        if (lod == LOD.FarOrbit) {
+            return 3;
+        }
+        if (lod == LOD.Orbit) {
+            return 1;
+        }
+        return 10;
     }
 }
