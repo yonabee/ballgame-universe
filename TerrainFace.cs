@@ -97,11 +97,11 @@ public class TerrainFace
             if (lod == LOD.FarOrbit) {
                 landMeshIndex = 1;
                 far = 5000f;
-                near = 3000f;
+                near = 2000f;
             }
             else if (lod == LOD.Orbit) {
                 landMeshIndex = 2;
-                far = 3000f;
+                far = 2000f;
                 near = 1f;
             }
 
@@ -219,15 +219,15 @@ public class TerrainFace
                 Chunks[i]?.Hide();
             }
         } else {
-            for (int i = 0; i < LandMeshes.Length; i++) {
-                if (LandMeshes[i] != null) {
-                    LandMeshes[i].CallDeferred(Node3D.MethodName.Hide);
-                    //LandMeshes[i].ProcessMode = Node.ProcessModeEnum.Disabled; 
-                }
-            }
-            for (int i = 0; i < Chunks.Length; i++) {
-                Chunks[i]?.Show();
-            } 
+            // for (int i = 0; i < LandMeshes.Length; i++) {
+            //     if (LandMeshes[i] != null) {
+            //         LandMeshes[i].CallDeferred(Node3D.MethodName.Hide);
+            //         LandMeshes[i].ProcessMode = Node.ProcessModeEnum.Disabled; 
+            //     }
+            // }
+            // for (int i = 0; i < Chunks.Length; i++) {
+            //     Chunks[i]?.Show();
+            // } 
         }
     }
 
@@ -237,7 +237,7 @@ public class TerrainFace
             for (int i = 0; i < LandMeshes.Length; i++) {
                 if (LandMeshes[i] != null) {
                     LandMeshes[i].CallDeferred(Node3D.MethodName.Hide);
-                    //LandMeshes[i].ProcessMode = Node.ProcessModeEnum.Disabled;
+                    LandMeshes[i].ProcessMode = Node.ProcessModeEnum.Disabled;
                 }
             }
         } else {

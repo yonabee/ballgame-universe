@@ -230,15 +230,26 @@ public partial class CubePlanet : Planetoid
             return;
         }
 
-        if (Universe.PlayerCam.Current) {
+        if (Universe.PlayerCam.Current && LOD != LOD.Planet) {
             faceRenderMask.Clear();
             faceRenderMask.AddRange(GetFaces(Universe.CurrentFace));
             LOD = LOD.Planet;
-        } else if (!faceRenderMask.Contains(Face.All)) {
-            faceRenderMask.Clear();
-            faceRenderMask.Add(Face.All);
-            LOD = LOD.Orbit;
+        } else if (Universe.WatcherCam.Current) {
+            if (LOD == LOD.Planet) {
+                faceRenderMask.Clear();
+                faceRenderMask.Add(Face.All);
+            }
+            var cameraZ = Universe.WatcherCam.Transform.Origin.Z - Universe.Planet.Radius;
+            if (cameraZ >= 5000f) {
+                LOD = LOD.Space;
+            } else if (cameraZ < 5000f && cameraZ > 2000f) {
+                LOD = LOD.FarOrbit;
+            } else {
+                LOD = LOD.Orbit;
+            }
         }
+
+        //GD.Print(LOD);
 
         for (int i = 0; i < Faces; i++) {
             if (faceRenderMask.Contains(Face.All) || faceRenderMask.Contains((Face)i + 1)) {
