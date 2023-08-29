@@ -45,7 +45,7 @@ public class TerrainChunk
         axisA = new Vector3(face.Up.Y, face.Up.Z, face.Up.X);
         axisB = face.Up.Cross(axisA);
 
-        var arrays = face.LandMesh.Mesh.SurfaceGetArrays(0);
+        var arrays = face.LandMeshes[2].Mesh.SurfaceGetArrays(0);
         faceVerts = arrays[(int)Mesh.ArrayType.Vertex].AsVector3Array();
         faceNormals = arrays[(int)Mesh.ArrayType.Normal].AsVector3Array();
         faceColors = arrays[(int)Mesh.ArrayType.Color].AsColorArray();

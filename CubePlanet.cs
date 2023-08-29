@@ -25,8 +25,8 @@ public partial class CubePlanet : Planetoid
     public TerrainFace[] TerrainFaces;
     public LOD LOD;
 
-    StandardMaterial3D landRenderer;
-    StandardMaterial3D oceanRenderer;
+    public StandardMaterial3D LandRenderer;
+    public StandardMaterial3D OceanRenderer;
 
     Vector3[] directions = { Vector3.Up, Vector3.Down, Vector3.Left, Vector3.Right, Vector3.Forward, Vector3.Back };
 
@@ -191,15 +191,15 @@ public partial class CubePlanet : Planetoid
             TerrainFaces = new TerrainFace[Faces];
         }
 
-        if (landRenderer == null) {
-            landRenderer = new StandardMaterial3D
+        if (LandRenderer == null) {
+            LandRenderer = new StandardMaterial3D
             {
                 VertexColorUseAsAlbedo = true,
                 TextureFilter = StandardMaterial3D.TextureFilterEnum.Nearest
             };
         }
-        if (oceanRenderer == null) {
-            oceanRenderer = new StandardMaterial3D
+        if (OceanRenderer == null) {
+            OceanRenderer = new StandardMaterial3D
             {
                 VertexColorUseAsAlbedo = true,
                 Transparency = StandardMaterial3D.TransparencyEnum.Alpha,
@@ -251,14 +251,14 @@ public partial class CubePlanet : Planetoid
 
     public override async void GenerateMesh()
     {
-        var generateLOD = async (int r) => {
+        var generateLOD = async (LOD lod) => {
             for (int i = 0; i < Faces; i++) {
                 bool renderFace = faceRenderMask.Contains(Face.All) || faceRenderMask.Contains((Face)i + 1);
                 if (!renderFace) {
                     continue;
                 }
                 var face = TerrainFaces[i];
-                await Task.Run(() => face.Elevate(r));
+                await Task.Run(() => face.Elevate(lod));
             }
 
             for (int i = 0; i < Faces; i++) {
@@ -267,21 +267,18 @@ public partial class CubePlanet : Planetoid
                     continue;
                 }
                 var face = TerrainFaces[i];
-                await face.ConstructMesh(r);
-                face.LandMesh.Mesh.CallDeferred(Mesh.MethodName.SurfaceSetMaterial, face.LandMesh.Mesh.GetSurfaceCount() - 1, landRenderer);
-                face.OceanMesh.Mesh.CallDeferred(Mesh.MethodName.SurfaceSetMaterial, face.OceanMesh.Mesh.GetSurfaceCount() - 1, oceanRenderer);
-                face.OceanMesh.CallDeferred(MeshInstance3D.MethodName.CreateMultipleConvexCollisions);
+                await face.ConstructMesh(lod);
                 face.Show();
                 GD.Print("Generated mesh for face " + i);
             }
         };
 
-        await generateLOD(20);
+        await generateLOD(LOD.Space);
     }
 
     public void OnChunkMeshCompleted(MeshInstance3D mesh, bool makeColliders = false) 
     {
-        mesh.Mesh.CallDeferred(Mesh.MethodName.SurfaceSetMaterial, 0, landRenderer);
+        mesh.Mesh.CallDeferred(Mesh.MethodName.SurfaceSetMaterial, 0, LandRenderer);
         if (makeColliders) {
             Task.Run(() => mesh.CallDeferred(MeshInstance3D.MethodName.CreateMultipleConvexCollisions));
         }
