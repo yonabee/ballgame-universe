@@ -7,6 +7,7 @@ public partial class Universe : Node3D
 {
 	public static List<HeavenlyBody> Bodies = new List<HeavenlyBody>();
 	public static CubePlanet Planet;
+	public static CollisionShape3D PlanetCollider;
 	public static Pivot PlayerPivot;
 	public static Label InfoText;
 	public static Camera3D PlayerCam;
@@ -17,9 +18,10 @@ public partial class Universe : Node3D
 	public static int Seed;
 	public static Face CurrentFace;
 	public static Vector2 Location;
+	public static DirectionalLight3D Sunlight;
+	public static Godot.Environment Environment;
 
 	Vector3 _rotate = Vector3.Zero;
-	DirectionalLight3D otherSun;
 
 	Color[] colors = {
 		new Color("#000000"),
@@ -51,37 +53,11 @@ public partial class Universe : Node3D
 		GD.Print("universe ready");
 
 		if (Planet == null || Planet.IsQueuedForDeletion()) {
-			GD.Print("adding planet");
-            Planet = new CubePlanet
-            {
-                Seed = (int)Random.Randi(),
-                Radius = 2000,
-                Resolution = 600
-            };
-            AddChild(Planet);
-
-			if (PlayerCam == null) {
-				PlayerCam = GetNode<Camera3D>("PlayerCam");
-			} else {
-				PlayerCam.Reparent(GetParent());
-				Transform3D trans = PlayerCam.Transform;
-				trans.Basis = Basis.Identity;
-				trans.Origin = Planet.Transform.Origin;
-				PlayerCam.Transform = trans;
-			}
-			PlayerCam.Translate(Planet.Transform.Origin + Vector3.Up * (Planet.Shapes.DetermineElevation(Vector3.Up).scaled + 50f));
-            PlayerPivot = new Pivot
-            {
-                Speed = 0.2f,
-                OrientForward = true
-            };
-            Planet.AddChild(PlayerPivot);
-			PlayerCam.Reparent(PlayerPivot);
-			PlayerPivot.Camera = PlayerCam;
+			_InitializePlanet();
 		}
 
-		if (otherSun == null) {
-            otherSun = new DirectionalLight3D
+		if (Sunlight == null) {
+            Sunlight = new DirectionalLight3D
             {
                 LightIntensityLumens = 10,
                 LightColor = new Color("#808080"),
@@ -94,36 +70,130 @@ public partial class Universe : Node3D
                 DirectionalShadowBlendSplits = true,
                 DirectionalShadowMaxDistance = 500f
             };
-            AddChild(otherSun);
+            AddChild(Sunlight);
 		}
 
-		if (WatcherCam == null) {
-			WatcherCam = GetNode<Camera3D>("Pivot/Watcher");
+		WatcherCam ??= GetNode<Camera3D>("Pivot/Watcher");
+		InfoText ??= GetNode<Label>("InfoText");
+
+		Environment ??= GetNode<WorldEnvironment>("WorldEnvironment").Environment;
+		var sky = Environment.Sky.SkyMaterial as PhysicalSkyMaterial;
+		int skyColor = Random.RandiRange(0, 11);
+		sky.RayleighColor = new Color(Crayons[12 + ((skyColor + Offset(2)) % 12)]);
+		sky.MieColor = new Color(Crayons[skyColor]);
+		sky.GroundColor = sky.RayleighColor.Darkened(0.05f);
+
+		_InitializeStars(4);
+		_InitializeMoons(40);
+	}
+
+	public override void _PhysicsProcess(double delta)
+	{
+		base._PhysicsProcess(delta);
+		Bodies.ForEach(body => body.UpdateVelocity(Bodies, Transform.Origin, (float)delta));
+		Bodies.ForEach(body => body.UpdatePosition((float)delta));
+
+		Sunlight.Rotation = new Vector3(
+			Mathf.Wrap(Sunlight.Rotation.X + (float)delta / 16, -Mathf.Pi, Mathf.Pi), 
+			Mathf.Wrap(Sunlight.Rotation.Y + (float)delta / 32, -Mathf.Pi, Mathf.Pi), 
+			Mathf.Wrap(Sunlight.Rotation.Z + (float)delta / 96, -Mathf.Pi, Mathf.Pi) 
+		);
+
+		Planet.Rotation = new Vector3(
+			Mathf.Wrap(Planet.Rotation.X + (float)delta * _rotate.X / 10, -Mathf.Pi, Mathf.Pi),
+			Planet.Rotation.Y,
+			Mathf.Wrap(Planet.Rotation.Z + (float)delta * _rotate.Z / 10, -Mathf.Pi, Mathf.Pi)
+		);
+
+		for (int i = 0; i < Bodies.Count; i++) {
+			switch(i%3) {
+				case 0:
+					Bodies[i].RotateObjectLocal(new Vector3(1,0,0), (float)delta * _rotate.X);
+					break;
+				case 1:
+					Bodies[i].RotateObjectLocal(new Vector3(1,0,1).Normalized(), (float)delta * _rotate.Y);
+					break;
+				case 2:
+					Bodies[i].RotateObjectLocal(new Vector3(0,0,1), (float)delta * _rotate.Z);
+					break;
+			}
+		}
+	}
+
+    public override void _Input(InputEvent @event)
+    {
+        if (@event.IsActionPressed("jump")) {
+			Bodies.ForEach(body => body.QueueFree());
+			Bodies.Clear();
+			Planet.QueueFree();
+			_Ready();
 		}
 
-		if (InfoText == null) {
-			InfoText = GetNode<Label>("InfoText");
+		if (@event.IsActionPressed("camera_toggle")) {
+			if (PlayerCam.Current == false) {
+				PlayerCam.Current = true;
+				WatcherCam.Current = false;
+			} else {
+				PlayerCam.Current = false;
+				WatcherCam.Current = true;
+			}
 		}
 
-		int sphereCount = 40;
-		int starCount = 4;
+		if (@event.IsActionPressed("info_toggle")) {
+			InfoText.Visible = !InfoText.Visible;
+		}
+    }
+
+	void _InitializePlanet() {
+		GD.Print("adding planet");
+		Planet = new CubePlanet
+		{
+			Seed = (int)Random.Randi(),
+			Radius = 2000,
+			Resolution = 600
+		};
+		AddChild(Planet);
+
+		if (PlayerCam == null) {
+			PlayerCam = GetNode<Camera3D>("PlayerCam");
+		} else {
+			PlayerCam.Reparent(GetParent());
+			Transform3D trans = PlayerCam.Transform;
+			trans.Basis = Basis.Identity;
+			trans.Origin = Planet.Transform.Origin;
+			PlayerCam.Transform = trans;
+		}
+		PlayerCam.Translate(Planet.Transform.Origin + Vector3.Up * (Planet.Shapes.DetermineElevation(Vector3.Up).scaled + 50f));
+		PlayerPivot = new Pivot
+		{
+			Speed = 0.2f,
+			OrientForward = true
+		};
+		Planet.AddChild(PlayerPivot);
+		PlayerCam.Reparent(PlayerPivot);
+		PlayerPivot.Camera = PlayerCam;
+
+		if (PlanetCollider == null) {
+			PlanetCollider = new CollisionShape3D
+			{
+				Shape = new SphereShape3D
+				{
+					Radius = Planet.Radius
+				}
+			};
+		}
+
+		if (PlanetCollider.GetParent() != null) {
+			PlanetCollider.Reparent(Planet);
+		} else {
+			Planet.AddChild(PlanetCollider);
+		}
+	}
+
+	void _InitializeMoons(int moonCount) 
+	{
 		float maxV = 1000f;
-
-		for (int i = 0; i < starCount; i++) {
-            var star = new Star
-            {
-                Gravity = Random.RandiRange(100, 1000),
-                Radius = 0.1f,
-                OmniRange = 5000f,
-                OmniAttenuation = 0.2f,
-                LightIntensityLumens = 1000f,
-                LightColor = colors[Random.RandiRange(1, 10)]
-            };
-            Bodies.Add(star);
-			AddChild(star);
-		}
-
-		for (int i = 0; i < sphereCount; i++) {
+		for (int i = 0; i < moonCount; i++) {
             var sphere = new Spheroid
             {
                 Seed = i,
@@ -258,56 +328,20 @@ public partial class Universe : Node3D
 		}
 	}
 
-	public override void _PhysicsProcess(double delta)
+	void _InitializeStars(int starCount) 
 	{
-		base._PhysicsProcess(delta);
-		Bodies.ForEach(body => body.UpdateVelocity(Bodies, Transform.Origin, (float)delta));
-		Bodies.ForEach(body => body.UpdatePosition((float)delta));
-
-		otherSun.Rotation = new Vector3(
-			Mathf.Wrap(otherSun.Rotation.X + (float)delta / 16, -Mathf.Pi, Mathf.Pi), 
-			Mathf.Wrap(otherSun.Rotation.Y + (float)delta / 32, -Mathf.Pi, Mathf.Pi), 
-			Mathf.Wrap(otherSun.Rotation.Z + (float)delta / 96, -Mathf.Pi, Mathf.Pi) 
-		);
-
-		Planet.Rotation = new Vector3(
-			Mathf.Wrap(Planet.Rotation.X + (float)delta * _rotate.X / 10, -Mathf.Pi, Mathf.Pi),
-			Planet.Rotation.Y,
-			Mathf.Wrap(Planet.Rotation.Z + (float)delta * _rotate.Z / 10, -Mathf.Pi, Mathf.Pi)
-		);
-
-		for (int i = 0; i < Bodies.Count; i++) {
-			switch(i%3) {
-				case 0:
-					Bodies[i].RotateObjectLocal(new Vector3(1,0,0), (float)delta * _rotate.X);
-					break;
-				case 1:
-					Bodies[i].RotateObjectLocal(new Vector3(1,0,1).Normalized(), (float)delta * _rotate.Y);
-					break;
-				case 2:
-					Bodies[i].RotateObjectLocal(new Vector3(0,0,1), (float)delta * _rotate.Z);
-					break;
-			}
+		for (int i = 0; i < starCount; i++) {
+            var star = new Star
+            {
+                Gravity = Random.RandiRange(100, 1000),
+                Radius = 0.1f,
+                OmniRange = 5000f,
+                OmniAttenuation = 0.2f,
+                LightIntensityLumens = 1000f,
+                LightColor = colors[Random.RandiRange(1, 10)]
+            };
+            Bodies.Add(star);
+			AddChild(star);
 		}
-	}
-
-    public override void _Input(InputEvent @event)
-    {
-        if (@event.IsActionPressed("jump")) {
-			Bodies.ForEach(body => body.QueueFree());
-			Bodies.Clear();
-			Planet.QueueFree();
-			_Ready();
-		}
-
-		if (@event.IsActionPressed("camera_toggle")) {
-			if (PlayerCam.Current == false) {
-				PlayerCam.Current = true;
-				WatcherCam.Current = false;
-			} else {
-				PlayerCam.Current = false;
-				WatcherCam.Current = true;
-			}
-		}
-    }
+	} 
 }

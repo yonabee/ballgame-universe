@@ -320,4 +320,14 @@
             //GD.Print(faces[0] + " " + faces[1] + " " + faces[2]);
             return faces;
         }
+
+        // Returns a number from -3 to 3 excluding 0;
+        public static int Offset(int amount)
+        {
+            var offset = Universe.Random.RandiRange(1, amount * 2) - amount;
+            if (offset <=0) {
+                offset -=1;
+            }
+            return offset;
+        }
     }

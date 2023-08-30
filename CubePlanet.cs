@@ -310,29 +310,29 @@ public partial class CubePlanet : Planetoid
             gradient[6] = grey;
             var darkIdx = Crayons.Length + Random.RandiRange(0, 11) - 24;
             gradient[5] = new Color(Crayons[darkIdx]);
-            var darkOffsetIdx = 24 + ((darkIdx - 24 + _Offset()) % 12);
+            var darkOffsetIdx = 24 + ((darkIdx - 24 + Offset(3)) % 12);
             gradient[4] = new Color(Crayons[darkOffsetIdx]);
-            var mediumIdx =  12 + ((darkIdx - 24 + _Offset()) % 12);
+            var mediumIdx =  12 + ((darkIdx - 24 + Offset(3)) % 12);
             gradient[3] = new Color(Crayons[mediumIdx]);
-            var mediumOffsetIdx = 12 + ((mediumIdx - 12 + _Offset()) % 12);
+            var mediumOffsetIdx = 12 + ((mediumIdx - 12 + Offset(3)) % 12);
             gradient[2] = new Color(Crayons[mediumOffsetIdx]);
-            var lightIdx = Mathf.Abs((mediumIdx - 12 + _Offset()) % 12);
+            var lightIdx = Mathf.Abs((mediumIdx - 12 + Offset(3)) % 12);
             gradient[1] = new Color(Crayons[lightIdx]);
-            var lightOffsetIdx = Mathf.Abs((lightIdx + _Offset()) % 12);
+            var lightOffsetIdx = Mathf.Abs((lightIdx + Offset(3)) % 12);
             gradient[0] = new Color(Crayons[lightOffsetIdx]);
         } else {
             gradient[0] = grey;
             var lightIdx = Random.RandiRange(0, 11);
             gradient[1] = new Color(Crayons[lightIdx]);
-            var lightOffsetIdx = Mathf.Abs((lightIdx + _Offset()) % 12);
+            var lightOffsetIdx = Mathf.Abs((lightIdx + Offset(3)) % 12);
             gradient[2] = new Color(Crayons[lightOffsetIdx]);
-            var medIdx = 12 + ((lightIdx + _Offset()) % 12);
+            var medIdx = 12 + ((lightIdx + Offset(3)) % 12);
             gradient[3] = new Color(Crayons[medIdx]);
-            var mediumOffsetIdx = 12 + ((medIdx - 12 + _Offset()) % 12);
+            var mediumOffsetIdx = 12 + ((medIdx - 12 + Offset(3)) % 12);
             gradient[4] = new Color(Crayons[mediumOffsetIdx]);
-            var darkIdx = 24 + ((medIdx - 12 + _Offset()) % 12);
+            var darkIdx = 24 + ((medIdx - 12 + Offset(3)) % 12);
             gradient[5] = new Color(Crayons[darkIdx]);
-            var darkOffsetIdx =  24 + ((darkIdx - 24 + _Offset()) % 12);
+            var darkOffsetIdx =  24 + ((darkIdx - 24 + Offset(3)) % 12);
             gradient[6] = new Color(Crayons[darkOffsetIdx]);
         }
         if (Random.Randf() >= 0.5f) {
@@ -341,13 +341,4 @@ public partial class CubePlanet : Planetoid
         return gradient;
     }
 
-    // Returns a number from -3 to 3 excluding 0;
-    int _Offset()
-    {
-        var offset = Random.RandiRange(1, 6) - 3;
-        if (offset <=0) {
-            offset -=1;
-        }
-        return offset;
-    }
 }
