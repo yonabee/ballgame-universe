@@ -77,11 +77,12 @@ public partial class Universe : Node3D
 		InfoText ??= GetNode<Label>("InfoText");
 
 		Environment ??= GetNode<WorldEnvironment>("WorldEnvironment").Environment;
-		var sky = Environment.Sky.SkyMaterial as PhysicalSkyMaterial;
+		var sky = Environment.Sky.SkyMaterial as ShaderMaterial;
 		int skyColor = Random.RandiRange(0, 11);
-		sky.RayleighColor = new Color(Crayons[12 + ((skyColor + Offset(2)) % 12)]);
-		sky.MieColor = new Color(Crayons[skyColor]);
-		sky.GroundColor = sky.RayleighColor.Darkened(0.05f);
+		sky.SetShaderParameter("rayleigh_color", new Color(Crayons[12 + ((skyColor + Offset(2)) % 12)]));
+		var mieColor = new Color(Crayons[skyColor]);
+		sky.SetShaderParameter("mie_color", mieColor);
+		sky.SetShaderParameter("ground_color", mieColor.Lightened(0.05f));
 
 		_InitializeStars(4);
 		_InitializeMoons(40);
