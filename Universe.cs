@@ -88,23 +88,36 @@ public partial class Universe : Node3D
 		_InitializeMoons(40);
 	}
 
-	public override void _PhysicsProcess(double delta)
+    // public override void _Process(double delta)
+    // {
+    //     base._Process(delta);
+	// 	var sky = Environment.Sky.SkyMaterial as ShaderMaterial;
+	// 	sky.SetShaderParameter("player_up", PlayerPivot.ToGlobal(new Vector3(0, 1, 0)));
+
+    // }
+
+    public override void _PhysicsProcess(double delta)
 	{
 		base._PhysicsProcess(delta);
 		Bodies.ForEach(body => body.UpdateVelocity(Bodies, Transform.Origin, (float)delta));
 		Bodies.ForEach(body => body.UpdatePosition((float)delta));
 
 		Sunlight.Rotation = new Vector3(
-			Mathf.Wrap(Sunlight.Rotation.X + (float)delta / 16, -Mathf.Pi, Mathf.Pi), 
-			Mathf.Wrap(Sunlight.Rotation.Y + (float)delta / 32, -Mathf.Pi, Mathf.Pi), 
-			Mathf.Wrap(Sunlight.Rotation.Z + (float)delta / 96, -Mathf.Pi, Mathf.Pi) 
+			Mathf.Wrap(Sunlight.Rotation.X + (float)delta / 4, -Mathf.Pi, Mathf.Pi), 
+			Mathf.Wrap(Sunlight.Rotation.Y + (float)delta / 8, -Mathf.Pi, Mathf.Pi), 
+			Mathf.Wrap(Sunlight.Rotation.Z + (float)delta / 24, -Mathf.Pi, Mathf.Pi) 
 		);
+
+		// GD.Print(Sunlight.Rotation.Z);
 
 		Planet.Rotation = new Vector3(
 			Mathf.Wrap(Planet.Rotation.X + (float)delta * _rotate.X / 10, -Mathf.Pi, Mathf.Pi),
 			Planet.Rotation.Y,
 			Mathf.Wrap(Planet.Rotation.Z + (float)delta * _rotate.Z / 10, -Mathf.Pi, Mathf.Pi)
 		);
+
+		var sky = Environment.Sky.SkyMaterial as ShaderMaterial;
+		sky.SetShaderParameter("player_up", PlayerPivot.ToGlobal(new Vector3(0, -1, 0)));
 
 		for (int i = 0; i < Bodies.Count; i++) {
 			switch(i%3) {

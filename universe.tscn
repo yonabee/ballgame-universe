@@ -25,11 +25,11 @@ uniform float exposure : hint_range(0, 128) = 1.0;
 
 uniform sampler2D night_sky : filter_linear, source_color, hint_default_black;
 
-const vec3 UP = vec3( 0.0, 1.0, 0.0 );
-
 // Optical length at zenith for molecules.
 const float rayleigh_zenith_size = 8.4e3;
 const float mie_zenith_size = 1.25e3;
+
+const vec3 player_up = vec3(0.0, -1.0, 0.0);
 
 float henyey_greenstein(float cos_theta, float g) {
 	const float k = 0.0795774715459;
@@ -38,9 +38,12 @@ float henyey_greenstein(float cos_theta, float g) {
 
 void sky() {
 	if (LIGHT0_ENABLED) {
-		float zenith_angle = clamp( dot(UP, normalize(LIGHT0_DIRECTION)), -1.0, 1.0 );
-		float sun_energy = max(0.0, 1.0 - exp(-((PI * 0.5) - acos(zenith_angle)))) * LIGHT0_ENERGY;
-		float sun_fade = 1.0 - clamp(1.0 - exp(LIGHT0_DIRECTION.y), 0.0, 1.0);
+		//float zenith_angle = clamp( dot(player_up, normalize(LIGHT0_DIRECTION)), -1.0, 1.0 );
+		//float sun_energy = max(0.0, 1.0 - exp(-((PI * 0.5) - acos(zenith_angle)))) * LIGHT0_ENERGY;
+		//float sun_fade = 1.0 - clamp(1.0 - exp(LIGHT0_DIRECTION.y), 0.0, 1.0);
+		
+		float sun_energy = 1.0;
+		float sun_fade = 1.0;
 
 		// Rayleigh coefficients.
 		float rayleigh_coefficient = rayleigh - ( 1.0 * ( 1.0 - sun_fade ) );
@@ -49,8 +52,9 @@ void sky() {
 		vec3 mie_beta = turbidity * mie * mie_color.rgb * 0.000434;
 
 		// Optical length.
-		float zenith = acos(max(0.0, dot(UP, EYEDIR)));
-		float optical_mass = 1.0 / (cos(zenith) + 0.15 * pow(93.885 - degrees(zenith), -1.253));
+		// float zenith = acos(max(0.0, dot(player_up, EYEDIR)));
+		// float optical_mass = 1.0 / (cos(zenith) + 0.15 * pow(93.885 - degrees(zenith), -1.253));
+		float optical_mass = 1.0 + 0.15 * pow(93.885, -1.253);
 		float rayleigh_scatter = rayleigh_zenith_size * optical_mass;
 		float mie_scatter = mie_zenith_size * optical_mass;
 
@@ -68,10 +72,11 @@ void sky() {
 
 		vec3 Lin = pow(sun_energy * ((betaRTheta + betaMTheta) / (rayleigh_beta + mie_beta)) * (1.0 - extinction), vec3(1.5));
 		// Hack from https://github.com/mrdoob/three.js/blob/master/examples/jsm/objects/Sky.js
-		Lin *= mix(vec3(1.0), pow(sun_energy * ((betaRTheta + betaMTheta) / (rayleigh_beta + mie_beta)) * extinction, vec3(0.5)), clamp(pow(1.0 - zenith_angle, 5.0), 0.0, 1.0));
+		Lin *= mix(vec3(1.0), pow(sun_energy * ((betaRTheta + betaMTheta) / (rayleigh_beta + mie_beta)) * extinction, vec3(0.5)), clamp(pow(1.0, 5.0), 0.0, 1.0));
+		//Lin *= mix(vec3(1.0), pow(sun_energy * ((betaRTheta + betaMTheta) / (rayleigh_beta + mie_beta)) * extinction, vec3(0.5)), clamp(pow(1.0 - zenith_angle, 5.0), 0.0, 1.0));
 
 		// Hack in the ground color.
-		Lin  *= mix(ground_color.rgb, vec3(1.0), smoothstep(-0.1, 0.1, dot(UP, EYEDIR)));
+		// Lin  *= mix(ground_color.rgb, vec3(1.0), smoothstep(-0.3, 0.3, dot(player_up, EYEDIR)));
 
 		// Solar disk and out-scattering.
 		float sunAngularDiameterCos = cos(LIGHT0_SIZE * sun_disk_scale);
