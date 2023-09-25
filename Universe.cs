@@ -20,8 +20,11 @@ public partial class Universe : Node3D
 	public static Vector2 Location;
 	public static DirectionalLight3D Sunlight;
 	public static Godot.Environment Environment;
+	public static ShaderMaterial Sky;
 
 	Vector3 _rotate = Vector3.Zero;
+
+	float _sunSpeed = 16f;
 
 	Color[] colors = {
 		new Color("#000000"),
@@ -77,24 +80,16 @@ public partial class Universe : Node3D
 		InfoText ??= GetNode<Label>("InfoText");
 
 		Environment ??= GetNode<WorldEnvironment>("WorldEnvironment").Environment;
-		var sky = Environment.Sky.SkyMaterial as ShaderMaterial;
+		Sky ??= Environment.Sky.SkyMaterial as ShaderMaterial;
 		int skyColor = Random.RandiRange(0, 11);
-		sky.SetShaderParameter("rayleigh_color", new Color(Crayons[12 + ((skyColor + Offset(2)) % 12)]));
-		var mieColor = new Color(Crayons[skyColor]);
-		sky.SetShaderParameter("mie_color", mieColor);
-		sky.SetShaderParameter("ground_color", mieColor.Lightened(0.05f));
+		Sky.SetShaderParameter("rayleigh_color", new Color(Crayons[12 + ((skyColor + Offset(2)) % 12)]));
+		var mieColor = new Color(Crayons[skyColor + Offset(1)]);
+		Sky.SetShaderParameter("mie_color", mieColor);
+		Sky.SetShaderParameter("ground_color", new Color(Crayons[12 + ((skyColor + Offset(1)) % 12)]));
 
 		_InitializeStars(4);
 		_InitializeMoons(40);
 	}
-
-    // public override void _Process(double delta)
-    // {
-    //     base._Process(delta);
-	// 	var sky = Environment.Sky.SkyMaterial as ShaderMaterial;
-	// 	sky.SetShaderParameter("player_up", PlayerPivot.ToGlobal(new Vector3(0, 1, 0)));
-
-    // }
 
     public override void _PhysicsProcess(double delta)
 	{
@@ -103,12 +98,10 @@ public partial class Universe : Node3D
 		Bodies.ForEach(body => body.UpdatePosition((float)delta));
 
 		Sunlight.Rotation = new Vector3(
-			Mathf.Wrap(Sunlight.Rotation.X + (float)delta / 4, -Mathf.Pi, Mathf.Pi), 
-			Mathf.Wrap(Sunlight.Rotation.Y + (float)delta / 8, -Mathf.Pi, Mathf.Pi), 
-			Mathf.Wrap(Sunlight.Rotation.Z + (float)delta / 24, -Mathf.Pi, Mathf.Pi) 
+			Mathf.Wrap(Sunlight.Rotation.X + (float)delta / _sunSpeed, -Mathf.Pi, Mathf.Pi), 
+			Mathf.Wrap(Sunlight.Rotation.Y + (float)delta / _sunSpeed * 2, -Mathf.Pi, Mathf.Pi), 
+			Mathf.Wrap(Sunlight.Rotation.Z + (float)delta / _sunSpeed * 3, -Mathf.Pi, Mathf.Pi) 
 		);
-
-		// GD.Print(Sunlight.Rotation.Z);
 
 		Planet.Rotation = new Vector3(
 			Mathf.Wrap(Planet.Rotation.X + (float)delta * _rotate.X / 10, -Mathf.Pi, Mathf.Pi),
@@ -116,8 +109,12 @@ public partial class Universe : Node3D
 			Mathf.Wrap(Planet.Rotation.Z + (float)delta * _rotate.Z / 10, -Mathf.Pi, Mathf.Pi)
 		);
 
-		var sky = Environment.Sky.SkyMaterial as ShaderMaterial;
-		sky.SetShaderParameter("player_up", PlayerPivot.ToGlobal(new Vector3(0, -1, 0)));
+		var planetDot = (Planet.Transform.Basis * PlayerPivot.Transform.Basis).Y.Dot(Sunlight.Transform.Basis.Z);
+
+		// GD.Print(planetDot);
+
+		Sky.SetShaderParameter("sun_energy", Mathf.Lerp(0.3f, 1f, planetDot + 1f));
+		Sky.SetShaderParameter("sun_fade", Mathf.Lerp(0.5f, 1f, planetDot + 1f ));
 
 		for (int i = 0; i < Bodies.Count; i++) {
 			switch(i%3) {
@@ -155,6 +152,14 @@ public partial class Universe : Node3D
 
 		if (@event.IsActionPressed("info_toggle")) {
 			InfoText.Visible = !InfoText.Visible;
+		}
+
+		if (@event.IsActionPressed("slower")) {
+			_sunSpeed *=2;
+		}
+
+		if (@event.IsActionPressed("faster")) {
+			_sunSpeed /=2;
 		}
     }
 
@@ -211,11 +216,11 @@ public partial class Universe : Node3D
             var sphere = new Spheroid
             {
                 Seed = i,
-                Radius = Random.RandiRange(50, 300)
+                Radius = Random.RandiRange(100, 500)
             };
             sphere.rings = Mathf.FloorToInt(sphere.Radius);
 			sphere.radialSegments = sphere.rings;
-			sphere.Gravity = sphere.Radius / 10f;
+			sphere.Gravity = sphere.Radius / 5f;
 			sphere.initialVelocity = new Vector3(Random.Randf() * maxV * 2 - maxV, Random.Randf() * maxV * 2 - maxV, Random.Randf() * maxV * 2 - maxV);
 			float transX = Random.RandfRange(-Radius, Radius);
 			if (transX < 0) {

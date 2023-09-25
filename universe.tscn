@@ -12,9 +12,9 @@ code = "
 shader_type sky;
 
 
-uniform float rayleigh : hint_range(0, 64) = 2.0;
+uniform float rayleigh : hint_range(0, 64) = 20.0;
 uniform vec4 rayleigh_color : source_color = vec4(0.3, 0.405, 0.6, 1.0);
-uniform float mie : hint_range(0, 1) = 0.005;
+uniform float mie : hint_range(0, 1) = 0.01;
 uniform float mie_eccentricity : hint_range(-1, 1) = 0.8;
 uniform vec4 mie_color : source_color = vec4(0.69, 0.729, 0.812, 1.0);
 
@@ -22,6 +22,9 @@ uniform float turbidity : hint_range(0, 1000) = 10.0;
 uniform float sun_disk_scale : hint_range(0, 360) = 1.0;
 uniform vec4 ground_color : source_color = vec4(0.1, 0.07, 0.034, 1.0);
 uniform float exposure : hint_range(0, 128) = 1.0;
+
+uniform float sun_energy : hint_range(0, 1) = 1.0;
+uniform float sun_fade : hint_range(0, 1) = 1.0;
 
 uniform sampler2D night_sky : filter_linear, source_color, hint_default_black;
 
@@ -42,8 +45,8 @@ void sky() {
 		//float sun_energy = max(0.0, 1.0 - exp(-((PI * 0.5) - acos(zenith_angle)))) * LIGHT0_ENERGY;
 		//float sun_fade = 1.0 - clamp(1.0 - exp(LIGHT0_DIRECTION.y), 0.0, 1.0);
 		
-		float sun_energy = 1.0;
-		float sun_fade = 1.0;
+		// float sun_energy = 1.0;
+		// float sun_fade = 1.0;
 
 		// Rayleigh coefficients.
 		float rayleigh_coefficient = rayleigh - ( 1.0 * ( 1.0 - sun_fade ) );
@@ -76,7 +79,7 @@ void sky() {
 		//Lin *= mix(vec3(1.0), pow(sun_energy * ((betaRTheta + betaMTheta) / (rayleigh_beta + mie_beta)) * extinction, vec3(0.5)), clamp(pow(1.0 - zenith_angle, 5.0), 0.0, 1.0));
 
 		// Hack in the ground color.
-		// Lin  *= mix(ground_color.rgb, vec3(1.0), smoothstep(-0.3, 0.3, dot(player_up, EYEDIR)));
+		Lin *= mix(ground_color.rgb, vec3(1.0), smoothstep(-1.0, 0, dot(player_up, EYEDIR)));
 
 		// Solar disk and out-scattering.
 		float sunAngularDiameterCos = cos(LIGHT0_SIZE * sun_disk_scale);
@@ -107,6 +110,8 @@ shader_parameter/turbidity = 100.0
 shader_parameter/sun_disk_scale = 1.0
 shader_parameter/ground_color = Color(0.168627, 0.360784, 0.827451, 1)
 shader_parameter/exposure = 1.0
+shader_parameter/sun_energy = 1.0
+shader_parameter/sun_fade = 1.0
 
 [sub_resource type="Sky" id="Sky_njqtj"]
 sky_material = SubResource("ShaderMaterial_dgvde")
