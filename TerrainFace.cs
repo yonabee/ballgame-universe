@@ -135,15 +135,16 @@ public class TerrainFace
                 colors[i] = colorGenerator.BiomeColourFromPoint(pointOnUnitSphere, elevation.unscaled);
                 oceanColors[i] = colorGenerator.OceanColorFromPoint(pointOnUnitSphere);
 
-                if (x < res - 1 && y < res - 1)
+                if (x > 0 && y > 0)
                 {
-                    tris[triIndex + 2] = i;
-                    tris[triIndex + 1] = i + res + 1; 
-                    tris[triIndex] = i + res;
+                    tris[triIndex] = i - 1;
+                    tris[triIndex + 1] = i - res;
+                    tris[triIndex + 2] = i - res - 1;
 
-                    tris[triIndex + 5] = i;
-                    tris[triIndex + 4] = i + 1;
-                    tris[triIndex + 3] = i + res + 1;
+                    tris[triIndex + 3] = i - 1;
+                    tris[triIndex + 4] = i;
+                    tris[triIndex + 5] = i - res;
+
                     triIndex += 6;
                 }
             };
@@ -156,10 +157,10 @@ public class TerrainFace
                 }
             }
 
-            landSurfaceArray[(int)Mesh.ArrayType.Vertex] = scale == 1 ? verts : verts[0..i];
-            landSurfaceArray[(int)Mesh.ArrayType.Normal] = scale == 1 ? normals : normals[0..i];
-            landSurfaceArray[(int)Mesh.ArrayType.Color] = scale == 1 ? colors : colors[0..i];
-            landSurfaceArray[(int)Mesh.ArrayType.Index] = scale == 1 ? tris : tris[0..triIndex];
+            landSurfaceArray[(int)Mesh.ArrayType.Vertex] = scale == 1 ? verts : verts[0..(i + 1)];
+            landSurfaceArray[(int)Mesh.ArrayType.Normal] = scale == 1 ? normals : normals[0..(i + 1)];
+            landSurfaceArray[(int)Mesh.ArrayType.Color] = scale == 1 ? colors : colors[0..(i + 1)];
+            landSurfaceArray[(int)Mesh.ArrayType.Index] = scale == 1 ? tris : tris[0..(triIndex + 3)];
 
             LandMeshes[landMeshIndex] = new MeshInstance3D
             {

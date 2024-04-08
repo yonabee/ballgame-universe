@@ -31,8 +31,6 @@ public partial class CubePlanet : Planetoid
 
     Vector3[] directions = { Vector3.Up, Vector3.Down, Vector3.Left, Vector3.Right, Vector3.Forward, Vector3.Back };
 
-    Dictionary<LOD, Action> createLOD;
-
     public override void _Ready() {
         Configure();
         GeneratePlanet();
