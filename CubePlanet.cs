@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using static Utils;
@@ -276,13 +277,17 @@ public partial class CubePlanet : Planetoid
                 await Task.Run(() => face.Elevate(lod));
             }
 
+            // Track seam values for successive faces so they can be stitched together.
+            // Make this here and pass it in so we can throw it away when we're done.
+            var seams = new Dictionary<Vector3, Vector3>();
+
             for (int i = 0; i < Faces; i++) {
                 bool renderFace = faceRenderMask.Contains(Face.All) || faceRenderMask.Contains((Face)i + 1);
                 if (!renderFace) {
                     continue;
                 }
                 var face = TerrainFaces[i];
-                await face.ConstructMesh(lod);
+                await face.ConstructMesh(lod, seams);
                 face.Show();
                 GD.Print("Generated mesh for face " + i);
             }

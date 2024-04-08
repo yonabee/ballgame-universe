@@ -16,7 +16,6 @@ public class TerrainFace
     public Utils.Face Face;
     public static int ChunkDimension = 1;
     public int resolution;
-    public TerrainChunk[] Chunks;
     Vector3 axisA;
     Vector3 axisB;
     Vector3[] verts;
@@ -42,7 +41,6 @@ public class TerrainFace
         this.Up = localUp;
         this.Face = face;
 
-        Chunks = new TerrainChunk[ChunkDimension * ChunkDimension];
         LandMeshes = new MeshInstance3D[3];
 
         axisA = new Vector3(localUp.Y, localUp.Z, localUp.X);
@@ -80,7 +78,7 @@ public class TerrainFace
         colorGenerator.UpdateElevation(shapeGenerator.elevationMinMax);
     }    
     
-    public async Task ConstructMesh(LOD lod)
+    public async Task ConstructMesh(LOD lod, Dictionary<Vector3, Vector3> seams)
     {
         await Task.Run(() => {
             int triIndex = 0;
@@ -104,7 +102,7 @@ public class TerrainFace
                 far = 1500f;
                 near = 1f;
             }
-
+        
             int i = 0;
             int y = 0;
             int x = 0;
@@ -112,20 +110,32 @@ public class TerrainFace
 
             var doXY = (int x, int y) => {
                 i = x + y * res;
+
                 Vector2 percent = new Vector2(x, y) / (res - 1);
+
                 Vector3 pointOnUnitCube = Up + (percent.X - .5f) * 2 * axisA + (percent.Y - .5f) * 2 * axisB;
+
                 Vector3 pointOnUnitSphere = Utils.CubeToSphere(pointOnUnitCube);
 
                 Elevation elevation = Elevations[x == res - 1 ? resolution - 1 : x * scale, y == res - 1 ? resolution - 1 : y * scale];
-
+                
                 verts[i] = pointOnUnitSphere * elevation.scaled;
+                if (percent.X == 0 || percent.X == 1 || percent.Y == 0 || percent.Y == 1) {
+                    if (seams.TryGetValue(pointOnUnitCube, out Vector3 seamValue)) {
+                        verts[i] = seamValue;
+                    } 
+                    else 
+                    {
+                        seams.Add(pointOnUnitCube, verts[i]);
+                    }
+                }
                 normals[i] = verts[i].Normalized();
                 oceanVerts[i] = pointOnUnitSphere * settings.radius;
                 oceanNormals[i] = oceanVerts[i].Normalized();
-                colors[i] = colorGenerator.BiomeColorFromPoint(pointOnUnitSphere, elevation.unscaled);
+                colors[i] = colorGenerator.BiomeColourFromPoint(pointOnUnitSphere, elevation.unscaled);
                 oceanColors[i] = colorGenerator.OceanColorFromPoint(pointOnUnitSphere);
 
-                if (x < res - 1 && y < res- 1)
+                if (x < res - 1 && y < res - 1)
                 {
                     tris[triIndex + 2] = i;
                     tris[triIndex + 1] = i + res + 1; 
@@ -178,73 +188,28 @@ public class TerrainFace
                 // OceanMesh.CallDeferred(MeshInstance3D.MethodName.CreateMultipleConvexCollisions);
                 Universe.Planet.CallDeferred(Node.MethodName.AddChild, OceanMesh);
             }
-
-            //ConstructChunks();
-
             GD.Print("generated meshes for scale " + scale);
         });
     }
 
-    public async void ConstructChunks()
-    {
-        for (int y = 0; y < ChunkDimension; y++) {
-            for (int x = 0; x < ChunkDimension; x++) {
-                int i = x + (y * ChunkDimension);
-                Chunks[i] = new TerrainChunk(
-                    this, 
-                    colorGenerator, 
-                    shapeGenerator, 
-                    settings, 
-                    x,
-                    y,
-                    y == ChunkDimension - 1 || x == ChunkDimension - 1
-                );
-                await Chunks[i].ConstructMeshes();
-            }
-        } 
-
-        GD.Print("constructed " + (ChunkDimension * ChunkDimension) + " chunks");
-    }
-
     public void Show()
     {
-        if (Universe.Planet.LOD != LOD.Planet) {
-            for (int i = 0; i < LandMeshes.Length; i++) {
-                if (LandMeshes[i] != null) {
-                    LandMeshes[i].CallDeferred(Node3D.MethodName.Show);
-                    LandMeshes[i].ProcessMode = Node.ProcessModeEnum.Inherit; 
-                }
+        for (int i = 0; i < LandMeshes.Length; i++) {
+            if (LandMeshes[i] != null) {
+                LandMeshes[i].CallDeferred(Node3D.MethodName.Show);
+                LandMeshes[i].ProcessMode = Node.ProcessModeEnum.Inherit; 
             }
-            for (int i = 0; i < Chunks.Length; i++) {
-                Chunks[i]?.Hide();
-            }
-        } else {
-            // for (int i = 0; i < LandMeshes.Length; i++) {
-            //     if (LandMeshes[i] != null) {
-            //         LandMeshes[i].CallDeferred(Node3D.MethodName.Hide);
-            //         LandMeshes[i].ProcessMode = Node.ProcessModeEnum.Disabled; 
-            //     }
-            // }
-            // for (int i = 0; i < Chunks.Length; i++) {
-            //     Chunks[i]?.Show();
-            // } 
         }
     }
 
     public void Hide()
     {
-        if (Universe.Planet.LOD != LOD.Planet) {
-            for (int i = 0; i < LandMeshes.Length; i++) {
-                if (LandMeshes[i] != null) {
-                    LandMeshes[i].CallDeferred(Node3D.MethodName.Hide);
-                    LandMeshes[i].ProcessMode = Node.ProcessModeEnum.Disabled;
-                }
+        for (int i = 0; i < LandMeshes.Length; i++) {
+            if (LandMeshes[i] != null) {
+                LandMeshes[i].CallDeferred(Node3D.MethodName.Hide);
+                LandMeshes[i].ProcessMode = Node.ProcessModeEnum.Disabled;
             }
-        } else {
-            for (int i = 0; i < Chunks.Length; i++) {
-                Chunks[i]?.Hide();
-            } 
-        }
+        }   
     }
 
     int _GetScale(LOD lod) {

@@ -22,6 +22,7 @@ public partial class Universe : Node3D
 	public static Godot.Environment Environment;
 	public static ShaderMaterial Sky;
 
+
 	Vector3 _rotate = Vector3.Zero;
 
 	float _sunSpeed = 16f;
@@ -161,6 +162,12 @@ public partial class Universe : Node3D
 		if (@event.IsActionPressed("faster")) {
 			_sunSpeed /=2;
 		}
+		      
+        if(@event is InputEventMouseMotion mouseMotion && PlayerPivot != null)
+		{
+			PlayerPivot.CameraRotation.X = mouseMotion.Relative.X;
+			PlayerPivot.CameraRotation.Y = mouseMotion.Relative.Y;
+		}
     }
 
 	void _InitializePlanet() {
@@ -169,6 +176,8 @@ public partial class Universe : Node3D
 		{
 			Seed = (int)Random.Randi(),
 			Radius = 2000,
+			// Multiple of 10, minimum 20. 
+			// This is of the full planet and is used as a base for LODs.
 			Resolution = 600
 		};
 		AddChild(Planet);

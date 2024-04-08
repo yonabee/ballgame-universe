@@ -93,13 +93,14 @@ void sky() {
 		COLOR *= exposure;
 	} else {
 		// There is no sun, so display night_sky and nothing else.
-		COLOR = texture(night_sky, SKY_COORDS).xyz;
-		COLOR *= exposure;
+		// COLOR = texture(night_sky, SKY_COORDS).xyz;
+		// COLOR *= exposure;
 	}
 }
 "
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_dgvde"]
+resource_local_to_scene = true
 shader = SubResource("Shader_3mjhx")
 shader_parameter/rayleigh = 0.99
 shader_parameter/rayleigh_color = Color(0.105882, 0.258824, 0.643137, 1)
@@ -115,6 +116,7 @@ shader_parameter/sun_fade = 1.0
 
 [sub_resource type="Sky" id="Sky_njqtj"]
 sky_material = SubResource("ShaderMaterial_dgvde")
+process_mode = 3
 
 [sub_resource type="Environment" id="Environment_p4qy4"]
 background_mode = 2
@@ -133,6 +135,7 @@ volumetric_fog_enabled = true
 volumetric_fog_density = 0.001
 
 [node name="Universe" type="Node3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8000, 0)
 script = ExtResource("1_wh6hk")
 
 [node name="Pivot" type="Marker3D" parent="."]
@@ -146,13 +149,6 @@ near = 1.0
 far = 20000.0
 script = ExtResource("3_3ebdc")
 
-[node name="PlayerCam" type="Camera3D" parent="."]
-near = 1.0
-far = 10000.0
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_p4qy4")
-
 [node name="InfoText" type="Label" parent="."]
 offset_left = 2.0
 offset_top = 1.0
@@ -163,3 +159,13 @@ theme_override_constants/outline_size = 0
 theme_override_fonts/font = ExtResource("4_lyy58")
 theme_override_font_sizes/font_size = 5
 text = "Hello World!"
+
+[node name="PlayerCam" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -8000, 0)
+near = 1.0
+far = 20000.0
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_p4qy4")
+
+[node name="Game" type="Node3D" parent="."]

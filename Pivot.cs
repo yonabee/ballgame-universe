@@ -8,7 +8,7 @@ public partial class Pivot : Marker3D
 	public bool OrientForward = false;
 	public Camera3D Camera;
 
-	private Vector2 _cameraRotation;
+	public Vector2 CameraRotation;
 
 	public override void _PhysicsProcess(double delta)
 	{
@@ -35,13 +35,13 @@ public partial class Pivot : Marker3D
 				RotateObjectLocal(OrientForward ? Vector3.Down : Vector3.Up, (float)delta * (OrientForward ? 1f : Speed));
 			}
 		}
-		RotateObjectLocal(Vector3.Down, _cameraRotation.X * (float)delta * Speed * 2);
+		RotateObjectLocal(Vector3.Down, CameraRotation.X * (float)delta * Speed * 2);
 
 		if (Camera == null) {
 			return;
 		}
 
-		Camera.RotateObjectLocal(Vector3.Left, _cameraRotation.Y * (float)delta * Speed * 2);
+		Camera.RotateObjectLocal(Vector3.Left, CameraRotation.Y * (float)delta * Speed * 2);
 
 		Vector3 cubemap = Utils.SphereToCube(
 			Universe.Planet.ToLocal(
@@ -95,15 +95,6 @@ public partial class Pivot : Marker3D
 
 		Camera.TranslateObjectLocal(new Vector3(0, -offset, 0));
 
-		_cameraRotation = Vector2.Zero;
+		CameraRotation = Vector2.Zero;
 	}
-
-    public override void _Input(InputEvent @event)
-    {
-        if(@event is InputEventMouseMotion mouseMotion && Camera != null)
-		{
-			_cameraRotation.X = mouseMotion.Relative.X;
-			_cameraRotation.Y = mouseMotion.Relative.Y;
-		}
-    }
 }

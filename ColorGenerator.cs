@@ -46,7 +46,7 @@ public class ColorGenerator
 
     }
 
-    public Color BiomeColorFromPoint(Vector3 pointOnUnitSphere, float height)
+    public Color BiomeColourFromPoint(Vector3 pointOnUnitSphere, float height)
     {
         height = (height + 1f) / 2f;
         height += heightMapNoiseFilter.Evaluate(pointOnUnitSphere) * settings.biomeColourSettings.heightMapNoiseStrength;
