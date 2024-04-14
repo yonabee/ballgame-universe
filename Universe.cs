@@ -83,14 +83,14 @@ public partial class Universe : Node3D
 
 		Environment ??= GetNode<WorldEnvironment>("WorldEnvironment").Environment;
 		Sky ??= Environment.Sky.SkyMaterial as ShaderMaterial;
-		int skyColor = Random.RandiRange(0, 10);
+		int skyColor = Random.RandiRange(0, 11);
 		Sky.SetShaderParameter("rayleigh_color", new Color(Crayons[12 + ((skyColor + Offset(2)) % 12)]));
 		var mieColor = new Color(Crayons[skyColor + Offset(1)]);
 		Sky.SetShaderParameter("mie_color", mieColor);
 		Sky.SetShaderParameter("ground_color", new Color(Crayons[12 + ((skyColor + Offset(1)) % 12)]));
 
-		_InitializeStars(4);
-		_InitializeMoons(40);
+		_InitializeStars(20);
+		_InitializeMoons(100);
 	}
 
     public override void _PhysicsProcess(double delta)
@@ -212,7 +212,7 @@ public partial class Universe : Node3D
             var sphere = new Spheroid
             {
                 Seed = i,
-                Radius = Random.RandiRange(100, 500)
+                Radius = Random.RandiRange(100, 750)
             };
             sphere.rings = Mathf.FloorToInt(sphere.Radius);
 			sphere.radialSegments = sphere.rings;
@@ -330,6 +330,7 @@ public partial class Universe : Node3D
 				sphere.crayons = new Color[crayons.Length];
 				for (var idx = offset; idx < crayons.Length + offset; idx++) {
 					sphere.crayons[idx%crayons.Length] = crayons[idx%crayons.Length];
+					sphere.crayons[idx%crayons.Length].A = 0.6f;
 				}
 
 			} else {
@@ -337,6 +338,9 @@ public partial class Universe : Node3D
 					colors[i%colors.Length],
 					colors[(i + Random.RandiRange(1, 32))%colors.Length]
 				};
+				for(int j = 0; j < sphere.crayons.Length; j++) {
+					sphere.crayons[j].A = 0.6f;
+				}
 			}
 			sphere.Visible = false;
 			Bodies.Add(sphere);
@@ -349,7 +353,7 @@ public partial class Universe : Node3D
 		for (int i = 0; i < starCount; i++) {
             var star = new Star
             {
-                Gravity = Random.RandiRange(100, 1000),
+                Gravity = Random.RandiRange(1000, 10000),
                 Radius = 0.1f,
                 OmniRange = 5000f,
                 OmniAttenuation = 0.2f,

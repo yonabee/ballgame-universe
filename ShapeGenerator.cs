@@ -64,7 +64,7 @@ public class ShapeGenerator {
             if (settings.noiseSettings[i].enabled)
             {
                 float mask = (settings.noiseSettings[i].useFirstLayerAsMask) ? firstLayerValue : 1;
-                elevation += noiseFilters[i].Evaluate(pointOnUnitSphere) * mask;
+                elevation += noiseFilters[i].Evaluate(pointOnUnitSphere) * mask * 3;
             }
         }
 

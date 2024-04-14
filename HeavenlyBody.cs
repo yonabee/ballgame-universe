@@ -44,7 +44,7 @@ public interface HeavenlyBody
         if (bodyRadius == 0) {
             if (Mathf.Abs(distance.Length()) > Universe.Radius) {
                 if (!OutOfBounds) {
-                    CurrentVelocity = CurrentVelocity / 2;
+                    CurrentVelocity /= 2;
                     OutOfBounds = true;
                 }
                 distance = distance.Normalized() * Universe.Radius;
@@ -58,7 +58,7 @@ public interface HeavenlyBody
         Vector3 force = forceDir * Gravity * bodyMass / sqrDist;
         Vector3 acceleration = (force).Normalized();
         if (!Mathf.IsNaN(acceleration.Length())) {
-            if (bodyRadius != 0 && distance.Length() > this.Radius + bodyRadius) {
+            if (bodyRadius != 0) { //&& distance.Length() > this.Radius + bodyRadius) {
                 CurrentVelocity += acceleration * timeStep;
             } else {
                 if (bodyRadius > 0) {

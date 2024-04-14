@@ -167,6 +167,7 @@ public partial class Spheroid : Planetoid
         material.ClearcoatEnabled = true;
         material.ClearcoatRoughness = 1.0f;
         material.Roughness = 1.0f;
+        material.Transparency = BaseMaterial3D.TransparencyEnum.Alpha;
         //material.RimEnabled = true;
         (Meshes[0].Mesh as ArrayMesh).SurfaceSetMaterial(0, material);
     }
