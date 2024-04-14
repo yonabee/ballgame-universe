@@ -7,7 +7,6 @@ public partial class Universe : Node3D
 {
 	public static List<HeavenlyBody> Bodies = new List<HeavenlyBody>();
 	public static CubePlanet Planet;
-	public static CollisionShape3D PlanetCollider;
 	public static Pivot PlayerPivot;
 	public static Label InfoText;
 	public static Camera3D PlayerCam;
@@ -21,6 +20,7 @@ public partial class Universe : Node3D
 	public static DirectionalLight3D Sunlight;
 	public static Godot.Environment Environment;
 	public static ShaderMaterial Sky;
+	public static ProgressBar Progress;
 
 
 	Vector3 _rotate = Vector3.Zero;
@@ -79,10 +79,11 @@ public partial class Universe : Node3D
 
 		WatcherCam ??= GetNode<Camera3D>("Pivot/Watcher");
 		InfoText ??= GetNode<Label>("InfoText");
+		Progress ??= GetNode<ProgressBar>("ProgressBar");
 
 		Environment ??= GetNode<WorldEnvironment>("WorldEnvironment").Environment;
 		Sky ??= Environment.Sky.SkyMaterial as ShaderMaterial;
-		int skyColor = Random.RandiRange(0, 11);
+		int skyColor = Random.RandiRange(0, 10);
 		Sky.SetShaderParameter("rayleigh_color", new Color(Crayons[12 + ((skyColor + Offset(2)) % 12)]));
 		var mieColor = new Color(Crayons[skyColor + Offset(1)]);
 		Sky.SetShaderParameter("mie_color", mieColor);
@@ -138,6 +139,8 @@ public partial class Universe : Node3D
 			Bodies.ForEach(body => body.QueueFree());
 			Bodies.Clear();
 			Planet.QueueFree();
+			Progress.Value = 0;
+			Progress.Visible = true;
 			_Ready();
 		}
 
@@ -200,22 +203,6 @@ public partial class Universe : Node3D
 		Planet.AddChild(PlayerPivot);
 		PlayerCam.Reparent(PlayerPivot);
 		PlayerPivot.Camera = PlayerCam;
-
-		if (PlanetCollider == null) {
-			PlanetCollider = new CollisionShape3D
-			{
-				Shape = new SphereShape3D
-				{
-					Radius = Planet.Radius
-				}
-			};
-		}
-
-		if (PlanetCollider.GetParent() != null) {
-			PlanetCollider.Reparent(Planet);
-		} else {
-			Planet.AddChild(PlanetCollider);
-		}
 	}
 
 	void _InitializeMoons(int moonCount) 
@@ -351,6 +338,7 @@ public partial class Universe : Node3D
 					colors[(i + Random.RandiRange(1, 32))%colors.Length]
 				};
 			}
+			sphere.Visible = false;
 			Bodies.Add(sphere);
 			AddChild(sphere);
 		}
@@ -370,6 +358,13 @@ public partial class Universe : Node3D
             };
             Bodies.Add(star);
 			AddChild(star);
+		}
+	}
+
+	void _InitializeBoids(int boidCount)
+	{
+		for (int i = 0; i < boidCount; i++) {
+			
 		}
 	} 
 }

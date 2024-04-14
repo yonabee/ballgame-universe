@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Godot;
 
@@ -25,6 +27,7 @@ public class TerrainFace
     Color[] colors;
     Color[] oceanColors;
     int[] tris;
+    List<Action> colliderTasks = new List<Action>();
 
     public TerrainFace(
         ColorGenerator colorGenerator,
@@ -77,6 +80,18 @@ public class TerrainFace
 
         colorGenerator.UpdateElevation(shapeGenerator.elevationMinMax);
     }    
+
+    public async Task MakeColliders()
+    {
+        var tasks = colliderTasks.Select(async action => 
+            {
+                await Task.Run(action);
+                Universe.Progress.Value += 4.2;
+            }
+        );
+        await Task.WhenAll(tasks);
+        colliderTasks.Clear();
+    }
     
     public async Task ConstructMesh(LOD lod, Dictionary<Vector3, Vector3> seams)
     {
@@ -172,6 +187,10 @@ public class TerrainFace
             };
             (LandMeshes[landMeshIndex].Mesh as ArrayMesh).AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, landSurfaceArray);
             LandMeshes[landMeshIndex].Mesh.CallDeferred(Mesh.MethodName.SurfaceSetMaterial, 0, Universe.Planet.LandRenderer);
+            if (lod == LOD.NearOrbit) {
+                colliderTasks.Add(() => LandMeshes[landMeshIndex].CallDeferred(MeshInstance3D.MethodName.CreateMultipleConvexCollisions));
+            }
+            LandMeshes[landMeshIndex].Visible = false;
             Universe.Planet.CallDeferred(Node.MethodName.AddChild, LandMeshes[landMeshIndex]);
 
             if (lod == LOD.Space) {
@@ -186,10 +205,10 @@ public class TerrainFace
                 };
                 (OceanMesh.Mesh as ArrayMesh).AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, oceanSurfaceArray);
                 OceanMesh.Mesh.CallDeferred(Mesh.MethodName.SurfaceSetMaterial, 0, Universe.Planet.OceanRenderer);
-                // OceanMesh.CallDeferred(MeshInstance3D.MethodName.CreateMultipleConvexCollisions);
+                colliderTasks.Add(() => OceanMesh.CallDeferred(MeshInstance3D.MethodName.CreateMultipleConvexCollisions));
+                OceanMesh.Visible = false;
                 Universe.Planet.CallDeferred(Node.MethodName.AddChild, OceanMesh);
             }
-            GD.Print("generated meshes for scale " + scale);
         });
     }
 
@@ -201,6 +220,10 @@ public class TerrainFace
                 LandMeshes[i].ProcessMode = Node.ProcessModeEnum.Inherit; 
             }
         }
+        if (OceanMesh != null) {
+            OceanMesh.CallDeferred(Node3D.MethodName.Show);
+            OceanMesh.ProcessMode = Node.ProcessModeEnum.Inherit;
+        }
     }
 
     public void Hide()
@@ -210,7 +233,11 @@ public class TerrainFace
                 LandMeshes[i].CallDeferred(Node3D.MethodName.Hide);
                 LandMeshes[i].ProcessMode = Node.ProcessModeEnum.Disabled;
             }
-        }   
+        }
+        if (OceanMesh != null) {
+            OceanMesh.CallDeferred(Node3D.MethodName.Hide);
+            OceanMesh.ProcessMode = Node.ProcessModeEnum.Disabled;
+        }
     }
 
     int _GetScale(LOD lod) {

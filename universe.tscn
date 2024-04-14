@@ -169,3 +169,13 @@ far = 20000.0
 environment = SubResource("Environment_p4qy4")
 
 [node name="Game" type="Node3D" parent="."]
+
+[node name="ProgressBar" type="ProgressBar" parent="."]
+process_mode = 3
+offset_left = 32.0
+offset_top = 83.0
+offset_right = 354.0
+offset_bottom = 110.0
+theme_override_fonts/font = ExtResource("4_lyy58")
+theme_override_font_sizes/font_size = 15
+rounded = true

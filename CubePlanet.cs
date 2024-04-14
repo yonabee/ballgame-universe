@@ -286,23 +286,24 @@ public partial class CubePlanet : Planetoid
                 }
                 var face = TerrainFaces[i];
                 await face.ConstructMesh(lod, seams);
-                face.Show();
-                GD.Print("Generated mesh for face " + i);
+                GD.Print("Generated mesh for face " + face.Face);
+                Universe.Progress.Value += 4.1;
             }
+            GD.Print("Generated meshes for " + lod);
         };
+        GetTree().Paused = true;
 
         await generateLOD(LOD.Space);
         await generateLOD(LOD.Orbit);
         await generateLOD(LOD.NearOrbit);
-    }
 
-    public void OnChunkMeshCompleted(MeshInstance3D mesh, bool makeColliders = false) 
-    {
-        mesh.Mesh.CallDeferred(Mesh.MethodName.SurfaceSetMaterial, 0, LandRenderer);
-        if (makeColliders) {
-            Task.Run(() => mesh.CallDeferred(MeshInstance3D.MethodName.CreateMultipleConvexCollisions));
+        foreach(var face in TerrainFaces) {
+            await face.MakeColliders();
+            GD.Print("Generating colliders for face " + face.Face);
         }
-        GD.Print("completed chunk mesh " + (makeColliders ? "and built colliders" : ""));
+        GetTree().Paused = false;
+        Universe.Progress.Visible = false;
+        Universe.Bodies.ForEach(body => (body as Node3D).Visible = true);
     }
 
     Color[] _CreateBiomeGradient()

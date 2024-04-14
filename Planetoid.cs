@@ -26,7 +26,7 @@ public partial class Planetoid : RigidBody3D, HeavenlyBody
         Layers = 1;
         CustomIntegrator = true;
         CurrentVelocity = initialVelocity;
-        Mass = Gravity * Radius * Radius / Universe.Gravity;
+        Mass = Gravity * Radius * Radius / Universe.Gravity * 10000;
         Random = Universe.Random;
     }
 
