@@ -2,7 +2,7 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
-public partial class Spheroid : Planetoid
+public partial class MicroSpheroid : Planetoid
 {
     public int radialSegments = 50;
     public int rings = 50;
@@ -77,25 +77,8 @@ public partial class Spheroid : Planetoid
                 normals.Add(vert.Normalized());
                 var noizz = Mathf.Abs(noise.GetNoise3Dv(vert));
 
-                // "Pride" marbles 🏳️‍🌈🏳️‍⚧️
-                if (crayons.Length > 2) {
-                    for (var k = 0; k < crayons.Length; k++) {
-                        if (noizz < (float)(k + 1)/(float)crayons.Length) {
-                            if (chance < 0.1) {
-                                colors.Add(crayons[k].Lightened(0.2f));
-                            } else if (chance < 0.2) {
-                                colors.Add(crayons[k].Darkened(0.15f));
-                            } else {
-                                colors.Add(crayons[k]);
-                            }
-                            break;
-                        }
-                    }
-
-                }
-
                 // Contrast stripes
-                else if (chance < 0.2 && noizz < 0.3 && crayons.Length > 1) {
+                if (chance < 0.2 && noizz < 0.3 && crayons.Length > 1) {
                     if (noizz < 0.1) {
                         colors.Add(crayons[1].Lightened(0.2f));
                     } else {
@@ -165,7 +148,6 @@ public partial class Spheroid : Planetoid
         var material = new StandardMaterial3D
         {
             EmissionEnabled = true,
-            EmissionEnergyMultiplier = 200f / Radius,
             VertexColorUseAsAlbedo = true,
             ClearcoatEnabled = true,
             ClearcoatRoughness = 1.0f,

@@ -135,7 +135,6 @@ volumetric_fog_enabled = true
 volumetric_fog_density = 0.001
 
 [node name="Universe" type="Node3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8000, 0)
 script = ExtResource("1_wh6hk")
 
 [node name="Pivot" type="Marker3D" parent="."]
@@ -163,7 +162,7 @@ text = "Hello World!"
 [node name="PlayerCam" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -8000, 0)
 near = 1.0
-far = 20000.0
+far = 200000.0
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_p4qy4")
@@ -179,3 +178,13 @@ offset_bottom = 110.0
 theme_override_fonts/font = ExtResource("4_lyy58")
 theme_override_font_sizes/font_size = 15
 rounded = true
+
+[node name="InfoText2" type="Label" parent="."]
+offset_left = 271.0
+offset_right = 385.0
+offset_bottom = 26.0
+theme_override_colors/font_color = Color(1, 1, 1, 0.498039)
+theme_override_constants/outline_size = 0
+theme_override_fonts/font = ExtResource("4_lyy58")
+theme_override_font_sizes/font_size = 5
+horizontal_alignment = 2

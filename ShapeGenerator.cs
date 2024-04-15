@@ -15,6 +15,8 @@ public class ShapeGenerator {
     public MinMax elevationMinMax;
     public Vector3 Start = Vector3.Zero;
 
+    readonly float _heightScaling = 1.1f;
+
     [System.Serializable]
     public class ShapeSettings {
         public float radius = 1;
@@ -64,7 +66,7 @@ public class ShapeGenerator {
             if (settings.noiseSettings[i].enabled)
             {
                 float mask = (settings.noiseSettings[i].useFirstLayerAsMask) ? firstLayerValue : 1;
-                elevation += noiseFilters[i].Evaluate(pointOnUnitSphere) * mask * 3;
+                elevation += noiseFilters[i].Evaluate(pointOnUnitSphere) * mask * _heightScaling;
             }
         }
 

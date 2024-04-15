@@ -249,8 +249,10 @@ public partial class CubePlanet : Planetoid
             } else {
                 LOD = LOD.NearOrbit;
             }
-            Universe.InfoText.Text = String.Format("{0}", LOD);
+            Universe.InfoText.Text = String.Format("{0} {1}", LOD, Universe.WatcherCam.Position.DistanceTo(Position).ToString());
         }
+
+        Universe.InfoText2.Text = String.Format("{0} lost", Universe.OutOfBounds);
 
         //GD.Print(LOD);
 
@@ -287,7 +289,7 @@ public partial class CubePlanet : Planetoid
                 var face = TerrainFaces[i];
                 await face.ConstructMesh(lod, seams);
                 GD.Print("Generated mesh for face " + face.Face);
-                Universe.Progress.Value += 4.1;
+                Universe.Progress.Value += Universe.ConstructPlanetColliders ? 4.1 : 6.1;
             }
             GD.Print("Generated meshes for " + lod);
         };
@@ -297,13 +299,16 @@ public partial class CubePlanet : Planetoid
         await generateLOD(LOD.Orbit);
         await generateLOD(LOD.NearOrbit);
 
-        foreach(var face in TerrainFaces) {
-            await face.MakeColliders();
-            GD.Print("Generating colliders for face " + face.Face);
+        if (Universe.ConstructPlanetColliders) {
+            foreach(var face in TerrainFaces) {
+                await face.MakeColliders();
+                GD.Print("Generating colliders for face " + face.Face);
+            }
         }
         GetTree().Paused = false;
         Universe.Progress.Visible = false;
         Universe.Bodies.ForEach(body => (body as Node3D).Visible = true);
+        Universe.Initialized = true;
     }
 
     Color[] _CreateBiomeGradient()

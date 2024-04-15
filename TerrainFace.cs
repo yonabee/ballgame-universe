@@ -187,7 +187,7 @@ public class TerrainFace
             };
             (LandMeshes[landMeshIndex].Mesh as ArrayMesh).AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, landSurfaceArray);
             LandMeshes[landMeshIndex].Mesh.CallDeferred(Mesh.MethodName.SurfaceSetMaterial, 0, Universe.Planet.LandRenderer);
-            if (lod == LOD.NearOrbit) {
+            if (lod == LOD.NearOrbit && Universe.ConstructPlanetColliders) {
                 colliderTasks.Add(() => LandMeshes[landMeshIndex].CallDeferred(MeshInstance3D.MethodName.CreateMultipleConvexCollisions));
             }
             LandMeshes[landMeshIndex].Visible = false;
@@ -205,7 +205,9 @@ public class TerrainFace
                 };
                 (OceanMesh.Mesh as ArrayMesh).AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, oceanSurfaceArray);
                 OceanMesh.Mesh.CallDeferred(Mesh.MethodName.SurfaceSetMaterial, 0, Universe.Planet.OceanRenderer);
-                colliderTasks.Add(() => OceanMesh.CallDeferred(MeshInstance3D.MethodName.CreateMultipleConvexCollisions));
+                if (Universe.ConstructPlanetColliders) {
+                    colliderTasks.Add(() => OceanMesh.CallDeferred(MeshInstance3D.MethodName.CreateMultipleConvexCollisions));
+                }
                 OceanMesh.Visible = false;
                 Universe.Planet.CallDeferred(Node.MethodName.AddChild, OceanMesh);
             }

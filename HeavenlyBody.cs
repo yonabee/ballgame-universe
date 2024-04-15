@@ -15,57 +15,51 @@ public interface HeavenlyBody
     public void RotateObjectLocal(Vector3 vec, float deg);
     public void QueueFree();
 
-    public void UpdateVelocity(List<HeavenlyBody> allBodies, Vector3 origin, float timeStep) 
+    public void UpdateVelocity(List<HeavenlyBody> allBodies, Vector3 universeOrigin, float timeStep) 
     {
-        var distance = Mathf.Abs((origin - Transform.Origin).Length());
-        if (distance < Universe.Radius) {
-            foreach(var node in allBodies) 
+        var distance = Transform.Origin.DistanceTo(universeOrigin);
+        if (distance > Universe.Radius) {
+            if (!OutOfBounds) {
+                Universe.OutOfBounds++;
+                OutOfBounds = true;
+                CurrentVelocity /= 10;
+            }
+        } else {
+            if (OutOfBounds) {
+                Universe.OutOfBounds--;
+                OutOfBounds = false;
+            }
+        } 
+        foreach(var node in allBodies) 
+        {
+            if (node != this && (node.Mass * 0.8f) > Mass && node.Transform.Origin.DistanceTo(Transform.Origin) < 20 * node.Radius)
             {
-                if (node != this)
-                {
-                    _ApplyVelocity(node.ToGlobal(node.Transform.Origin), node.Mass, node.Radius, timeStep);
-                }
+                _ApplyBodyToVelocity(node.ToGlobal(node.Transform.Origin), node.Mass, node.Radius, timeStep);
             }
         }
 
-        // sun
-        _ApplyVelocity(origin, 1000000000, 0, timeStep);
+        if (OutOfBounds) {
+           _ApplyBodyToVelocity(Universe.Planet.Transform.Origin, 1000000000, 0, timeStep);
+        }
     }
 
     public void UpdatePosition(float timeStep) 
     {
         Translate(CurrentVelocity * timeStep);
-        //GD.Print(CurrentVelocity);
     }
 
-    void _ApplyVelocity(Vector3 origin, float bodyMass, float bodyRadius, float timeStep) 
+    void _ApplyBodyToVelocity(Vector3 origin, float bodyMass, float bodyRadius, float timeStep) 
     {
         Vector3 distance = origin - Transform.Origin;
-        if (bodyRadius == 0) {
-            if (Mathf.Abs(distance.Length()) > Universe.Radius) {
-                if (!OutOfBounds) {
-                    CurrentVelocity /= 2;
-                    OutOfBounds = true;
-                }
-                distance = distance.Normalized() * Universe.Radius;
-            } else {
-                OutOfBounds = false;
-            } 
-        }
-
         float sqrDist = distance.LengthSquared();
         Vector3 forceDir = distance.Normalized();
         Vector3 force = forceDir * Gravity * bodyMass / sqrDist;
-        Vector3 acceleration = (force).Normalized();
+        Vector3 acceleration = force.Normalized();
         if (!Mathf.IsNaN(acceleration.Length())) {
-            if (bodyRadius != 0) { //&& distance.Length() > this.Radius + bodyRadius) {
-                CurrentVelocity += acceleration * timeStep;
+            if (bodyRadius == 0) { 
+                CurrentVelocity += acceleration * timeStep * 10;
             } else {
-                if (bodyRadius > 0) {
-                   CurrentVelocity += -acceleration * timeStep * 10;
-                } else {
-                    CurrentVelocity += acceleration * timeStep;
-                }
+                CurrentVelocity += acceleration * timeStep;
             }
         }
     }
