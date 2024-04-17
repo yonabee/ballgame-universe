@@ -57,7 +57,7 @@ public interface HeavenlyBody
         Vector3 acceleration = force.Normalized();
         if (!Mathf.IsNaN(acceleration.Length())) {
             if (bodyRadius == 0) { 
-                CurrentVelocity += acceleration * timeStep * 10;
+                CurrentVelocity += acceleration * timeStep * 10f;
             } else {
                 CurrentVelocity += acceleration * timeStep;
             }

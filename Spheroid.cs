@@ -22,8 +22,10 @@ public partial class Spheroid : Planetoid
             AddChild(Colliders[i]);
         }
         if (Colliders[0].Shape == null) {
-            var shape = new SphereShape3D();
-            shape.Radius = Radius;
+            var shape = new SphereShape3D
+            {
+                Radius = Radius
+            };
             Colliders[0].Shape = shape;
         }
     }

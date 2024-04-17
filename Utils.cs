@@ -1,5 +1,6 @@
 
-    using Godot;
+using Godot;
+using System;
     
     public static class Utils {
 
@@ -329,5 +330,24 @@
                 offset -=1;
             }
             return offset;
+        }
+
+        public static float GaussianRandom()
+        {
+            var u1 = 1.0f-Universe.Random.Randf();
+            var u2 = 1.0f-Universe.Random.Randf();
+            return Mathf.Sqrt(-2.0f * Mathf.Log(u1)) * Mathf.Sin(2.0f * Mathf.Pi * u2);
+        }
+
+        public static Vector3 RandomPointOnSphere()
+        {
+            var x = 1.0f - GaussianRandom();
+            var y = 1.0f - GaussianRandom();
+            var z = 1.0f - GaussianRandom();
+            var normalise = 1f / Mathf.Sqrt(Mathf.Pow(x, 2) + Mathf.Pow(y, 2) + Mathf.Pow(z, 2));
+            x *= normalise;
+            y *= normalise;
+            z *= normalise;
+            return new Vector3(x, y, z);
         }
     }

@@ -31,7 +31,7 @@ public partial class Universe : Node3D
 
 
 	float _sunSpeed = 16f;
-	readonly int _numStars = 5;
+	readonly int _numStars = 7;
 	readonly int _numMoons = 20;
 	readonly int _numMoonlets = 150;
 	readonly float _cameraFloatHeight = 75f;
@@ -40,13 +40,13 @@ public partial class Universe : Node3D
 	// Multiple of 10, minimum 20. 
 	// This is of the full planet and is used as a base for LODs.
 	readonly int _planetResolution = 600;
-	readonly float _maxMoonInitialVelocity = 1000f;
+	readonly float _maxMoonInitialVelocity = 500f;
 	readonly int _minMoonSize = 100;
-	readonly int _maxMoonSize = 750;
+	readonly int _maxMoonSize = 500;
 	readonly int _minMoonlet = 10;
-	readonly int _maxMoonlet = 100;
+	readonly int _maxMoonlet = 70;
 	readonly float _moonAlpha = 0.6f;
-	readonly float _moonletAlpha = 0.5f;
+	readonly float _moonletAlpha = 0.8f;
 
 	Color[] colors = {
 		new Color("#000000"),
@@ -114,6 +114,7 @@ public partial class Universe : Node3D
 		int skyColor = Random.RandiRange(0, 11);
 		Sky.SetShaderParameter("rayleigh_color", new Color(Crayons[12 + ((skyColor + Offset(2)) % 12)]));
 		var mieIndex = skyColor + Offset(1);
+		GD.Print("crayon " + mieIndex + " of " + Crayons.Length);
 		var mieColor = new Color(Crayons[mieIndex < Crayons.Length ? mieIndex : 0]);
 		Sky.SetShaderParameter("mie_color", mieColor);
 		Sky.SetShaderParameter("ground_color", new Color(Crayons[12 + ((skyColor + Offset(1)) % 12)]));
@@ -241,7 +242,7 @@ public partial class Universe : Node3D
 	void _InitializeMoons(int moonCount) 
 	{
 		float maxV = _maxMoonInitialVelocity;
-		float maxDistance = Radius * 0.666f;
+		float maxDistance = Radius;
 		for (int i = 0; i < moonCount; i++) {
             var sphere = new Spheroid
             {
@@ -250,36 +251,14 @@ public partial class Universe : Node3D
             };
             sphere.rings = Mathf.FloorToInt(sphere.Radius);
 			sphere.radialSegments = sphere.rings;
-			sphere.Gravity = sphere.Radius / 5f;
+			sphere.Gravity = sphere.Radius / 10f;
 			sphere.initialVelocity = new Vector3(Random.Randf() * maxV * 2 - maxV, Random.Randf() * maxV * 2 - maxV, Random.Randf() * maxV * 2 - maxV);
-			float transX = Random.RandfRange(-maxDistance, maxDistance);
-			if (transX < 0) {
-				transX -= Planet.Radius;
-			} else {
-				transX += Planet.Radius;
+
+			float distance = Random.RandfRange(Planet.Radius, maxDistance);
+			if (Random.Randf() < 0.5f) {
+				distance = -distance;
 			}
-			if (Mathf.Abs(transX) > maxDistance) {
-				transX = maxDistance * Mathf.Sign(transX);
-			}
-			float transY = Random.RandfRange(-maxDistance, maxDistance);
-			if (transY < 0) {
-				transY -= Planet.Radius;
-			} else {
-				transY += Planet.Radius;
-			}
-			if (Mathf.Abs(transY) > maxDistance) {
-				transY = maxDistance * Mathf.Sign(transY);
-			}
-			float transZ = Random.RandfRange(-maxDistance, maxDistance);
-			if (transZ < 0) {
-				transZ -= Planet.Radius;
-			} else {
-				transZ += Planet.Radius;
-			}
-			if (Mathf.Abs(transZ) > maxDistance) {
-				transZ = maxDistance * Mathf.Sign(transZ);
-			}
-			sphere.Translate(new Vector3(transX, transY, transZ));
+			sphere.Translate(Utils.RandomPointOnSphere() * (distance + sphere.Radius * 10));
 
 			var chance = Random.Randf();
 			if (chance < 0.2f) {
@@ -394,15 +373,27 @@ public partial class Universe : Node3D
 	void _InitializeStars(int starCount) 
 	{
 		for (int i = 0; i < starCount; i++) {
+			var stellarClass = Random.RandiRange(1000, 10000);
             var star = new Star
             {
-                Gravity = Random.RandiRange(1000, 10000),
-                Radius = 0.1f,
-                OmniRange = 5000f,
+                Gravity = stellarClass,
+				EventHorizon = stellarClass / 5f,
+                Radius = 0.0f,
+                OmniRange = stellarClass / 2f,
                 OmniAttenuation = 0.2f,
-                LightIntensityLumens = 1000f,
-                LightColor = colors[Random.RandiRange(1, 10)]
+                LightColor = colors[Random.RandiRange(1, 10)],
+				ShadowEnabled = true,
+				LightSize = stellarClass / 15f,
+				ShadowBias = 0.3f,
+				ShadowBlur = 10f
             };
+
+			float distance = Random.RandfRange(Planet.Radius, Radius);
+			if (Random.Randf() < 0.5f) {
+				distance = -distance;
+			}
+			star.Translate(Utils.RandomPointOnSphere() * (distance + star.EventHorizon * 10));
+
             Bodies.Add(star);
 			AddChild(star);
 		}
@@ -423,38 +414,14 @@ public partial class Universe : Node3D
 			sphere.radialSegments = sphere.rings;
 			sphere.Gravity = sphere.Radius / 5f;
 			sphere.initialVelocity = new Vector3(Random.Randf() * maxV * 2 - maxV, Random.Randf() * maxV * 2 - maxV, Random.Randf() * maxV * 2 - maxV);
-			float transX = Random.RandfRange(-maxDistance + Planet.Radius, maxDistance - Planet.Radius);
-			float transY = Random.RandfRange(-maxDistance + Planet.Radius, maxDistance - Planet.Radius);
-			float transZ = Random.RandfRange(-maxDistance + Planet.Radius, maxDistance - Planet.Radius);
 
-			if (Mathf.Abs(transX) <= Planet.Radius && Mathf.Abs(transY) <= Planet.Radius && Mathf.Abs(transZ) <= Planet.Radius) {
-				var chance1 = Random.Randf();
-				if (chance1 <= 0.33f) {
-					if (transX < 0) {
-						transX -= Planet.Radius;
-					} else {
-						transX += Planet.Radius;
-					}
-				}
-				var chance2 = Random.Randf();
-				if (chance2 <= 0.33f) {
-					if (transY < 0) {
-						transY -= Planet.Radius;
-					} else {
-						transY += Planet.Radius;
-					}
-				}
-				var chance3 = Random.Randf();
-				if ((chance1 > 0.33f && chance2 > 0.33f) || chance3 <= 0.33f) {
-					if (transZ < 0) {
-						transZ -= Planet.Radius;
-					} else {
-						transZ += Planet.Radius;
-					}
-				}
+			float distance = Random.RandfRange(Planet.Radius, maxDistance);
+			if (Random.Randf() < 0.5f) {
+				distance = -distance;
 			}
+			sphere.Translate(Utils.RandomPointOnSphere() * (distance + sphere.Radius * 10));
 
-			sphere.Translate(new Vector3(transX, transY, transZ));
+			// sphere.Translate(new Vector3(transX, transY, transZ));
 			sphere.crayons = new[] { 
 				colors[i%colors.Length],
 				colors[(i + Random.RandiRange(1, 32))%colors.Length]

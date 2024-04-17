@@ -126,12 +126,10 @@ ambient_light_color = Color(0.270588, 0.270588, 0.270588, 1)
 ambient_light_sky_contribution = 0.21
 ambient_light_energy = 0.43
 reflected_light_source = 1
-glow_enabled = true
 glow_intensity = 0.72
 glow_strength = 0.76
 glow_bloom = 0.25
 glow_hdr_threshold = 0.5
-volumetric_fog_enabled = true
 volumetric_fog_density = 0.001
 
 [node name="Universe" type="Node3D"]
