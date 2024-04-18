@@ -155,7 +155,6 @@ theme_override_colors/font_color = Color(1, 1, 1, 0.498039)
 theme_override_constants/outline_size = 0
 theme_override_fonts/font = ExtResource("4_lyy58")
 theme_override_font_sizes/font_size = 5
-text = "Hello World!"
 
 [node name="PlayerCam" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -8000, 0)

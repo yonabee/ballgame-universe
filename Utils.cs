@@ -339,7 +339,7 @@ using System;
             return Mathf.Sqrt(-2.0f * Mathf.Log(u1)) * Mathf.Sin(2.0f * Mathf.Pi * u2);
         }
 
-        public static Vector3 RandomPointOnSphere()
+        public static Vector3 RandomPointOnUnitSphere()
         {
             var x = 1.0f - GaussianRandom();
             var y = 1.0f - GaussianRandom();

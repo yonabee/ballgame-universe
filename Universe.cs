@@ -1,6 +1,9 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
 using static Utils;
 
 public partial class Universe : Node3D
@@ -15,7 +18,6 @@ public partial class Universe : Node3D
 	public static float Gravity;
 	public static int Radius = 7500;
 	public static RandomNumberGenerator Random;
-	public static int Seed;
 	public static Face CurrentFace;
 	public static Vector2 Location;
 	public static DirectionalLight3D Sunlight;
@@ -26,11 +28,12 @@ public partial class Universe : Node3D
 	public static readonly bool ConstructPlanetColliders = true;
 	public static int OutOfBounds = 0;
 	public static bool Initialized = false;
+	public static string Seed = "tatooine";
 
 	Vector3 _rotate = Vector3.Zero;
 
 
-	float _sunSpeed = 16f;
+	float _sunSpeed = 64f;
 	readonly int _numStars = 7;
 	readonly int _numMoons = 20;
 	readonly int _numMoonlets = 150;
@@ -39,14 +42,14 @@ public partial class Universe : Node3D
 	readonly float _planetRaduis = 2000f;
 	// Multiple of 10, minimum 20. 
 	// This is of the full planet and is used as a base for LODs.
-	readonly int _planetResolution = 600;
+	readonly int _planetResolution = 800;
 	readonly float _maxMoonInitialVelocity = 500f;
 	readonly int _minMoonSize = 100;
 	readonly int _maxMoonSize = 500;
 	readonly int _minMoonlet = 10;
 	readonly int _maxMoonlet = 70;
 	readonly float _moonAlpha = 0.6f;
-	readonly float _moonletAlpha = 0.8f;
+	readonly float _moonletAlpha = 0.6f;
 
 	Color[] colors = {
 		new Color("#000000"),
@@ -65,8 +68,9 @@ public partial class Universe : Node3D
 	public override void _Ready() 
 	{
 		Random = new RandomNumberGenerator();
-		//Random.Seed = 123456;
 		Random.Randomize();
+		Seed = File.ReadLines("scrabble.txt").ElementAtOrDefault(Random.RandiRange(0,267751));
+		Random.Seed = (ulong)Seed.GetHashCode();
 
 		OutOfBounds = 0;
 
@@ -108,6 +112,8 @@ public partial class Universe : Node3D
 		InfoText ??= GetNode<Label>("InfoText");
 		InfoText2 ??= GetNode<Label>("InfoText2");
 		Progress ??= GetNode<ProgressBar>("ProgressBar");
+		TextInfo textInfo = new CultureInfo("en-US", false).TextInfo;
+		InfoText.Text = textInfo.ToTitleCase(Seed.ToLower());
 
 		Environment ??= GetNode<WorldEnvironment>("WorldEnvironment").Environment;
 		Sky ??= Environment.Sky.SkyMaterial as ShaderMaterial;
@@ -254,11 +260,11 @@ public partial class Universe : Node3D
 			sphere.Gravity = sphere.Radius / 10f;
 			sphere.initialVelocity = new Vector3(Random.Randf() * maxV * 2 - maxV, Random.Randf() * maxV * 2 - maxV, Random.Randf() * maxV * 2 - maxV);
 
-			float distance = Random.RandfRange(Planet.Radius, maxDistance);
+			float distance = Random.RandfRange(Planet.Radius * 2, maxDistance) + (sphere.Radius * 10);
 			if (Random.Randf() < 0.5f) {
 				distance = -distance;
 			}
-			sphere.Translate(Utils.RandomPointOnSphere() * (distance + sphere.Radius * 10));
+			sphere.Translate(Utils.RandomPointOnUnitSphere() * distance);
 
 			var chance = Random.Randf();
 			if (chance < 0.2f) {
@@ -372,6 +378,7 @@ public partial class Universe : Node3D
 
 	void _InitializeStars(int starCount) 
 	{
+		Vector3 starPosition = Vector3.Zero;
 		for (int i = 0; i < starCount; i++) {
 			var stellarClass = Random.RandiRange(1000, 10000);
             var star = new Star
@@ -385,14 +392,18 @@ public partial class Universe : Node3D
 				ShadowEnabled = true,
 				LightSize = stellarClass / 15f,
 				ShadowBias = 0.3f,
-				ShadowBlur = 10f
+				ShadowBlur = 5f
             };
 
-			float distance = Random.RandfRange(Planet.Radius, Radius);
+			float distance = Random.RandfRange(Planet.Radius * 2, Radius) + (star.EventHorizon * 2);
 			if (Random.Randf() < 0.5f) {
 				distance = -distance;
 			}
-			star.Translate(Utils.RandomPointOnSphere() * (distance + star.EventHorizon * 10));
+			var chance = Random.Randf();
+			if (starPosition == Vector3.Zero || chance > 0.05f) {
+				starPosition = Utils.RandomPointOnUnitSphere() * distance;
+			}
+			star.Translate(starPosition);
 
             Bodies.Add(star);
 			AddChild(star);
@@ -419,7 +430,7 @@ public partial class Universe : Node3D
 			if (Random.Randf() < 0.5f) {
 				distance = -distance;
 			}
-			sphere.Translate(Utils.RandomPointOnSphere() * (distance + sphere.Radius * 10));
+			sphere.Translate(Utils.RandomPointOnUnitSphere() * distance);
 
 			// sphere.Translate(new Vector3(transX, transY, transZ));
 			sphere.crayons = new[] { 

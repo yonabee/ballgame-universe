@@ -235,7 +235,7 @@ public partial class CubePlanet : Planetoid
                 faceRenderMask.AddRange(GetFaces(Universe.CurrentFace));
                 LOD = LOD.Planet;
             }
-            Universe.InfoText.Text = string.Format("{0} {1} {2}x{3}", LOD, Universe.CurrentFace, Universe.Location.X, Universe.Location.Y);
+            // Universe.InfoText.Text = string.Format("{0} {1} {2}x{3}", LOD, Universe.CurrentFace, Universe.Location.X, Universe.Location.Y);
         } else if (Universe.WatcherCam.Current) {
             if (LOD == LOD.Planet) {
                 faceRenderMask.Clear();
@@ -249,7 +249,7 @@ public partial class CubePlanet : Planetoid
             } else {
                 LOD = LOD.NearOrbit;
             }
-            Universe.InfoText.Text = String.Format("{0} {1}", LOD, Universe.WatcherCam.Position.DistanceTo(Position).ToString());
+            // Universe.InfoText.Text = String.Format("{0} {1}", LOD, Universe.WatcherCam.Position.DistanceTo(Position).ToString());
         }
 
         Universe.InfoText2.Text = String.Format("{0} lost", Universe.OutOfBounds);

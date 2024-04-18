@@ -20,7 +20,7 @@ public class WarpedNoiseFilter : INoiseFilter {
         noise.DomainWarpFrequency = settings.warpFrequency;
         noise.DomainWarpFractalGain = settings.warpRoughness;
         noise.DomainWarpFractalLacunarity = settings.warpPersistence;
-        noise.Seed = Universe.Seed;
+        noise.Seed = Universe.Seed.GetHashCode();
     }
 
     public float Evaluate(Vector3 point)
