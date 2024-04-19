@@ -24,6 +24,7 @@ public partial class Universe : Node3D
 	public static Godot.Environment Environment;
 	public static ShaderMaterial Sky;
 	public static ProgressBar Progress;
+	public static Node3D Atmosphere;
 
 	public static readonly bool ConstructPlanetColliders = true;
 	public static int OutOfBounds = 0;
@@ -42,7 +43,7 @@ public partial class Universe : Node3D
 	readonly float _planetRaduis = 2000f;
 	// Multiple of 10, minimum 20. 
 	// This is of the full planet and is used as a base for LODs.
-	readonly int _planetResolution = 800;
+	readonly int _planetResolution = 500;
 	readonly float _maxMoonInitialVelocity = 500f;
 	readonly int _minMoonSize = 100;
 	readonly int _maxMoonSize = 500;
@@ -112,8 +113,7 @@ public partial class Universe : Node3D
 		InfoText ??= GetNode<Label>("InfoText");
 		InfoText2 ??= GetNode<Label>("InfoText2");
 		Progress ??= GetNode<ProgressBar>("ProgressBar");
-		TextInfo textInfo = new CultureInfo("en-US", false).TextInfo;
-		InfoText.Text = textInfo.ToTitleCase(Seed.ToLower());
+		InfoText.Text = Seed.ToLower();
 
 		Environment ??= GetNode<WorldEnvironment>("WorldEnvironment").Environment;
 		Sky ??= Environment.Sky.SkyMaterial as ShaderMaterial;
@@ -124,6 +124,8 @@ public partial class Universe : Node3D
 		var mieColor = new Color(Crayons[mieIndex < Crayons.Length ? mieIndex : 0]);
 		Sky.SetShaderParameter("mie_color", mieColor);
 		Sky.SetShaderParameter("ground_color", new Color(Crayons[12 + ((skyColor + Offset(1)) % 12)]));
+
+		Atmosphere.Call("set_shader_parameter", "u_atmosphere_ambient_color", mieColor);
 
 		_InitializeStars(_numStars);
 		_InitializeMoons(_numMoons);
@@ -243,6 +245,17 @@ public partial class Universe : Node3D
 		Planet.AddChild(PlayerPivot);
 		PlayerCam.Reparent(PlayerPivot);
 		PlayerPivot.Camera = PlayerCam;
+		
+		if (Atmosphere == null) {
+			GDScript AtmosphereScript = GD.Load<GDScript>("res://addons/zylann.atmosphere/planet_atmosphere.gd");
+			Atmosphere = (Node3D)AtmosphereScript.New();
+			Atmosphere.Set("sun_path", Sunlight);
+			Atmosphere.Set("planet_radius", Planet.Radius);
+			Atmosphere.Set("atmosphere_height", Planet.Radius / 10f);
+			Planet.AddChild(Atmosphere);
+		} else {
+			Atmosphere.Reparent(Planet);
+		}
 	}
 
 	void _InitializeMoons(int moonCount) 
