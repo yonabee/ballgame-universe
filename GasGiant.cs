@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Godot;
 
-public partial class Star : OmniLight3D, HeavenlyBody 
+public partial class GasGiant : OmniLight3D, HeavenlyBody 
 {
     public float Mass { get; set; }
     public float Radius { get; set; }
@@ -12,6 +12,7 @@ public partial class Star : OmniLight3D, HeavenlyBody
     public MeshInstance3D SMesh = new MeshInstance3D();
     public CollisionShape3D SCollider = new CollisionShape3D();
     public Vector3 initialVelocity;
+    public Vector3 BaseRotation { get; set; }
     public int radialSegments = 50;
     public int rings = 50;
 
@@ -25,6 +26,11 @@ public partial class Star : OmniLight3D, HeavenlyBody
         {
             Radius = EventHorizon * 0.9f
         };
+    }
+    
+    public void UpdatePosition(float timeStep) 
+    {
+        Translate(CurrentVelocity * timeStep);
     }
     
     public void GenerateMesh()
@@ -113,6 +119,7 @@ public partial class Star : OmniLight3D, HeavenlyBody
             Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
             RimEnabled = true,
             RimTint = 0.5f,
+            CullMode = BaseMaterial3D.CullModeEnum.Disabled
         };
         (SMesh.Mesh as ArrayMesh).SurfaceSetMaterial(0, material);
     }

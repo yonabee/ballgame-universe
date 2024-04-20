@@ -25,6 +25,7 @@ public partial class Universe : Node3D
 	public static ShaderMaterial Sky;
 	public static ProgressBar Progress;
 	public static Node3D Atmosphere;
+	public static GDScript AtmosphereScript;
 
 	public static readonly bool ConstructPlanetColliders = true;
 	public static int OutOfBounds = 0;
@@ -35,12 +36,12 @@ public partial class Universe : Node3D
 
 
 	float _sunSpeed = 64f;
-	readonly int _numStars = 7;
+	readonly int _numStars = 5;
 	readonly int _numMoons = 20;
-	readonly int _numMoonlets = 150;
+	readonly int _numMoonlets = 200;
 	readonly float _cameraFloatHeight = 75f;
 	readonly float _cameraSpeed = 0.3f;
-	readonly float _planetRaduis = 2000f;
+	readonly float _planetRadius = 2000f;
 	// Multiple of 10, minimum 20. 
 	// This is of the full planet and is used as a base for LODs.
 	readonly int _planetResolution = 500;
@@ -114,22 +115,25 @@ public partial class Universe : Node3D
 		InfoText2 ??= GetNode<Label>("InfoText2");
 		Progress ??= GetNode<ProgressBar>("ProgressBar");
 		InfoText.Text = Seed.ToLower();
+		InfoText2.Text = Seed.GetHashCode().ToString();
 
 		Environment ??= GetNode<WorldEnvironment>("WorldEnvironment").Environment;
 		Sky ??= Environment.Sky.SkyMaterial as ShaderMaterial;
 		int skyColor = Random.RandiRange(0, 11);
 		Sky.SetShaderParameter("rayleigh_color", new Color(Crayons[12 + ((skyColor + Offset(2)) % 12)]));
 		var mieIndex = skyColor + Offset(1);
-		GD.Print("crayon " + mieIndex + " of " + Crayons.Length);
-		var mieColor = new Color(Crayons[mieIndex < Crayons.Length ? mieIndex : 0]);
+		// rolling -1 gives a chance at an unrelated mie color.
+		var mieColor = new Color(Crayons[mieIndex > 0 ? mieIndex : Random.RandiRange(0,11)]);
 		Sky.SetShaderParameter("mie_color", mieColor);
 		Sky.SetShaderParameter("ground_color", new Color(Crayons[12 + ((skyColor + Offset(1)) % 12)]));
 
 		Atmosphere.Call("set_shader_parameter", "u_atmosphere_ambient_color", mieColor);
 
-		_InitializeStars(_numStars);
-		_InitializeMoons(_numMoons);
-		_InitializeMoonlets(_numMoonlets);
+		_InitializeGasGiants(Random.RandiRange(1, _numStars));
+		_InitializeMoons(Random.RandiRange(1, _numMoons));
+		_InitializeMoonlets(Random.RandiRange(100, _numMoonlets));
+
+		Bodies.ForEach(body => body.BaseRotation = Utils.RandomPointOnUnitSphere() * Random.RandfRange(0.0f, 0.5f));
 	}
 
     public override void _PhysicsProcess(double delta)
@@ -159,20 +163,6 @@ public partial class Universe : Node3D
 
 		Sky.SetShaderParameter("sun_energy", Mathf.Lerp(0.3f, 1f, planetDot + 1f));
 		Sky.SetShaderParameter("sun_fade", Mathf.Lerp(0.5f, 1f, planetDot + 1f ));
-
-		for (int i = 0; i < Bodies.Count; i++) {
-			switch(i%3) {
-				case 0:
-					Bodies[i].RotateObjectLocal(new Vector3(1,0,0), (float)delta * _rotate.X);
-					break;
-				case 1:
-					Bodies[i].RotateObjectLocal(new Vector3(1,0,1).Normalized(), (float)delta * _rotate.Y);
-					break;
-				case 2:
-					Bodies[i].RotateObjectLocal(new Vector3(0,0,1), (float)delta * _rotate.Z);
-					break;
-			}
-		}
 	}
 
     public override void _Input(InputEvent @event)
@@ -220,7 +210,7 @@ public partial class Universe : Node3D
 		Planet = new CubePlanet
 		{
 			Seed = (int)Random.Randi(),
-			Radius = _planetRaduis,
+			Radius = _planetRadius,
 			// Multiple of 10, minimum 20. 
 			// This is of the full planet and is used as a base for LODs.
 			Resolution = _planetResolution
@@ -247,7 +237,7 @@ public partial class Universe : Node3D
 		PlayerPivot.Camera = PlayerCam;
 		
 		if (Atmosphere == null) {
-			GDScript AtmosphereScript = GD.Load<GDScript>("res://addons/zylann.atmosphere/planet_atmosphere.gd");
+			AtmosphereScript = GD.Load<GDScript>("res://addons/zylann.atmosphere/planet_atmosphere.gd");
 			Atmosphere = (Node3D)AtmosphereScript.New();
 			Atmosphere.Set("sun_path", Sunlight);
 			Atmosphere.Set("planet_radius", Planet.Radius);
@@ -294,7 +284,6 @@ public partial class Universe : Node3D
 						new Color("#770088")
 					};
 
-				
 				// progress rainbow
 				} else if (chance < 0.3f) {
 					crayons = new[] {
@@ -389,37 +378,45 @@ public partial class Universe : Node3D
 		}
 	}
 
-	void _InitializeStars(int starCount) 
+	void _InitializeGasGiants(int gasGiantCount) 
 	{
-		Vector3 starPosition = Vector3.Zero;
-		for (int i = 0; i < starCount; i++) {
-			var stellarClass = Random.RandiRange(1000, 10000);
-            var star = new Star
+		Vector3 gasGiantPosition = Vector3.Zero;
+		for (int i = 0; i < gasGiantCount; i++) {
+			var giantSize = Random.RandiRange(1000, 7000);
+			var lightColor = colors[Random.RandiRange(1, 10)];
+            var gasGiant = new GasGiant
             {
-                Gravity = stellarClass,
-				EventHorizon = stellarClass / 5f,
+                Gravity = giantSize,
+				EventHorizon = giantSize / 5f,
                 Radius = 0.0f,
-                OmniRange = stellarClass / 2f,
+                OmniRange = giantSize,
                 OmniAttenuation = 0.2f,
-                LightColor = colors[Random.RandiRange(1, 10)],
-				ShadowEnabled = true,
-				LightSize = stellarClass / 15f,
+                LightColor = lightColor,
+				// ShadowEnabled = true,
+				LightSize = giantSize / 15f,
 				ShadowBias = 0.3f,
 				ShadowBlur = 5f
             };
 
-			float distance = Random.RandfRange(Planet.Radius * 2, Radius) + (star.EventHorizon * 2);
+			float distance = Random.RandfRange(Planet.Radius * 2, Radius) + (gasGiant.EventHorizon * 2);
 			if (Random.Randf() < 0.5f) {
 				distance = -distance;
 			}
 			var chance = Random.Randf();
-			if (starPosition == Vector3.Zero || chance > 0.05f) {
-				starPosition = Utils.RandomPointOnUnitSphere() * distance;
+			if (gasGiantPosition == Vector3.Zero || chance > 0.05f) {
+				gasGiantPosition = Utils.RandomPointOnUnitSphere() * distance;
 			}
-			star.Translate(starPosition);
+			gasGiant.Translate(gasGiantPosition);
+			gasGiant.Visible = false;	
+			// var gas = (Node3D)AtmosphereScript.New();
+			// gas.Set("sun_path", Sunlight);
+			// gas.Set("planet_radius", gasGiant.Radius);
+			// gas.Set("atmosphere_height", gasGiant.Radius);
+			// gas.Call("set_shader_parameter", "u_atmosphere_ambient_color", lightColor);
+			// gasGiant.AddChild(gas);
 
-            Bodies.Add(star);
-			AddChild(star);
+            Bodies.Add(gasGiant);
+			AddChild(gasGiant);
 		}
 	}
 

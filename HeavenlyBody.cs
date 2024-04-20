@@ -7,6 +7,7 @@ public interface HeavenlyBody
     public float Radius { get; set; }
     public float Gravity { get; set; }
     public Vector3 CurrentVelocity { get; set; }
+    public Vector3 BaseRotation { get; set; }
     public bool OutOfBounds { get; set; }
     public Transform3D Transform { get; }
     public Vector3 Rotation { get; set; }
@@ -43,10 +44,7 @@ public interface HeavenlyBody
         }
     }
 
-    public void UpdatePosition(float timeStep) 
-    {
-        Translate(CurrentVelocity * timeStep);
-    }
+    public void UpdatePosition(float timeStep); 
 
     void _ApplyBodyToVelocity(Vector3 origin, float bodyMass, float bodyRadius, float timeStep) 
     {

@@ -322,7 +322,7 @@ using System;
             return faces;
         }
 
-        // Returns a number from -3 to 3 excluding 0;
+        // Returns a number from -amount to +amount excluding 0;
         public static int Offset(int amount)
         {
             var offset = Universe.Random.RandiRange(1, amount * 2) - amount;

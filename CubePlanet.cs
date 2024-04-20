@@ -202,8 +202,7 @@ public partial class CubePlanet : Planetoid
             {
                 VertexColorUseAsAlbedo = true,
                 Transparency = StandardMaterial3D.TransparencyEnum.Alpha,
-                ClearcoatEnabled = true,
-                ClearcoatRoughness = 1.0f
+                SpecularMode = BaseMaterial3D.SpecularModeEnum.Toon,
             };
         }
 
@@ -252,7 +251,7 @@ public partial class CubePlanet : Planetoid
             // Universe.InfoText.Text = String.Format("{0} {1}", LOD, Universe.WatcherCam.Position.DistanceTo(Position).ToString());
         }
 
-        Universe.InfoText2.Text = String.Format("{0} lost", Universe.OutOfBounds);
+        // Universe.InfoText2.Text = String.Format("{0} lost", Universe.OutOfBounds);
 
         //GD.Print(LOD);
 
