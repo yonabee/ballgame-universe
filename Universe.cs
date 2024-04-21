@@ -36,18 +36,18 @@ public partial class Universe : Node3D
 
 
 	float _sunSpeed = 64f;
-	readonly int _numStars = 7;
-	readonly int _numMoons = 30;
+	readonly int _numStars = 5;
+	readonly int _numMoons = 25;
 	readonly int _numMoonlets = 100;
 	readonly float _cameraFloatHeight = 75f;
 	readonly float _cameraSpeed = 0.3f;
 	readonly float _planetRadius = 2000f;
 	// Multiple of 10, minimum 20. 
 	// This is of the full planet and is used as a base for LODs.
-	readonly int _planetResolution = 900;
+	readonly int _planetResolution = 700;
 	readonly float _maxMoonInitialVelocity = 500f;
 	readonly int _minMoonSize = 100;
-	readonly int _maxMoonSize = 500;
+	readonly int _maxMoonSize = 350;
 	readonly int _minMoonlet = 10;
 	readonly int _maxMoonlet = 70;
 	readonly float _moonAlpha = 0.6f;
@@ -133,7 +133,9 @@ public partial class Universe : Node3D
 		_InitializeMoons(Random.RandiRange(1, _numMoons));
 		_InitializeMoonlets(Random.RandiRange(100, _numMoonlets));
 
-		Bodies.ForEach(body => body.BaseRotation = Utils.RandomPointOnUnitSphere() * Random.RandfRange(0.0f, 0.5f));
+		Bodies.ForEach(body => body.BaseRotation = Utils.RandomPointOnUnitSphere() * Random.RandfRange(0.5f, 2f));
+		Planet.BaseRotation = Utils.RandomPointOnUnitSphere();
+		Planet.RotationSpeed = Random.RandfRange(0.03f, 0.07f);
 	}
 
     public override void _PhysicsProcess(double delta)
@@ -143,18 +145,13 @@ public partial class Universe : Node3D
 		if (Initialized) {
 			Bodies.ForEach(body => body.UpdateVelocity(Bodies, Planet.Transform.Origin, (float)delta));
 			Bodies.ForEach(body => body.UpdatePosition((float)delta));
+			Planet.UpdatePosition((float)delta);
 		}
 
 		Sunlight.Rotation = new Vector3(
 			Mathf.Wrap(Sunlight.Rotation.X + (float)delta / _sunSpeed, -Mathf.Pi, Mathf.Pi), 
 			Mathf.Wrap(Sunlight.Rotation.Y + (float)delta / _sunSpeed * 2, -Mathf.Pi, Mathf.Pi), 
 			Mathf.Wrap(Sunlight.Rotation.Z + (float)delta / _sunSpeed * 3, -Mathf.Pi, Mathf.Pi) 
-		);
-
-		Planet.Rotation = new Vector3(
-			Mathf.Wrap(Planet.Rotation.X + (float)delta * _rotate.X / 5, -Mathf.Pi, Mathf.Pi),
-			Planet.Rotation.Y,
-			Mathf.Wrap(Planet.Rotation.Z + (float)delta * _rotate.Z / 5, -Mathf.Pi, Mathf.Pi)
 		);
 
 		var planetDot = (Planet.Transform.Basis * PlayerPivot.Transform.Basis).Y.Dot(Sunlight.Transform.Basis.Z);
@@ -395,7 +392,8 @@ public partial class Universe : Node3D
 				// ShadowEnabled = true,
 				// LightSize = giantSize / 15f,
 				ShadowBias = 0.3f,
-				ShadowBlur = 5f
+				ShadowBlur = 5f,
+				RotationSpeed = Random.RandfRange(0.1f, 0.3f)
             };
 
 			float distance = Random.RandfRange(Planet.Radius * 2, Radius) + (gg.EventHorizon * 2);

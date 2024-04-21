@@ -37,37 +37,21 @@ public interface HeavenlyBody
             if (node != this && (node.Mass * 0.8f) > Mass && nodeDistance < 20 * node.Radius)
             {
                 if (nodeDistance > node.Radius) {
-                    _ApplyBodyToVelocity(node.ToGlobal(node.Transform.Origin), node.Mass, node.Radius, timeStep);
+                    Utils.ApplyBodyToVelocity(this, node, node.Mass, node.Radius, timeStep);
                 } else {
-                    _ApplyBodyToVelocity(node.ToGlobal(node.Transform.Origin), -node.Mass, 0, timeStep);
+                    Utils.ApplyBodyToVelocity(this, node, node.Mass * 100f, 0, timeStep, true);
                 }
             }
         }
 
         if (OutOfBounds) {
-            _ApplyBodyToVelocity(Universe.Planet.Transform.Origin, 1000000000, 0, timeStep);
-        } else if (distance > Radius + (Universe.Planet.Radius * 1.2f)) {
-            _ApplyBodyToVelocity(Universe.Planet.Transform.Origin, Universe.Planet.Mass, Universe.Planet.Radius, timeStep);
+            Utils.ApplyBodyToVelocity(this, Universe.Planet, 1000000000, 0, timeStep);
+        } else if (distance > Radius + (Universe.Planet.Radius * 2f)) {
+            Utils.ApplyBodyToVelocity(this, Universe.Planet, Universe.Planet.Mass, Universe.Planet.Radius, timeStep);
         } else {
-            _ApplyBodyToVelocity(Universe.Planet.Transform.Origin, -Universe.Planet.Mass * 10f, Universe.Planet.Radius, timeStep);
+            Utils.ApplyBodyToVelocity(this, Universe.Planet, Universe.Planet.Mass * 10f, Universe.Planet.Radius, timeStep, true);
         }
     }
 
     public void UpdatePosition(float timeStep); 
-
-    void _ApplyBodyToVelocity(Vector3 origin, float bodyMass, float bodyRadius, float timeStep) 
-    {
-        Vector3 distance = origin - Transform.Origin;
-        float sqrDist = distance.LengthSquared();
-        Vector3 forceDir = distance.Normalized();
-        Vector3 force = forceDir * Gravity * bodyMass / sqrDist;
-        Vector3 acceleration = force.Normalized();
-        if (!Mathf.IsNaN(acceleration.Length())) {
-            if (bodyRadius == 0) { 
-                CurrentVelocity += acceleration * timeStep * 10f;
-            } else {
-                CurrentVelocity += acceleration * timeStep;
-            }
-        }
-    }
 }

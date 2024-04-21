@@ -29,6 +29,13 @@ public partial class Spheroid : Planetoid
             Colliders[0].Shape = shape;
         }
     }
+    
+    public override void _IntegrateForces(PhysicsDirectBodyState3D state)
+    {
+        state.LinearVelocity = CurrentVelocity;
+        state.AngularVelocity = BaseRotation;
+    }
+
 
     public override void GenerateMesh()
     {

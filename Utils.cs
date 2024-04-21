@@ -350,4 +350,23 @@ using System;
             z *= normalise;
             return new Vector3(x, y, z);
         }
+
+        public static void ApplyBodyToVelocity(HeavenlyBody thisBody, HeavenlyBody otherBody, float mass, float radius, float timeStep, bool inverse = false) 
+        {
+            Vector3 distance = otherBody.Transform.Origin - thisBody.Transform.Origin;
+            float sqrDist = distance.LengthSquared();
+            Vector3 forceDir = distance.Normalized();
+            Vector3 force = forceDir * otherBody.Gravity * mass / sqrDist;
+            Vector3 acceleration = force.Normalized();
+            if (inverse) {
+                acceleration = -acceleration;
+            }
+            if (!Mathf.IsNaN(acceleration.Length())) {
+                if (radius == 0) { 
+                    thisBody.CurrentVelocity += acceleration * timeStep * 10f;
+                } else {
+                    thisBody.CurrentVelocity += acceleration * timeStep;
+                }
+            }
+        }
     }

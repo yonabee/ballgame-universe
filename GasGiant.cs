@@ -14,6 +14,7 @@ public partial class GasGiant : OmniLight3D, HeavenlyBody
     public MeshInstance3D SMesh = new MeshInstance3D();
     //public CollisionShape3D SCollider = new CollisionShape3D();
     public Vector3 initialVelocity;
+    public float RotationSpeed { get; set; }
     public int radialSegments = 200;
     public int rings = 200;
 
@@ -45,22 +46,22 @@ public partial class GasGiant : OmniLight3D, HeavenlyBody
         {
             if (node != this && node.Transform.Origin.DistanceTo(Transform.Origin) < 5 * node.Radius)
             {
-                _ApplyBodyToVelocity(node.ToGlobal(node.Transform.Origin), node.Mass, node.Radius, timeStep);
+                Utils.ApplyBodyToVelocity(this, node, node.Mass, node.Radius, timeStep);
             }
         }
 
         if (OutOfBounds) {
-            _ApplyBodyToVelocity(Universe.Planet.Transform.Origin, 1000000000, 0, timeStep);
-        } else if (distance < (Universe.Planet.Radius / 0.8f) + Radius) {
-            _ApplyBodyToVelocity(Universe.Planet.Transform.Origin, -1000000000, 0, timeStep);
+            Utils.ApplyBodyToVelocity(this, Universe.Planet, 1000000000, 0, timeStep);
+        } else if (distance < Universe.Planet.Radius + Radius) {
+            Utils.ApplyBodyToVelocity(this, Universe.Planet, 1000000000, 0, timeStep, true);
         } else {
-            _ApplyBodyToVelocity(Universe.Planet.Transform.Origin, Universe.Planet.Mass, Universe.Planet.Radius, timeStep);
+            Utils.ApplyBodyToVelocity(this, Universe.Planet, Universe.Planet.Mass, Universe.Planet.Radius, timeStep);
         }
     }
     public void UpdatePosition(float timeStep) 
     {
         Translate(CurrentVelocity * timeStep);
-        RotateObjectLocal(BaseRotation.Normalized(), timeStep * 0.3f);
+        RotateObjectLocal(BaseRotation.Normalized(), timeStep * RotationSpeed);
     }
     
     public void GenerateMesh()
@@ -186,22 +187,6 @@ public partial class GasGiant : OmniLight3D, HeavenlyBody
             CullMode = BaseMaterial3D.CullModeEnum.Disabled
         };
         (SMesh.Mesh as ArrayMesh).SurfaceSetMaterial(0, material);
-    }
-    
-    void _ApplyBodyToVelocity(Vector3 origin, float bodyMass, float bodyRadius, float timeStep) 
-    {
-        Vector3 distance = origin - Transform.Origin;
-        float sqrDist = distance.LengthSquared();
-        Vector3 forceDir = distance.Normalized();
-        Vector3 force = forceDir * Gravity * bodyMass / sqrDist;
-        Vector3 acceleration = force.Normalized();
-        if (!Mathf.IsNaN(acceleration.Length())) {
-            if (bodyRadius == 0) { 
-                CurrentVelocity += acceleration * timeStep * 10f;
-            } else {
-                CurrentVelocity += acceleration * timeStep;
-            }
-        }
     }
     
 }

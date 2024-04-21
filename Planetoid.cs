@@ -21,12 +21,6 @@ public partial class Planetoid : RigidBody3D, HeavenlyBody
         GeneratePlanet();
     }
 
-    public override void _IntegrateForces(PhysicsDirectBodyState3D state)
-    {
-        state.LinearVelocity = CurrentVelocity;
-        state.AngularVelocity = BaseRotation;
-    }
-
     public void UpdatePosition(float timeStep)
     {
         // Do nothing and let _IntegrateForces handle it.

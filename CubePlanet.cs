@@ -16,6 +16,7 @@ public enum LOD {
 public partial class CubePlanet : Planetoid
 {
     public int Resolution = 400;
+    public float RotationSpeed = 0.3f;
     public List<Face> faceRenderMask;
 
     public ShapeGenerator.ShapeSettings shapeSettings;
@@ -250,7 +251,7 @@ public partial class CubePlanet : Planetoid
             // Universe.InfoText.Text = String.Format("{0} {1}", LOD, Universe.WatcherCam.Position.DistanceTo(Position).ToString());
         }
 
-        // Universe.InfoText2.Text = String.Format("{0} lost", Universe.OutOfBounds);
+        Universe.InfoText2.Text = String.Format("{0} lost", Universe.OutOfBounds);
 
         //GD.Print(LOD);
 
@@ -261,6 +262,10 @@ public partial class CubePlanet : Planetoid
                 TerrainFaces[i].Hide();
             }
         }
+    }
+
+    public new void UpdatePosition(float timeStep) {
+        RotateObjectLocal(BaseRotation.Normalized(), timeStep * RotationSpeed);
     }
 
     public override async void GenerateMesh()
