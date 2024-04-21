@@ -45,7 +45,6 @@ public partial class CubePlanet : Planetoid
         Layers = 2;
         faceRenderMask = new List<Face>{ Face.All };
         LOD = LOD.NearOrbit;
-
     }
 
     public override void Initialize()

@@ -36,15 +36,15 @@ public partial class Universe : Node3D
 
 
 	float _sunSpeed = 64f;
-	readonly int _numStars = 5;
-	readonly int _numMoons = 20;
-	readonly int _numMoonlets = 200;
+	readonly int _numStars = 7;
+	readonly int _numMoons = 30;
+	readonly int _numMoonlets = 100;
 	readonly float _cameraFloatHeight = 75f;
 	readonly float _cameraSpeed = 0.3f;
 	readonly float _planetRadius = 2000f;
 	// Multiple of 10, minimum 20. 
 	// This is of the full planet and is used as a base for LODs.
-	readonly int _planetResolution = 500;
+	readonly int _planetResolution = 900;
 	readonly float _maxMoonInitialVelocity = 500f;
 	readonly int _minMoonSize = 100;
 	readonly int _maxMoonSize = 500;
@@ -115,7 +115,7 @@ public partial class Universe : Node3D
 		InfoText2 ??= GetNode<Label>("InfoText2");
 		Progress ??= GetNode<ProgressBar>("ProgressBar");
 		InfoText.Text = Seed.ToLower();
-		InfoText2.Text = Seed.GetHashCode().ToString();
+		// InfoText2.Text = Seed.GetHashCode().ToString();
 
 		Environment ??= GetNode<WorldEnvironment>("WorldEnvironment").Environment;
 		Sky ??= Environment.Sky.SkyMaterial as ShaderMaterial;
@@ -357,19 +357,19 @@ public partial class Universe : Node3D
 				}					
 				
 				var offset = Random.RandiRange(0, crayons.Length - 1);
-				sphere.crayons = new Color[crayons.Length];
+				sphere.Crayons = new Color[crayons.Length];
 				for (var idx = offset; idx < crayons.Length + offset; idx++) {
-					sphere.crayons[idx%crayons.Length] = crayons[idx%crayons.Length];
-					sphere.crayons[idx%crayons.Length].A = _moonAlpha;
+					sphere.Crayons[idx%crayons.Length] = crayons[idx%crayons.Length];
+					sphere.Crayons[idx%crayons.Length].A = _moonAlpha;
 				}
 
 			} else {
-				sphere.crayons = new[] { 
+				sphere.Crayons = new[] { 
 					colors[i%colors.Length],
 					colors[(i + Random.RandiRange(1, 32))%colors.Length]
 				};
-				for(int j = 0; j < sphere.crayons.Length; j++) {
-					sphere.crayons[j].A = _moonAlpha;
+				for(int j = 0; j < sphere.Crayons.Length; j++) {
+					sphere.Crayons[j].A = _moonAlpha;
 				}
 			}
 			sphere.Visible = false;
@@ -382,9 +382,9 @@ public partial class Universe : Node3D
 	{
 		Vector3 gasGiantPosition = Vector3.Zero;
 		for (int i = 0; i < gasGiantCount; i++) {
-			var giantSize = Random.RandiRange(1000, 7000);
+			var giantSize = Random.RandiRange(1000, 10000);
 			var lightColor = colors[Random.RandiRange(1, 10)];
-            var gasGiant = new GasGiant
+            var gg = new GasGiant
             {
                 Gravity = giantSize,
 				EventHorizon = giantSize / 5f,
@@ -393,12 +393,12 @@ public partial class Universe : Node3D
                 OmniAttenuation = 0.2f,
                 LightColor = lightColor,
 				// ShadowEnabled = true,
-				LightSize = giantSize / 15f,
+				// LightSize = giantSize / 15f,
 				ShadowBias = 0.3f,
 				ShadowBlur = 5f
             };
 
-			float distance = Random.RandfRange(Planet.Radius * 2, Radius) + (gasGiant.EventHorizon * 2);
+			float distance = Random.RandfRange(Planet.Radius * 2, Radius) + (gg.EventHorizon * 2);
 			if (Random.Randf() < 0.5f) {
 				distance = -distance;
 			}
@@ -406,8 +406,8 @@ public partial class Universe : Node3D
 			if (gasGiantPosition == Vector3.Zero || chance > 0.05f) {
 				gasGiantPosition = Utils.RandomPointOnUnitSphere() * distance;
 			}
-			gasGiant.Translate(gasGiantPosition);
-			gasGiant.Visible = false;	
+			gg.Translate(gasGiantPosition);
+			gg.Visible = false;	
 			// var gas = (Node3D)AtmosphereScript.New();
 			// gas.Set("sun_path", Sunlight);
 			// gas.Set("planet_radius", gasGiant.Radius);
@@ -415,8 +415,8 @@ public partial class Universe : Node3D
 			// gas.Call("set_shader_parameter", "u_atmosphere_ambient_color", lightColor);
 			// gasGiant.AddChild(gas);
 
-            Bodies.Add(gasGiant);
-			AddChild(gasGiant);
+            Bodies.Add(gg);
+			AddChild(gg);
 		}
 	}
 

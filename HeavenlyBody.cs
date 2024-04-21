@@ -33,14 +33,23 @@ public interface HeavenlyBody
         } 
         foreach(var node in allBodies) 
         {
-            if (node != this && (node.Mass * 0.8f) > Mass && node.Transform.Origin.DistanceTo(Transform.Origin) < 20 * node.Radius)
+            var nodeDistance = node.Transform.Origin.DistanceTo(Transform.Origin);
+            if (node != this && (node.Mass * 0.8f) > Mass && nodeDistance < 20 * node.Radius)
             {
-                _ApplyBodyToVelocity(node.ToGlobal(node.Transform.Origin), node.Mass, node.Radius, timeStep);
+                if (nodeDistance > node.Radius) {
+                    _ApplyBodyToVelocity(node.ToGlobal(node.Transform.Origin), node.Mass, node.Radius, timeStep);
+                } else {
+                    _ApplyBodyToVelocity(node.ToGlobal(node.Transform.Origin), -node.Mass, 0, timeStep);
+                }
             }
         }
 
         if (OutOfBounds) {
-           _ApplyBodyToVelocity(Universe.Planet.Transform.Origin, 1000000000, 0, timeStep);
+            _ApplyBodyToVelocity(Universe.Planet.Transform.Origin, 1000000000, 0, timeStep);
+        } else if (distance > Radius + (Universe.Planet.Radius * 1.2f)) {
+            _ApplyBodyToVelocity(Universe.Planet.Transform.Origin, Universe.Planet.Mass, Universe.Planet.Radius, timeStep);
+        } else {
+            _ApplyBodyToVelocity(Universe.Planet.Transform.Origin, -Universe.Planet.Mass * 10f, Universe.Planet.Radius, timeStep);
         }
     }
 

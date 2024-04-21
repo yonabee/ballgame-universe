@@ -9,12 +9,13 @@ public partial class GasGiant : OmniLight3D, HeavenlyBody
     public Vector3 CurrentVelocity { get; set; }
     public bool OutOfBounds { get; set; }
     public float EventHorizon { get; set; }
-    public MeshInstance3D SMesh = new MeshInstance3D();
-    public CollisionShape3D SCollider = new CollisionShape3D();
-    public Vector3 initialVelocity;
     public Vector3 BaseRotation { get; set; }
-    public int radialSegments = 50;
-    public int rings = 50;
+    public Color[] Crayons { get; set; }
+    public MeshInstance3D SMesh = new MeshInstance3D();
+    //public CollisionShape3D SCollider = new CollisionShape3D();
+    public Vector3 initialVelocity;
+    public int radialSegments = 200;
+    public int rings = 200;
 
     public override void _Ready()
     {
@@ -22,15 +23,44 @@ public partial class GasGiant : OmniLight3D, HeavenlyBody
         CurrentVelocity = initialVelocity;
         GenerateMesh();
         AddChild(SMesh);
-        SCollider.Shape = new SphereShape3D 
-        {
-            Radius = EventHorizon * 0.9f
-        };
     }
     
+    public void UpdateVelocity(List<HeavenlyBody> allBodies, Vector3 universeOrigin, float timeStep) 
+    {
+        var distance = Transform.Origin.DistanceTo(universeOrigin);
+        if (distance > Universe.Radius) {
+            if (!OutOfBounds) {
+                Universe.OutOfBounds++;
+                OutOfBounds = true;
+                CurrentVelocity /= 10;
+            }
+        } else {
+            if (OutOfBounds) {
+                Universe.OutOfBounds--;
+                OutOfBounds = false;
+            }
+        } 
+
+        foreach(var node in allBodies) 
+        {
+            if (node != this && node.Transform.Origin.DistanceTo(Transform.Origin) < 5 * node.Radius)
+            {
+                _ApplyBodyToVelocity(node.ToGlobal(node.Transform.Origin), node.Mass, node.Radius, timeStep);
+            }
+        }
+
+        if (OutOfBounds) {
+            _ApplyBodyToVelocity(Universe.Planet.Transform.Origin, 1000000000, 0, timeStep);
+        } else if (distance < (Universe.Planet.Radius / 0.8f) + Radius) {
+            _ApplyBodyToVelocity(Universe.Planet.Transform.Origin, -1000000000, 0, timeStep);
+        } else {
+            _ApplyBodyToVelocity(Universe.Planet.Transform.Origin, Universe.Planet.Mass, Universe.Planet.Radius, timeStep);
+        }
+    }
     public void UpdatePosition(float timeStep) 
     {
         Translate(CurrentVelocity * timeStep);
+        RotateObjectLocal(BaseRotation.Normalized(), timeStep * 0.3f);
     }
     
     public void GenerateMesh()
@@ -43,6 +73,21 @@ public partial class GasGiant : OmniLight3D, HeavenlyBody
 
 		var surfaceArray = new Godot.Collections.Array();
 		surfaceArray.Resize((int)Mesh.ArrayType.Max);
+        
+        var noise = new FastNoiseLite
+        {
+            NoiseType = FastNoiseLite.NoiseTypeEnum.Simplex,
+            FractalOctaves = 4,
+            Seed = Universe.Seed.GetHashCode(),
+            Frequency = Universe.Random.RandfRange(0.00005f, 0.0001f),
+            DomainWarpEnabled = true,
+            DomainWarpFractalOctaves = 1,
+            DomainWarpFrequency = Universe.Random.RandfRange(0.0005f, 0.001f)
+        };
+            
+        Crayons = new Color[] { LightColor, new Color(Utils.Crayons[Universe.Random.RandiRange(0, 47)]).Lightened(0.3f)};
+        Crayons[0].A = 0.3f;
+        Crayons[1].A = 0.2f;
 
         // Vertex indices.
         var thisRow = 0;
@@ -55,8 +100,6 @@ public partial class GasGiant : OmniLight3D, HeavenlyBody
             var v = ((float)i) / rings;
             var w = Mathf.Sin(Mathf.Pi * v);
             var y = Mathf.Cos(Mathf.Pi * v);
-            var color = LightColor;
-            color.A = 0.1f;
 
             // Loop over segments in ring.
             for (var j = 0; j < radialSegments; j++)
@@ -67,7 +110,28 @@ public partial class GasGiant : OmniLight3D, HeavenlyBody
                 var vert = new Vector3(x * EventHorizon * w, y * EventHorizon, z * EventHorizon * w);
                 verts.Add(vert);
                 normals.Add(vert.Normalized());
-                colors.Add(color);
+
+                var noizz = Mathf.Abs(noise.GetNoise3Dv(vert));
+                if (noizz < 0.1f || noizz >= 0.9f) {
+                    if (Crayons[0] != Colors.White) {
+                        colors.Add(Crayons[0].Lightened(0.2f));
+                    } else {
+                        colors.Add(Crayons[1].Darkened(0.15f));
+                    }
+                } else if (noizz < 0.2f || noizz >= 0.8f) {
+                    colors.Add(Crayons[1].Darkened(0.15f));
+                } else if (noizz < 0.3f || noizz >= 0.7f) {
+                    if (Crayons[0] != Colors.White) {
+                        colors.Add(Crayons[0].Darkened(0.15f));
+                    } else {
+                        colors.Add(Crayons[1].Lightened(0.2f));
+                    }
+                } else if (noizz < 0.4f || noizz >= 0.6f) {
+                    colors.Add(Crayons[0]);
+                } else {
+                    colors.Add(Crayons[1]);
+                }
+
                 uvs.Add(new Vector2(u, v));
                 point += 1;
  
@@ -123,4 +187,21 @@ public partial class GasGiant : OmniLight3D, HeavenlyBody
         };
         (SMesh.Mesh as ArrayMesh).SurfaceSetMaterial(0, material);
     }
+    
+    void _ApplyBodyToVelocity(Vector3 origin, float bodyMass, float bodyRadius, float timeStep) 
+    {
+        Vector3 distance = origin - Transform.Origin;
+        float sqrDist = distance.LengthSquared();
+        Vector3 forceDir = distance.Normalized();
+        Vector3 force = forceDir * Gravity * bodyMass / sqrDist;
+        Vector3 acceleration = force.Normalized();
+        if (!Mathf.IsNaN(acceleration.Length())) {
+            if (bodyRadius == 0) { 
+                CurrentVelocity += acceleration * timeStep * 10f;
+            } else {
+                CurrentVelocity += acceleration * timeStep;
+            }
+        }
+    }
+    
 }
