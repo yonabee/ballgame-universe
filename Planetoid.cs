@@ -42,8 +42,7 @@ public partial class Planetoid : RigidBody3D, HeavenlyBody
         GenerateMesh();
     }
 
-    public virtual void Initialize() {
-    }
+    public virtual void Initialize() {}
 
     public virtual void GenerateMesh() {}
 }

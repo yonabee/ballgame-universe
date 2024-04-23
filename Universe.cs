@@ -23,6 +23,7 @@ public partial class Universe : Node3D
 	public static DirectionalLight3D Sunlight;
 	public static Godot.Environment Environment;
 	public static ShaderMaterial Sky;
+	public static MultiMeshInstance3D Stars;
 	public static ProgressBar Progress;
 	public static Node3D Atmosphere;
 	public static GDScript AtmosphereScript;
@@ -32,13 +33,11 @@ public partial class Universe : Node3D
 	public static bool Initialized = false;
 	public static string Seed = "tatooine";
 
-	Vector3 _rotate = Vector3.Zero;
-
-
 	float _sunSpeed = 64f;
-	readonly int _numStars = 5;
+	readonly int _numGG = 5;
 	readonly int _numMoons = 25;
-	readonly int _numMoonlets = 100;
+	readonly int _numAsteroids = 100;
+	readonly int _numStars = 1000;
 	readonly float _cameraFloatHeight = 75f;
 	readonly float _cameraSpeed = 0.3f;
 	readonly float _planetRadius = 2000f;
@@ -69,26 +68,22 @@ public partial class Universe : Node3D
 
 	public override void _Ready() 
 	{
-		Random = new RandomNumberGenerator();
-		Random.Randomize();
-		Seed = File.ReadLines("scrabble.txt").ElementAtOrDefault(Random.RandiRange(0,267751));
-		Random.Seed = (ulong)Seed.GetHashCode();
-
-		OutOfBounds = 0;
-
-        Gravity = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle();
-		CurrentFace = Face.Top;
-
-		_rotate.X = Random.RandfRange(-0.3f, 0.3f);
-		_rotate.Y = Random.RandfRange(-0.3f, 0.3f);
-		_rotate.Z = Random.RandfRange(-0.3f, 0.3f);
-
-		GD.Print("universe ready");
+		_InitializeUniverse();
 
 		if (Planet == null || Planet.IsQueuedForDeletion()) {
 			_InitializePlanet();
 		}
 
+		WatcherCam ??= GetNode<Camera3D>("Pivot/Watcher");
+		WatcherCam.Current = false;
+		PlayerCam.Current = true;
+
+		InfoText ??= GetNode<Label>("InfoText");
+		InfoText2 ??= GetNode<Label>("InfoText2");
+		Progress ??= GetNode<ProgressBar>("ProgressBar");
+		InfoText.Text = Seed.ToLower();
+		// InfoText2.Text = Seed.GetHashCode().ToString();
+		
 		if (Sunlight == null) {
             Sunlight = new DirectionalLight3D
             {
@@ -106,17 +101,6 @@ public partial class Universe : Node3D
             AddChild(Sunlight);
 		}
 
-		WatcherCam ??= GetNode<Camera3D>("Pivot/Watcher");
-
-		WatcherCam.Current = false;
-		PlayerCam.Current = true;
-
-		InfoText ??= GetNode<Label>("InfoText");
-		InfoText2 ??= GetNode<Label>("InfoText2");
-		Progress ??= GetNode<ProgressBar>("ProgressBar");
-		InfoText.Text = Seed.ToLower();
-		// InfoText2.Text = Seed.GetHashCode().ToString();
-
 		Environment ??= GetNode<WorldEnvironment>("WorldEnvironment").Environment;
 		Sky ??= Environment.Sky.SkyMaterial as ShaderMaterial;
 		int skyColor = Random.RandiRange(0, 11);
@@ -129,9 +113,10 @@ public partial class Universe : Node3D
 
 		Atmosphere.Call("set_shader_parameter", "u_atmosphere_ambient_color", mieColor);
 
-		_InitializeGasGiants(Random.RandiRange(1, _numStars));
-		_InitializeMoons(Random.RandiRange(1, _numMoons));
-		_InitializeMoonlets(Random.RandiRange(100, _numMoonlets));
+		_InitializeGasGiants(Random.RandiRange(1, _numGG));
+		_InitializeMoons(Random.RandiRange(10, _numMoons));
+		_InitializeAsteroids(Random.RandiRange(50, _numAsteroids));
+		_InitializeStars(_numStars);
 
 		Bodies.ForEach(body => body.BaseRotation = Utils.RandomPointOnUnitSphere() * Random.RandfRange(0.5f, 2f));
 		Planet.BaseRotation = Utils.RandomPointOnUnitSphere();
@@ -201,6 +186,18 @@ public partial class Universe : Node3D
 			PlayerPivot.CameraRotation.Y = mouseMotion.Relative.Y;
 		}
     }
+
+	void _InitializeUniverse() {
+		Random = new RandomNumberGenerator();
+		Random.Randomize();
+		Seed = File.ReadLines("scrabble.txt").ElementAtOrDefault(Random.RandiRange(0,267751));
+		Random.Seed = (ulong)Seed.GetHashCode();
+		OutOfBounds = 0;
+        Gravity = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle();
+		CurrentFace = Face.Top;
+
+		GD.Print("universe ready");
+	}
 
 	void _InitializePlanet() {
 		GD.Print("adding planet");
@@ -418,12 +415,12 @@ public partial class Universe : Node3D
 		}
 	}
 
-	void _InitializeMoonlets(int moonletCount)
+	void _InitializeAsteroids(int asteroidCount)
 	{
 		
 		float maxV = _maxMoonInitialVelocity / 10f;
 		float maxDistance = Radius * 0.333f;
-		for (int i = 0; i < moonletCount; i++) {
+		for (int i = 0; i < asteroidCount; i++) {
             var sphere = new MicroSpheroid
             {
                 Seed = i,
@@ -452,6 +449,55 @@ public partial class Universe : Node3D
 			Bodies.Add(sphere);
 			AddChild(sphere);
 		}
-
 	} 
+
+	void _InitializeStars(int starCount) 
+	{
+		if (Stars == null) {
+			GD.Print("Putting stars in the sky.");
+
+			var material = new StandardMaterial3D
+			{
+				EmissionEnabled = true,
+				EmissionEnergyMultiplier = 10,
+				VertexColorUseAsAlbedo = true,
+				ClearcoatEnabled = true,
+				ClearcoatRoughness = 1.0f,
+				Roughness = 1.0f,
+			};
+			var quad = new PlaneMesh 
+			{
+				Size = new Vector2(100, 100),
+				Orientation = PlaneMesh.OrientationEnum.Z,
+				Material = material
+			};
+			var mesh = new MultiMesh
+			{
+				TransformFormat = MultiMesh.TransformFormatEnum.Transform3D,
+				UseColors = true,
+				Mesh = quad
+			};
+			Stars = new MultiMeshInstance3D()
+			{
+				Multimesh = mesh
+			};
+			Stars.Visible = true;
+			AddChild(Stars);
+		}
+
+		Stars.Multimesh.InstanceCount = 0;
+		Stars.Multimesh.InstanceCount = starCount;
+
+		for (int i = 0; i < starCount; i++) {
+			var position = Utils.RandomPointOnUnitSphere() * 3000f;
+			var transform = new Transform3D().Translated(position);
+			Stars.Multimesh.SetInstanceTransform(i, transform);
+			var chance = Random.Randf();
+			if (chance < 0.5f) {
+				Stars.Multimesh.SetInstanceColor(i, new Color(Utils.Crayons[Random.RandiRange(36, 47)]));
+			} else {
+				Stars.Multimesh.SetInstanceColor(i, new Color(Utils.Crayons[Random.RandiRange(36, 47)]).Lightened(0.5f));
+			}
+		}
+	}
 }

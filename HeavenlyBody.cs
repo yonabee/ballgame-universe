@@ -49,9 +49,19 @@ public interface HeavenlyBody
         } else if (distance > Radius + (Universe.Planet.Radius * 2f)) {
             Utils.ApplyBodyToVelocity(this, Universe.Planet, Universe.Planet.Mass, Universe.Planet.Radius, timeStep);
         } else {
-            Utils.ApplyBodyToVelocity(this, Universe.Planet, Universe.Planet.Mass * 10f, Universe.Planet.Radius, timeStep, true);
+            Utils.ApplyBodyToVelocity(this, Universe.Planet, Universe.Planet.Mass, Universe.Planet.Radius, timeStep, true);
         }
     }
 
     public void UpdatePosition(float timeStep); 
+    
+    public void GeneratePlanet()
+    {
+        Initialize();
+        GenerateMesh();
+    }
+
+    public void Initialize() {}
+
+    public void GenerateMesh() {}
 }
