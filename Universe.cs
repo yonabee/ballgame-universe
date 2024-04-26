@@ -37,7 +37,7 @@ public partial class Universe : Node3D
 	readonly int _numGG = 5;
 	readonly int _numMoons = 25;
 	readonly int _numAsteroids = 100;
-	readonly int _numStars = 1000;
+	readonly int _numStars = 5000;
 	readonly float _cameraFloatHeight = 75f;
 	readonly float _cameraSpeed = 0.3f;
 	readonly float _planetRadius = 2000f;
@@ -240,6 +240,8 @@ public partial class Universe : Node3D
 		} else {
 			Atmosphere.Reparent(Planet);
 		}
+
+		GD.Print("planet created");
 	}
 
 	void _InitializeMoons(int moonCount) 
@@ -370,6 +372,8 @@ public partial class Universe : Node3D
 			Bodies.Add(sphere);
 			AddChild(sphere);
 		}
+
+		GD.Print("throwing together " + moonCount + " moons");
 	}
 
 	void _InitializeGasGiants(int gasGiantCount) 
@@ -413,11 +417,12 @@ public partial class Universe : Node3D
             Bodies.Add(gg);
 			AddChild(gg);
 		}
+
+		GD.Print("pondered " + gasGiantCount + " glowing orbs");
 	}
 
 	void _InitializeAsteroids(int asteroidCount)
 	{
-		
 		float maxV = _maxMoonInitialVelocity / 10f;
 		float maxDistance = Radius * 0.333f;
 		for (int i = 0; i < asteroidCount; i++) {
@@ -449,12 +454,12 @@ public partial class Universe : Node3D
 			Bodies.Add(sphere);
 			AddChild(sphere);
 		}
+		GD.Print("spun up " + asteroidCount + " little moonlets");
 	} 
 
 	void _InitializeStars(int starCount) 
 	{
 		if (Stars == null) {
-			GD.Print("Putting stars in the sky.");
 
 			var material = new StandardMaterial3D
 			{
@@ -464,40 +469,42 @@ public partial class Universe : Node3D
 				ClearcoatEnabled = true,
 				ClearcoatRoughness = 1.0f,
 				Roughness = 1.0f,
+				RimEnabled = true,
+				Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
 			};
-			var quad = new PlaneMesh 
-			{
-				Size = new Vector2(100, 100),
-				Orientation = PlaneMesh.OrientationEnum.Z,
-				Material = material
-			};
-			var mesh = new MultiMesh
-			{
-				TransformFormat = MultiMesh.TransformFormatEnum.Transform3D,
-				UseColors = true,
-				Mesh = quad
-			};
-			Stars = new MultiMeshInstance3D()
-			{
-				Multimesh = mesh
-			};
-			Stars.Visible = true;
-			AddChild(Stars);
-		}
+			var multiMesh = new MultiMesh();
+            Stars = new MultiMeshInstance3D
+            {
+                Multimesh = multiMesh,
+                Position = Vector3.Zero
+            };
 
+            var mesh = MeshUtils.GenerateCubeMesh(Colors.White, 20);
+			mesh.SurfaceSetMaterial(0, material);
+
+            Stars.Multimesh.TransformFormat = MultiMesh.TransformFormatEnum.Transform3D;
+			Stars.Multimesh.UseColors = true;
+			Stars.Multimesh.Mesh = mesh;
+            AddChild(Stars);
+		}
 		Stars.Multimesh.InstanceCount = 0;
+		Stars.Multimesh.VisibleInstanceCount = -1;
 		Stars.Multimesh.InstanceCount = starCount;
+		Stars.Multimesh.VisibleInstanceCount = starCount;
 
 		for (int i = 0; i < starCount; i++) {
-			var position = Utils.RandomPointOnUnitSphere() * 3000f;
-			var transform = new Transform3D().Translated(position);
+			var position = Utils.RandomPointOnUnitSphere() * Random.RandfRange(Planet.Radius + 3000f, Planet.Radius + 7500f);
+			var transform = Transform3D.Identity.Translated(position);
 			Stars.Multimesh.SetInstanceTransform(i, transform);
 			var chance = Random.Randf();
-			if (chance < 0.5f) {
-				Stars.Multimesh.SetInstanceColor(i, new Color(Utils.Crayons[Random.RandiRange(36, 47)]));
-			} else {
-				Stars.Multimesh.SetInstanceColor(i, new Color(Utils.Crayons[Random.RandiRange(36, 47)]).Lightened(0.5f));
+			Color color = Colors.White;
+			if (chance < 0.7f) {
+				color = new Color(Utils.Crayons[Random.RandiRange(0, 47)]).Lightened(0.5f);
 			}
+			color.A = Random.Randf() / 10f;
+			Stars.Multimesh.SetInstanceColor(i, color);
 		}
+		Stars.Visible = true;
+		GD.Print("putting " + starCount + " stars in the sky for you");
 	}
 }

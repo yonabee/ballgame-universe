@@ -8,61 +8,6 @@ using System;
 
         public enum Face { All, Top, Bottom, Left, Right, Front, Back }
 
-        public static string[] Crayons = new[] {
-            "#fc6fcf",
-            "#fc66ff",
-            "#c6f",
-            "#66f",
-            "#6cf",
-            "#6ff",
-            "#6fc",
-            "#6f6",
-            "#cf6",
-            "#ff6",
-            "#fecc66",
-            "#fc6666",
-
-            "#fb0207",
-            "#fd8008",
-            "#ffff0a",
-            "#80ff08",
-            "#21ff06",
-            "#21ff80",
-            "#21ffff",
-            "#0f80ff",
-            "#00f",
-            "#8000ff",
-            "#fb02ff",
-            "#fb0280",
-
-            "#800040",
-            "#800080",
-            "#400080",
-            "#000080",
-            "#074080",
-            "#108080",
-            "#118040",
-            "#118002",
-            "#408002",
-            "#808004",
-            "#804003",
-            "#804003",
-            "#800002",
-
-            "#000",
-            "#191919",
-            "#333",
-            "#4c4c4c",
-            "#666",
-            "#7f7f7f",
-            "#808080",
-            "#999",
-            "#b3b3b3",
-            "#ccc",
-            "#e6e6e6",
-            "#fff"
-        };
-
         public static Vector3 CubeToSphere(Vector3 point)
         {
             //return point.Normalized();
@@ -203,11 +148,6 @@ using System;
             }
 
             return result;
-            // float max = Mathf.Max(
-            //     Mathf.Max(Mathf.Abs(p.X), Mathf.Abs(p.Y)), 
-            //     Mathf.Abs(p.Z)
-            // );
-            // return new Vector3(p.X/max, p.Y/max, p.Z/max);
         }
 
         public static Face GetFace(Vector3 point)
@@ -332,23 +272,9 @@ using System;
             return offset;
         }
 
-        public static float GaussianRandom()
-        {
-            var u1 = 1.0f-Universe.Random.Randf();
-            var u2 = 1.0f-Universe.Random.Randf();
-            return Mathf.Sqrt(-2.0f * Mathf.Log(u1)) * Mathf.Sin(2.0f * Mathf.Pi * u2);
-        }
-
         public static Vector3 RandomPointOnUnitSphere()
         {
-            var x = 1.0f - GaussianRandom();
-            var y = 1.0f - GaussianRandom();
-            var z = 1.0f - GaussianRandom();
-            var normalise = 1f / Mathf.Sqrt(Mathf.Pow(x, 2) + Mathf.Pow(y, 2) + Mathf.Pow(z, 2));
-            x *= normalise;
-            y *= normalise;
-            z *= normalise;
-            return new Vector3(x, y, z);
+           return new Vector3(Universe.Random.Randfn(0,1),Universe.Random.Randfn(0,1),Universe.Random.Randfn(0,1)).Normalized(); 
         }
 
         public static void ApplyBodyToVelocity(HeavenlyBody thisBody, HeavenlyBody otherBody, float mass, float radius, float timeStep, bool inverse = false) 
@@ -369,4 +295,60 @@ using System;
                 }
             }
         }
+
+        // from the mac os colourpicker
+        public static string[] Crayons = new[] {
+            "#fc6fcf",
+            "#fc66ff",
+            "#c6f",
+            "#66f",
+            "#6cf",
+            "#6ff",
+            "#6fc",
+            "#6f6",
+            "#cf6",
+            "#ff6",
+            "#fecc66",
+            "#fc6666",
+
+            "#fb0207",
+            "#fd8008",
+            "#ffff0a",
+            "#80ff08",
+            "#21ff06",
+            "#21ff80",
+            "#21ffff",
+            "#0f80ff",
+            "#00f",
+            "#8000ff",
+            "#fb02ff",
+            "#fb0280",
+
+            "#800040",
+            "#800080",
+            "#400080",
+            "#000080",
+            "#074080",
+            "#108080",
+            "#118040",
+            "#118002",
+            "#408002",
+            "#808004",
+            "#804003",
+            "#804003",
+            "#800002",
+
+            "#000",
+            "#191919",
+            "#333",
+            "#4c4c4c",
+            "#666",
+            "#7f7f7f",
+            "#808080",
+            "#999",
+            "#b3b3b3",
+            "#ccc",
+            "#e6e6e6",
+            "#fff"
+        };
     }
