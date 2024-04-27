@@ -37,7 +37,7 @@ public partial class Universe : Node3D
 	readonly int _numGG = 5;
 	readonly int _numMoons = 25;
 	readonly int _numAsteroids = 100;
-	readonly int _numStars = 5000;
+	readonly int _numStars = 10000;
 	readonly float _cameraFloatHeight = 75f;
 	readonly float _cameraSpeed = 0.3f;
 	readonly float _planetRadius = 2000f;
@@ -65,6 +65,11 @@ public partial class Universe : Node3D
 		new Color("#73D7EE"),
 		new Color("#613915")
 	};
+
+	float[] starLuminosity;
+	Vector3 starRotation;
+	float starSpeed;
+	int starIndex;
 
 	public override void _Ready() 
 	{
@@ -131,6 +136,7 @@ public partial class Universe : Node3D
 			Bodies.ForEach(body => body.UpdateVelocity(Bodies, Planet.Transform.Origin, (float)delta));
 			Bodies.ForEach(body => body.UpdatePosition((float)delta));
 			Planet.UpdatePosition((float)delta);
+			Stars.RotateObjectLocal(starRotation.Normalized(), (float)delta * starSpeed);
 		}
 
 		Sunlight.Rotation = new Vector3(
@@ -141,10 +147,18 @@ public partial class Universe : Node3D
 
 		var planetDot = (Planet.Transform.Basis * PlayerPivot.Transform.Basis).Y.Dot(Sunlight.Transform.Basis.Z);
 
-		// GD.Print(planetDot);
+		InfoText2.Text = (planetDot + 1f).ToString("f4");
 
 		Sky.SetShaderParameter("sun_energy", Mathf.Lerp(0.3f, 1f, planetDot + 1f));
 		Sky.SetShaderParameter("sun_fade", Mathf.Lerp(0.5f, 1f, planetDot + 1f ));
+
+		var starsOut = Mathf.FloorToInt(Mathf.Clamp(Mathf.Lerp(starIndex, 0f, planetDot + 1f), 0f, starIndex));
+		Stars.Multimesh.VisibleInstanceCount = starsOut;
+		for (int i = 0; i < starsOut; i++) {
+			var color = Stars.Multimesh.GetInstanceColor(i);
+			color.A = Mathf.Clamp(Mathf.Lerp(starLuminosity[i], 0f, planetDot + 1f), 0f, 1f);
+			Stars.Multimesh.SetInstanceColor(i, color);
+		}
 	}
 
     public override void _Input(InputEvent @event)
@@ -153,6 +167,7 @@ public partial class Universe : Node3D
 			Bodies.ForEach(body => body.QueueFree());
 			Bodies.Clear();
 			Planet.QueueFree();
+			Stars.Visible = false;
 			Progress.Value = 0;
 			Progress.Visible = true;
 			_Ready();
@@ -195,12 +210,12 @@ public partial class Universe : Node3D
 		OutOfBounds = 0;
         Gravity = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle();
 		CurrentFace = Face.Top;
+		starLuminosity = new float[_numStars];
 
 		GD.Print("universe ready");
 	}
 
 	void _InitializePlanet() {
-		GD.Print("adding planet");
 		Planet = new CubePlanet
 		{
 			Seed = (int)Random.Randi(),
@@ -463,11 +478,10 @@ public partial class Universe : Node3D
 
 			var material = new StandardMaterial3D
 			{
-				EmissionEnabled = true,
-				EmissionEnergyMultiplier = 10,
 				VertexColorUseAsAlbedo = true,
 				ClearcoatEnabled = true,
 				ClearcoatRoughness = 1.0f,
+				EmissionEnabled = true,
 				Roughness = 1.0f,
 				RimEnabled = true,
 				Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
@@ -485,26 +499,60 @@ public partial class Universe : Node3D
             Stars.Multimesh.TransformFormat = MultiMesh.TransformFormatEnum.Transform3D;
 			Stars.Multimesh.UseColors = true;
 			Stars.Multimesh.Mesh = mesh;
-            AddChild(Stars);
+            Planet.AddChild(Stars);
+		} else {
+			Stars.Reparent(Planet);
 		}
-		Stars.Multimesh.InstanceCount = 0;
-		Stars.Multimesh.VisibleInstanceCount = -1;
-		Stars.Multimesh.InstanceCount = starCount;
-		Stars.Multimesh.VisibleInstanceCount = starCount;
+		starRotation = Utils.RandomPointOnUnitSphere();
+		starSpeed = Mathf.Lerp(0.001f, 0.03f, Random.Randf());
 
+		Stars.Multimesh.InstanceCount = 0;
+		Stars.Multimesh.InstanceCount = starCount;
+		      
+        var starNoise = new FastNoiseLite
+        {
+            NoiseType = FastNoiseLite.NoiseTypeEnum.Simplex,
+            FractalOctaves = 4,
+            Seed = Universe.Seed.GetHashCode(),
+            Frequency = Universe.Random.RandfRange(0.0001f, 0.0005f),
+            DomainWarpEnabled = true,
+            DomainWarpFractalOctaves = 2,
+            DomainWarpFrequency = Universe.Random.RandfRange(0.0005f, 0.001f)
+        };
+
+		starIndex = 0;
 		for (int i = 0; i < starCount; i++) {
-			var position = Utils.RandomPointOnUnitSphere() * Random.RandfRange(Planet.Radius + 3000f, Planet.Radius + 7500f);
+			var distance = Random.RandfRange(Planet.Radius + 3500f, Planet.Radius + 10000f);
+			var position = Utils.RandomPointOnUnitSphere() * distance;
+			var noiseValue = starNoise.GetNoise3Dv(position);
+			if (Random.Randf() * 0.5f > noiseValue) 
+			{
+				continue;
+			}
+
 			var transform = Transform3D.Identity.Translated(position);
-			Stars.Multimesh.SetInstanceTransform(i, transform);
+			Stars.Multimesh.SetInstanceTransform(starIndex, transform);
+
 			var chance = Random.Randf();
 			Color color = Colors.White;
-			if (chance < 0.7f) {
-				color = new Color(Utils.Crayons[Random.RandiRange(0, 47)]).Lightened(0.5f);
+			if (chance < 0.05) {
+				color = new Color(Utils.Crayons[Random.RandiRange(0, 47)]);
 			}
-			color.A = Random.Randf() / 10f;
-			Stars.Multimesh.SetInstanceColor(i, color);
+			else if (chance < 0.2f) {
+				color = new Color(Utils.Crayons[Random.RandiRange(0, 47)]).Lightened(0.2f);
+			}
+			else if (chance < 0.7f) {
+				color = new Color(Utils.Crayons[Random.RandiRange(0, 47)]).Lightened(0.4f);
+			}
+			starLuminosity[starIndex] = Mathf.Abs(Random.Randfn() - 0.5f) / 5f;
+			color.A = starLuminosity[starIndex];
+			Stars.Multimesh.SetInstanceColor(starIndex, color);
+
+			starIndex++;
 		}
-		Stars.Visible = true;
-		GD.Print("putting " + starCount + " stars in the sky for you");
+		
+		Stars.Multimesh.VisibleInstanceCount = starIndex + 1;
+		Stars.Visible = false;
+		GD.Print("putting " + starIndex + " stars in the sky for you");
 	}
 }

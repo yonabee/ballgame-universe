@@ -251,7 +251,7 @@ public partial class CubePlanet : Planetoid
             // Universe.InfoText.Text = String.Format("{0} {1}", LOD, Universe.WatcherCam.Position.DistanceTo(Position).ToString());
         }
 
-        Universe.InfoText2.Text = String.Format("{0} lost", Universe.OutOfBounds);
+        // Universe.InfoText2.Text = String.Format("{0} lost", Universe.OutOfBounds);
 
         //GD.Print(LOD);
 
@@ -311,6 +311,7 @@ public partial class CubePlanet : Planetoid
         GetTree().Paused = false;
         Universe.Progress.Visible = false;
         Universe.Bodies.ForEach(body => (body as Node3D).Visible = true);
+        Universe.Stars.Visible = true;
         Universe.Initialized = true;
     }
 
