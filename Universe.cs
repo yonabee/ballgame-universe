@@ -514,7 +514,7 @@ public partial class Universe : Node3D
             NoiseType = FastNoiseLite.NoiseTypeEnum.Simplex,
             FractalOctaves = 4,
             Seed = Universe.Seed.GetHashCode(),
-            Frequency = Universe.Random.RandfRange(0.0001f, 0.0005f),
+            Frequency = Universe.Random.RandfRange(0.0005f, 0.001f),
             DomainWarpEnabled = true,
             DomainWarpFractalOctaves = 2,
             DomainWarpFrequency = Universe.Random.RandfRange(0.0005f, 0.001f)
@@ -525,7 +525,7 @@ public partial class Universe : Node3D
 			var distance = Random.RandfRange(Planet.Radius + 3500f, Planet.Radius + 10000f);
 			var position = Utils.RandomPointOnUnitSphere() * distance;
 			var noiseValue = starNoise.GetNoise3Dv(position);
-			if (Random.Randf() * 0.5f > noiseValue) 
+			if (Random.Randf() * 0.25f > noiseValue) 
 			{
 				continue;
 			}

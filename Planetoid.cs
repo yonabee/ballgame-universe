@@ -34,6 +34,9 @@ public partial class Planetoid : RigidBody3D, HeavenlyBody
         CurrentVelocity = initialVelocity;
         Mass = Gravity * Radius * Radius / Universe.Gravity * 10000;
         Random = Universe.Random;
+        CollisionLayer = 1;
+        SetCollisionMaskValue(1, true);
+        SetCollisionMaskValue(2, true);
     }
 
     public void GeneratePlanet()

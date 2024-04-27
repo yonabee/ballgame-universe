@@ -11,6 +11,7 @@ public enum LOD {
     NearOrbit,
     Orbit,
     Space,
+    Collision,
 }
 
 public partial class CubePlanet : Planetoid
@@ -46,6 +47,8 @@ public partial class CubePlanet : Planetoid
         Layers = 2;
         faceRenderMask = new List<Face>{ Face.All };
         LOD = LOD.NearOrbit;
+        CollisionLayer = 2;
+        SetCollisionMaskValue(1, false);
     }
 
     public override void Initialize()
@@ -298,6 +301,7 @@ public partial class CubePlanet : Planetoid
         };
         GetTree().Paused = true;
 
+        await generateLOD(LOD.Collision);
         await generateLOD(LOD.Space);
         await generateLOD(LOD.Orbit);
         await generateLOD(LOD.NearOrbit);
@@ -307,6 +311,21 @@ public partial class CubePlanet : Planetoid
                 await face.MakeColliders();
                 GD.Print("Generating colliders for face " + face.Face);
             }
+            var planetBody = new AnimatableBody3D() 
+            {
+                CollisionLayer = 2,
+            };
+            planetBody.SetCollisionMaskValue(1, false);
+            var planetCollider = new CollisionShape3D
+            {
+                Shape = new SphereShape3D()
+                {
+                    Radius = Radius
+                }
+            };
+            planetBody.AddChild(planetCollider);
+            // Primarily so it doesn't rotate
+            GetNode("/root/Universe").AddChild(planetBody);        
         }
         GetTree().Paused = false;
         Universe.Progress.Visible = false;

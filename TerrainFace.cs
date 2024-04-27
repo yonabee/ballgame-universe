@@ -13,6 +13,7 @@ public class TerrainFace
     public ShapeGenerator.ShapeSettings settings;
     public MeshInstance3D[] LandMeshes;
     public MeshInstance3D OceanMesh;
+    public MeshInstance3D ColliderMesh;
     public Elevation[,] Elevations;
     public Vector3 Up;
     public Utils.Face Face;
@@ -64,17 +65,14 @@ public class TerrainFace
     {
         int scale = _GetScale(lod);
         int res = resolution / scale;
-        var doXY = (int x, int y) => {
-            int scaledX = x == res - 1 ? resolution - 1 : x * scale;
-            int scaledY = y == res - 1 ? resolution - 1 : y * scale;
-            Vector2 percent = new Vector2(x, y) / (res - 1);
-            Vector3 pointOnUnitCube = Up + (percent.X - .5f) * 2 * axisA + (percent.Y - .5f) * 2 * axisB;
-            Vector3 pointOnUnitSphere = Utils.CubeToSphere(pointOnUnitCube);
-            Elevations[scaledX, scaledY] = shapeGenerator.DetermineElevation(pointOnUnitSphere);
-        };
         for (int y = 0; y < res; y++) {
             for (int x = 0; x < res; x++) {
-                doXY(x,y);
+                int scaledX = x == res - 1 ? resolution - 1 : x * scale;
+                int scaledY = y == res - 1 ? resolution - 1 : y * scale;
+                Vector2 percent = new Vector2(x, y) / (res - 1);
+                Vector3 pointOnUnitCube = Up + (percent.X - .5f) * 2 * axisA + (percent.Y - .5f) * 2 * axisB;
+                Vector3 pointOnUnitSphere = Utils.CubeToSphere(pointOnUnitCube);
+                Elevations[scaledX, scaledY] = shapeGenerator.DetermineElevation(pointOnUnitSphere);
             }
         }
 
@@ -123,52 +121,48 @@ public class TerrainFace
             int x = 0;
             int res = resolution / scale;
 
-            var doXY = (int x, int y) => {
-                i = x + y * res;
-
-                Vector2 percent = new Vector2(x, y) / (res - 1);
-
-                Vector3 pointOnUnitCube = Up + (percent.X - .5f) * 2 * axisA + (percent.Y - .5f) * 2 * axisB;
-
-                Vector3 pointOnUnitSphere = Utils.CubeToSphere(pointOnUnitCube);
-
-                Elevation elevation = Elevations[x == res - 1 ? resolution - 1 : x * scale, y == res - 1 ? resolution - 1 : y * scale];
-                
-                verts[i] = pointOnUnitSphere * elevation.scaled;
-                if (percent.X == 0 || percent.X == 1 || percent.Y == 0 || percent.Y == 1) {
-                    if (seams.TryGetValue(pointOnUnitCube, out Vector3 seamValue)) {
-                        verts[i] = seamValue;
-                    } 
-                    else 
-                    {
-                        seams.Add(pointOnUnitCube, verts[i]);
-                    }
-                }
-                normals[i] = verts[i].Normalized();
-                oceanVerts[i] = pointOnUnitSphere * settings.radius;
-                oceanNormals[i] = oceanVerts[i].Normalized();
-                colors[i] = colorGenerator.BiomeColourFromPoint(pointOnUnitSphere, elevation.unscaled);
-                oceanColors[i] = colorGenerator.OceanColorFromPoint(pointOnUnitSphere);
-
-                if (x > 0 && y > 0)
-                {
-                    tris[triIndex] = i - 1;
-                    tris[triIndex + 1] = i - res;
-                    tris[triIndex + 2] = i - res - 1;
-
-                    tris[triIndex + 3] = i - 1;
-                    tris[triIndex + 4] = i;
-                    tris[triIndex + 5] = i - res;
-
-                    triIndex += 6;
-                }
-            };
-
             for (y = 0; y < res; y++)
             {
                 for (x = 0; x < res; x++)
                 {
-                    doXY(x, y);
+                    i = x + y * res;
+
+                    Vector2 percent = new Vector2(x, y) / (res - 1);
+
+                    Vector3 pointOnUnitCube = Up + (percent.X - .5f) * 2 * axisA + (percent.Y - .5f) * 2 * axisB;
+
+                    Vector3 pointOnUnitSphere = Utils.CubeToSphere(pointOnUnitCube);
+
+                    Elevation elevation = Elevations[x == res - 1 ? resolution - 1 : x * scale, y == res - 1 ? resolution - 1 : y * scale];
+                    
+                    verts[i] = pointOnUnitSphere * elevation.scaled;
+                    if (percent.X == 0 || percent.X == 1 || percent.Y == 0 || percent.Y == 1) {
+                        if (seams.TryGetValue(pointOnUnitCube, out Vector3 seamValue)) {
+                            verts[i] = seamValue;
+                        } 
+                        else 
+                        {
+                            seams.Add(pointOnUnitCube, verts[i]);
+                        }
+                    }
+                    normals[i] = verts[i].Normalized();
+                    oceanVerts[i] = pointOnUnitSphere * settings.radius;
+                    oceanNormals[i] = oceanVerts[i].Normalized();
+                    colors[i] = colorGenerator.BiomeColourFromPoint(pointOnUnitSphere, elevation.unscaled);
+                    oceanColors[i] = colorGenerator.OceanColorFromPoint(pointOnUnitSphere);
+
+                    if (x > 0 && y > 0)
+                    {
+                        tris[triIndex] = i - 1;
+                        tris[triIndex + 1] = i - res;
+                        tris[triIndex + 2] = i - res - 1;
+
+                        tris[triIndex + 3] = i - 1;
+                        tris[triIndex + 4] = i;
+                        tris[triIndex + 5] = i - res;
+
+                        triIndex += 6;
+                    }
                 }
             }
 
@@ -177,23 +171,32 @@ public class TerrainFace
             landSurfaceArray[(int)Mesh.ArrayType.Color] = scale == 1 ? colors : colors[0..(i + 1)];
             landSurfaceArray[(int)Mesh.ArrayType.Index] = scale == 1 ? tris : tris[0..(triIndex + 3)];
 
-            LandMeshes[landMeshIndex] = new MeshInstance3D
+            if (lod != LOD.Collision) 
             {
-                Mesh = new ArrayMesh(),
-                VisibilityRangeBegin = near,
-                VisibilityRangeBeginMargin = 1f,
-                VisibilityRangeEnd = far,
-                VisibilityRangeEndMargin = 1f
-            };
-            (LandMeshes[landMeshIndex].Mesh as ArrayMesh).AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, landSurfaceArray);
-            LandMeshes[landMeshIndex].Mesh.CallDeferred(Mesh.MethodName.SurfaceSetMaterial, 0, Universe.Planet.LandRenderer);
-            if (lod == LOD.Space && Universe.ConstructPlanetColliders) {
-                colliderTasks.Add(() => LandMeshes[landMeshIndex].CallDeferred(MeshInstance3D.MethodName.CreateTrimeshCollision));
+                LandMeshes[landMeshIndex] = new MeshInstance3D
+                {
+                    Mesh = new ArrayMesh(),
+                    VisibilityRangeBegin = near,
+                    VisibilityRangeBeginMargin = 1f,
+                    VisibilityRangeEnd = far,
+                    VisibilityRangeEndMargin = 1f
+                };
+                (LandMeshes[landMeshIndex].Mesh as ArrayMesh).AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, landSurfaceArray);
+                LandMeshes[landMeshIndex].Mesh.CallDeferred(Mesh.MethodName.SurfaceSetMaterial, 0, Universe.Planet.LandRenderer);
+                LandMeshes[landMeshIndex].Visible = false;
+                Universe.Planet.CallDeferred(Node.MethodName.AddChild, LandMeshes[landMeshIndex]);
             }
-            LandMeshes[landMeshIndex].Visible = false;
-            Universe.Planet.CallDeferred(Node.MethodName.AddChild, LandMeshes[landMeshIndex]);
+            else if (Universe.ConstructPlanetColliders) 
+            {
+                ColliderMesh = new MeshInstance3D { Mesh = new ArrayMesh() };
+                (ColliderMesh.Mesh as ArrayMesh).AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, landSurfaceArray);
+                ColliderMesh.Visible = false;
+                Universe.Planet.CallDeferred(Node.MethodName.AddChild, ColliderMesh);
+                colliderTasks.Add(() => ColliderMesh.CallDeferred(MeshInstance3D.MethodName.CreateTrimeshCollision));
+            }
 
-            if (lod == LOD.Space) {
+            if (lod == LOD.Space) 
+            {
                 oceanSurfaceArray[(int)Mesh.ArrayType.Vertex] = oceanVerts;
                 oceanSurfaceArray[(int)Mesh.ArrayType.Normal] = oceanNormals;
                 oceanSurfaceArray[(int)Mesh.ArrayType.Color] = oceanColors;
@@ -205,9 +208,9 @@ public class TerrainFace
                 };
                 (OceanMesh.Mesh as ArrayMesh).AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, oceanSurfaceArray);
                 OceanMesh.Mesh.CallDeferred(Mesh.MethodName.SurfaceSetMaterial, 0, Universe.Planet.OceanRenderer);
-                if (Universe.ConstructPlanetColliders) {
-                    colliderTasks.Add(() => OceanMesh.CallDeferred(MeshInstance3D.MethodName.CreateTrimeshCollision));
-                }
+                // if (Universe.ConstructPlanetColliders) {
+                //     colliderTasks.Add(() => OceanMesh.CallDeferred(MeshInstance3D.MethodName.CreateTrimeshCollision));
+                // }
                 OceanMesh.Visible = false;
                 Universe.Planet.CallDeferred(Node.MethodName.AddChild, OceanMesh);
             }
@@ -248,6 +251,9 @@ public class TerrainFace
         }
         if (lod == LOD.NearOrbit) {
             return 1;
+        }
+        if (lod == LOD.Collision) {
+            return 20;
         }
         return 10;
     }
