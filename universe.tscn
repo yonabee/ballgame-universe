@@ -1,9 +1,12 @@
-[gd_scene load_steps=9 format=3 uid="uid://bfbrc8hceno8d"]
+[gd_scene load_steps=10 format=3 uid="uid://bfbrc8hceno8d"]
 
 [ext_resource type="Script" path="res://Universe.cs" id="1_wh6hk"]
 [ext_resource type="Script" path="res://Pivot.cs" id="2_7e67d"]
 [ext_resource type="Script" path="res://Watcher.cs" id="3_3ebdc"]
 [ext_resource type="FontFile" uid="uid://fgohvphw7rug" path="res://TeenyTinyPixls-o2zo.ttf" id="4_lyy58"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_1qxg7"]
+radius = 300.0
 
 [sub_resource type="Shader" id="Shader_3mjhx"]
 code = "
@@ -160,6 +163,13 @@ theme_override_font_sizes/font_size = 5
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -8000, 0)
 near = 1.0
 far = 200000.0
+
+[node name="RigidBody3D" type="RigidBody3D" parent="PlayerCam"]
+custom_integrator = true
+continuous_cd = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PlayerCam/RigidBody3D"]
+shape = SubResource("SphereShape3D_1qxg7")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_p4qy4")

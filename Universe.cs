@@ -33,17 +33,17 @@ public partial class Universe : Node3D
 	public static bool Initialized = false;
 	public static string Seed = "tatooine";
 
-	float _sunSpeed = 64f;
+	float _sunSpeed = 256f;
 	readonly int _numGG = 5;
 	readonly int _numMoons = 25;
-	readonly int _numAsteroids = 100;
+	readonly int _numMoonlets = 150;
 	readonly int _numStars = 10000;
 	readonly float _cameraFloatHeight = 75f;
 	readonly float _cameraSpeed = 0.3f;
 	readonly float _planetRadius = 2000f;
 	// Multiple of 10, minimum 20. 
 	// This is of the full planet and is used as a base for LODs.
-	readonly int _planetResolution = 700;
+	readonly int _planetResolution = 900;
 	readonly float _maxMoonInitialVelocity = 500f;
 	readonly int _minMoonSize = 100;
 	readonly int _maxMoonSize = 350;
@@ -120,7 +120,7 @@ public partial class Universe : Node3D
 
 		_InitializeGasGiants(Random.RandiRange(1, _numGG));
 		_InitializeMoons(Random.RandiRange(10, _numMoons));
-		_InitializeAsteroids(Random.RandiRange(50, _numAsteroids));
+		_InitializeMoonlets(Random.RandiRange(50, _numMoonlets));
 		_InitializeStars(_numStars);
 
 		Bodies.ForEach(body => body.BaseRotation = Utils.RandomPointOnUnitSphere() * Random.RandfRange(0.5f, 2f));
@@ -402,7 +402,7 @@ public partial class Universe : Node3D
                 Gravity = giantSize,
 				EventHorizon = giantSize / 5f,
                 Radius = 0.0f,
-                OmniRange = giantSize,
+                OmniRange = giantSize * 2f,
                 OmniAttenuation = 0.2f,
                 LightColor = lightColor,
 				// ShadowEnabled = true,
@@ -411,6 +411,8 @@ public partial class Universe : Node3D
 				ShadowBlur = 5f,
 				RotationSpeed = Random.RandfRange(0.1f, 0.3f)
             };
+			gg.rings = Mathf.FloorToInt(gg.EventHorizon);
+			gg.radialSegments = gg.rings;
 
 			float distance = Random.RandfRange(Planet.Radius * 2, Radius) + (gg.EventHorizon * 2);
 			if (Random.Randf() < 0.5f) {
@@ -436,7 +438,7 @@ public partial class Universe : Node3D
 		GD.Print("pondered " + gasGiantCount + " glowing orbs");
 	}
 
-	void _InitializeAsteroids(int asteroidCount)
+	void _InitializeMoonlets(int asteroidCount)
 	{
 		float maxV = _maxMoonInitialVelocity / 10f;
 		float maxDistance = Radius * 0.333f;
@@ -514,9 +516,10 @@ public partial class Universe : Node3D
             NoiseType = FastNoiseLite.NoiseTypeEnum.Simplex,
             FractalOctaves = 4,
             Seed = Universe.Seed.GetHashCode(),
-            Frequency = Universe.Random.RandfRange(0.0005f, 0.001f),
+            Frequency = Universe.Random.RandfRange(0.00005f, 0.001f),
             DomainWarpEnabled = true,
-            DomainWarpFractalOctaves = 2,
+            DomainWarpFractalOctaves = 4,
+			DomainWarpAmplitude = 100f,
             DomainWarpFrequency = Universe.Random.RandfRange(0.0005f, 0.001f)
         };
 

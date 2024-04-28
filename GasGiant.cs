@@ -15,8 +15,8 @@ public partial class GasGiant : OmniLight3D, HeavenlyBody
     public MeshInstance3D GGMesh = new MeshInstance3D();
     public Vector3 initialVelocity;
     public float RotationSpeed { get; set; }
-    public int radialSegments = 200;
-    public int rings = 200;
+    public int radialSegments = 500;
+    public int rings = 500;
     FastNoiseLite _Noise;
     Func<Vector3, Color> _GetVertexColor;
 
@@ -38,7 +38,9 @@ public partial class GasGiant : OmniLight3D, HeavenlyBody
             Seed = Universe.Seed.GetHashCode(),
             Frequency = Universe.Random.RandfRange(0.00005f, 0.0001f),
             DomainWarpEnabled = true,
-            DomainWarpFractalOctaves = 1,
+            DomainWarpFractalOctaves = Universe.Random.RandiRange(1,3),
+            DomainWarpFractalGain = Universe.Random.Randf() * 0.75f,
+            DomainWarpAmplitude = Universe.Random.RandfRange(10f, 100f),
             DomainWarpFrequency = Universe.Random.RandfRange(0.0005f, 0.001f)
         };
 

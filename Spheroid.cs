@@ -39,7 +39,9 @@ public partial class Spheroid : Planetoid
             Seed = Seed,
             Frequency = Random.RandfRange(0.0005f, 0.001f),
             DomainWarpEnabled = true,
-            DomainWarpFractalOctaves = 2,
+            DomainWarpFractalOctaves = Random.RandiRange(1,3),
+            DomainWarpFractalGain = Random.Randf() * 0.75f,
+            DomainWarpAmplitude = Random.RandfRange(10f, 100f),
             DomainWarpFrequency = Random.RandfRange(0.0005f, 0.005f)
         };
 
@@ -120,7 +122,7 @@ public partial class Spheroid : Planetoid
             Roughness = 1.0f,
             Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
             RefractionEnabled = true,
-            SpecularMode = BaseMaterial3D.SpecularModeEnum.Toon
+            SpecularMode = BaseMaterial3D.SpecularModeEnum.Toon,
         };
         (Meshes[0].Mesh as ArrayMesh).SurfaceSetMaterial(0, material);
     }

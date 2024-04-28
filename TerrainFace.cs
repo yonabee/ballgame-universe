@@ -252,9 +252,9 @@ public class TerrainFace
         if (lod == LOD.NearOrbit) {
             return 1;
         }
-        if (lod == LOD.Collision) {
-            return 20;
-        }
+        // if (lod == LOD.Collision) {
+        //     return 20;
+        // }
         return 10;
     }
 }
