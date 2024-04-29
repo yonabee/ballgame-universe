@@ -32,13 +32,13 @@ public partial class Universe : Node3D
 	public static int OutOfBounds = 0;
 	public static bool Initialized = false;
 	public static string Seed = "tatooine";
+	public readonly static float CameraFloatHeight = 100f;
 
 	float _sunSpeed = 256f;
 	readonly int _numGG = 5;
 	readonly int _numMoons = 25;
 	readonly int _numMoonlets = 150;
 	readonly int _numStars = 10000;
-	readonly float _cameraFloatHeight = 75f;
 	readonly float _cameraSpeed = 0.3f;
 	readonly float _planetRadius = 2000f;
 	// Multiple of 10, minimum 20. 
@@ -147,7 +147,7 @@ public partial class Universe : Node3D
 
 		var planetDot = (Planet.Transform.Basis * PlayerPivot.Transform.Basis).Y.Dot(Sunlight.Transform.Basis.Z);
 
-		InfoText2.Text = (planetDot + 1f).ToString("f4");
+		//InfoText2.Text = (planetDot + 1f).ToString("f4");
 
 		Sky.SetShaderParameter("sun_energy", Mathf.Lerp(0.3f, 1f, planetDot + 1f));
 		Sky.SetShaderParameter("sun_fade", Mathf.Lerp(0.5f, 1f, planetDot + 1f ));
@@ -163,7 +163,8 @@ public partial class Universe : Node3D
 
     public override void _Input(InputEvent @event)
     {
-        if (@event.IsActionPressed("reset")) {
+        if (@event.IsActionPressed("reset")) 
+		{
 			Bodies.ForEach(body => body.QueueFree());
 			Bodies.Clear();
 			Planet.QueueFree();
@@ -173,7 +174,8 @@ public partial class Universe : Node3D
 			_Ready();
 		}
 
-		if (@event.IsActionPressed("camera_toggle")) {
+		if (@event.IsActionPressed("camera_toggle")) 
+		{
 			if (PlayerCam.Current == false) {
 				PlayerCam.Current = true;
 				WatcherCam.Current = false;
@@ -183,15 +185,18 @@ public partial class Universe : Node3D
 			}
 		}
 
-		if (@event.IsActionPressed("info_toggle")) {
+		if (@event.IsActionPressed("info_toggle")) 
+		{
 			InfoText.Visible = !InfoText.Visible;
 		}
 
-		if (@event.IsActionPressed("slower")) {
+		if (@event.IsActionPressed("slower")) 
+		{
 			_sunSpeed *=2;
 		}
 
-		if (@event.IsActionPressed("faster")) {
+		if (@event.IsActionPressed("faster")) 
+		{
 			_sunSpeed /=2;
 		}
 		      
@@ -235,7 +240,7 @@ public partial class Universe : Node3D
 			trans.Origin = Planet.Transform.Origin;
 			PlayerCam.Transform = trans;
 		}
-		PlayerCam.Translate(Planet.Transform.Origin + Vector3.Up * (Planet.Shapes.DetermineElevation(Vector3.Up).scaled + _cameraFloatHeight));
+		PlayerCam.Translate(Planet.Transform.Origin + Vector3.Up * (Planet.Shapes.DetermineElevation(Vector3.Up).scaled + CameraFloatHeight));
 		PlayerPivot = new Pivot
 		{
 			Speed = _cameraSpeed,
