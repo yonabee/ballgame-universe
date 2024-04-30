@@ -11,6 +11,7 @@ public partial class Universe : Node3D
 	public static List<HeavenlyBody> Bodies = new List<HeavenlyBody>();
 	public static CubePlanet Planet;
 	public static Pivot PlayerPivot;
+	public static Node3D CameraArm;
 	public static Label InfoText;
 	public static Label InfoText2;
 	public static Camera3D PlayerCam;
@@ -200,7 +201,7 @@ public partial class Universe : Node3D
 			_sunSpeed /=2;
 		}
 		      
-        if(@event is InputEventMouseMotion mouseMotion && PlayerPivot != null)
+        if (@event is InputEventMouseMotion mouseMotion && PlayerPivot != null)
 		{
 			PlayerPivot.CameraRotation.X = mouseMotion.Relative.X;
 			PlayerPivot.CameraRotation.Y = mouseMotion.Relative.Y;
@@ -210,7 +211,7 @@ public partial class Universe : Node3D
 	void _InitializeUniverse() {
 		Random = new RandomNumberGenerator();
 		Random.Randomize();
-		Seed = File.ReadLines("scrabble.txt").ElementAtOrDefault(Random.RandiRange(0,267751));
+		Seed = File.ReadLines("scrabble.txt").ElementAtOrDefault(Random.RandiRange(0,267706));
 		Random.Seed = (ulong)Seed.GetHashCode();
 		OutOfBounds = 0;
         Gravity = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle();
@@ -231,6 +232,16 @@ public partial class Universe : Node3D
 		};
 		AddChild(Planet);
 
+		if (CameraArm == null) {
+			CameraArm = new Node3D();
+			AddChild(CameraArm);
+		} else {
+			CameraArm.Reparent(GetParent());
+			Transform3D trans = CameraArm.Transform;
+			trans.Basis = Basis.Identity;
+			trans.Origin = Planet.Transform.Origin;
+			CameraArm.Transform = trans;
+		}
 		if (PlayerCam == null) {
 			PlayerCam = GetNode<Camera3D>("PlayerCam");
 		} else {
@@ -240,14 +251,17 @@ public partial class Universe : Node3D
 			trans.Origin = Planet.Transform.Origin;
 			PlayerCam.Transform = trans;
 		}
-		PlayerCam.Translate(Planet.Transform.Origin + Vector3.Up * (Planet.Shapes.DetermineElevation(Vector3.Up).scaled + CameraFloatHeight));
+
+		PlayerCam.Reparent(CameraArm);
+		CameraArm.Translate(Planet.Transform.Origin + Vector3.Up * (Planet.Shapes.DetermineElevation(Vector3.Up).scaled + CameraFloatHeight));
+
 		PlayerPivot = new Pivot
 		{
 			Speed = _cameraSpeed,
 			OrientForward = true
 		};
 		Planet.AddChild(PlayerPivot);
-		PlayerCam.Reparent(PlayerPivot);
+		CameraArm.Reparent(PlayerPivot);
 		PlayerPivot.Camera = PlayerCam;
 		
 		if (Atmosphere == null) {
