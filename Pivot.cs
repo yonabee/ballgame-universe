@@ -9,6 +9,7 @@ public partial class Pivot : Marker3D
 	public bool OrientForward = false;
 	public Camera3D Camera;
 	public Vector2 CameraRotation;
+	public Vector2 Velocity;
 
 	float _strafeStep = 1500f;
 	bool _jumping = false;
@@ -140,40 +141,45 @@ public partial class Pivot : Marker3D
 			_jumping = false;
 		}
 
-		if (Input.IsActionPressed("camera_up")) 
+		if (Input.IsActionPressed("move_up_key")) 
 		{
-			RotateObjectLocal(Vector3.Left, (float)delta * Speed);
+			_CameraUp((float)delta * Speed);
 		}
 
-		if (Input.IsActionPressed("camera_down")) 
+		if (Input.IsActionPressed("move_down_key")) 
 		{
-			RotateObjectLocal(Vector3.Right, (float)delta * Speed);
+			_CameraDown((float)delta * Speed);
 		}
 
-		if (Input.IsActionPressed("camera_left")) 
+		if (Input.IsActionPressed("move_left_key")) 
 		{
-			if (Universe.PlayerCam.Current) 
-			{
-				RotateObjectLocal(Vector3.Back, (float)delta * Speed / (Universe.Planet.Radius / _strafeStep));
-			} 
-			else 
-			{
-				RotateObjectLocal(OrientForward ? Vector3.Up : Vector3.Down, (float)delta * (OrientForward ? 1f : Speed));
-			}
+			_CameraLeft((float)delta * (!Universe.PlayerCam.Current && OrientForward ? 1f : Speed));
 		}
 
-		if (Input.IsActionPressed("camera_right")) 
+		if (Input.IsActionPressed("move_right_key")) 
 		{
-			if (Universe.PlayerCam.Current) 
-			{
-				RotateObjectLocal(Vector3.Forward, (float)delta * Speed / (Universe.Planet.Radius / _strafeStep));
-			} 
-			else 
-			{
-				RotateObjectLocal(OrientForward ? Vector3.Down : Vector3.Up, (float)delta * (OrientForward ? 1f : Speed));
-			}
+			_CameraRight((float)delta * (!Universe.PlayerCam.Current && OrientForward ? 1f : Speed));
 		}
 
+		if (Velocity.X > 0f)
+		{
+			_CameraRight(Velocity.X * (float)delta * Speed);
+		}
+
+		if (Velocity.X < 0f) 
+		{
+			_CameraLeft(Mathf.Abs(Velocity.X) * (float)delta * Speed);
+		}
+
+		if (Velocity.Y > 0f)
+		{
+			_CameraDown(Velocity.Y * (float)delta * Speed);
+		}
+
+		if (Velocity.Y < 0f) 
+		{
+			_CameraUp(Mathf.Abs(Velocity.Y) * (float)delta * Speed);
+		}
 		// The pivot rotates for X and the camera rotates for Y
 		RotateObjectLocal(Vector3.Down, CameraRotation.X * (float)delta * Speed * 2);
 		Camera.RotateObjectLocal(Vector3.Left, CameraRotation.Y * (float)delta * Speed * 2);
@@ -197,5 +203,40 @@ public partial class Pivot : Marker3D
 		// 	+ " ft";
 
 		CameraRotation = Vector2.Zero;
+	}
+
+	private void _CameraUp(float amount)
+	{
+		RotateObjectLocal(Vector3.Left, amount);
+	}
+
+	private void _CameraDown(float amount)
+	{
+		RotateObjectLocal(Vector3.Right, amount);
+	}
+
+	private void _CameraLeft(float amount)
+	{
+
+		if (Universe.PlayerCam.Current) 
+		{
+			RotateObjectLocal(Vector3.Back, amount / (Universe.Planet.Radius / _strafeStep));
+		} 
+		else 
+		{
+			RotateObjectLocal(OrientForward ? Vector3.Up : Vector3.Down, amount);
+		}
+	}
+
+	private void _CameraRight(float amount)
+	{
+		if (Universe.PlayerCam.Current) 
+		{
+			RotateObjectLocal(Vector3.Forward, amount / (Universe.Planet.Radius / _strafeStep));
+		} 
+		else 
+		{
+			RotateObjectLocal(OrientForward ? Vector3.Down : Vector3.Up, amount);
+		}
 	}
 }

@@ -40,7 +40,8 @@ public partial class Universe : Node3D
 	readonly int _numMoons = 25;
 	readonly int _numMoonlets = 150;
 	readonly int _numStars = 10000;
-	readonly float _cameraSpeed = 0.3f;
+	readonly float _playerSpeed = 0.3f;
+	readonly float _cameraPadSpeed = 3f;
 	readonly float _planetRadius = 2000f;
 	// Multiple of 10, minimum 20. 
 	// This is of the full planet and is used as a base for LODs.
@@ -88,7 +89,6 @@ public partial class Universe : Node3D
 		InfoText2 ??= GetNode<Label>("InfoText2");
 		Progress ??= GetNode<ProgressBar>("ProgressBar");
 		InfoText.Text = Seed.ToLower();
-		// InfoText2.Text = Seed.GetHashCode().ToString();
 		
 		if (Sunlight == null) {
             Sunlight = new DirectionalLight3D
@@ -206,6 +206,16 @@ public partial class Universe : Node3D
 			PlayerPivot.CameraRotation.X = mouseMotion.Relative.X;
 			PlayerPivot.CameraRotation.Y = mouseMotion.Relative.Y;
 		}
+		
+		if (@event is InputEventJoypadMotion && PlayerPivot != null) 
+		{
+			Vector2 cameraVelocity = Input.GetVector("camera_left", "camera_right", "camera_up", "camera_down");
+			Vector2 velocity = Input.GetVector("move_left", "move_right", "move_up", "move_down");
+			PlayerPivot.Velocity = velocity;
+			PlayerPivot.CameraRotation.X += cameraVelocity.X * _cameraPadSpeed;
+			PlayerPivot.CameraRotation.Y += cameraVelocity.Y * _cameraPadSpeed;
+		}
+		
     }
 
 	void _InitializeUniverse() {
@@ -257,7 +267,7 @@ public partial class Universe : Node3D
 
 		PlayerPivot = new Pivot
 		{
-			Speed = _cameraSpeed,
+			Speed = _playerSpeed,
 			OrientForward = true
 		};
 		Planet.AddChild(PlayerPivot);

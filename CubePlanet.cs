@@ -232,12 +232,19 @@ public partial class CubePlanet : Planetoid
         }
 
         if (Universe.PlayerCam.Current) {
-            if (LOD != LOD.Planet) {
+            var cameraY = Universe.CameraArm.Transform.Origin.Y - Universe.Planet.Radius;
+            if (cameraY >= 5000f) {
+                LOD = LOD.Space;
+            } else if (cameraY < 5000f && cameraY > 1500f) {
+                LOD = LOD.Orbit;
+            } else if (cameraY <= 1500f && cameraY > 500f) {
+                LOD = LOD.NearOrbit;
+            } else if (LOD != LOD.Planet) {
                 faceRenderMask.Clear();
                 faceRenderMask.AddRange(GetFaces(Universe.CurrentFace));
                 LOD = LOD.Planet;
             }
-            // Universe.InfoText.Text = string.Format("{0} {1} {2}x{3}", LOD, Universe.CurrentFace, Universe.Location.X, Universe.Location.Y);
+            Universe.InfoText2.Text = string.Format("{0} {1} {2}x{3}", LOD, Universe.CurrentFace, Universe.Location.X, Universe.Location.Y);
         } else if (Universe.WatcherCam.Current) {
             if (LOD == LOD.Planet) {
                 faceRenderMask.Clear();
@@ -251,7 +258,7 @@ public partial class CubePlanet : Planetoid
             } else {
                 LOD = LOD.NearOrbit;
             }
-            // Universe.InfoText.Text = String.Format("{0} {1}", LOD, Universe.WatcherCam.Position.DistanceTo(Position).ToString());
+            Universe.InfoText2.Text = String.Format("{0} {1}", LOD, Universe.WatcherCam.Position.DistanceTo(Position).ToString());
         }
 
         // Universe.InfoText2.Text = String.Format("{0} lost", Universe.OutOfBounds);
