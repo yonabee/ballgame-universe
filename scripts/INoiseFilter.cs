@@ -1,6 +1,6 @@
 using Godot;
 
-public interface INoiseFilter 
+public interface INoiseFilter
 {
     float Evaluate(Vector3 point);
 }

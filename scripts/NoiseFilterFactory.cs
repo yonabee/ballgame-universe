@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Godot;
 
-public static class NoiseFilterFactory 
+public static class NoiseFilterFactory
 {
     public static INoiseFilter CreateNoiseFilter(NoiseSettings settings)
     {

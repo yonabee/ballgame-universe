@@ -1,11 +1,18 @@
-
 using Godot;
 
 [System.Serializable]
-public class NoiseSettings {
+public class NoiseSettings
+{
     public bool enabled = true;
     public bool useFirstLayerAsMask;
-    public enum FilterType { Simple, Ridged, Warped };
+
+    public enum FilterType
+    {
+        Simple,
+        Ridged,
+        Warped
+    };
+
     public FilterType filterType;
     public int radius = 1;
     public float strength = 1;

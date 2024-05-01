@@ -13,8 +13,12 @@ public class ColorGenerator
     public void UpdateSettings(ColorSettings settings)
     {
         this.settings = settings;
-        biomeNoiseFilter = NoiseFilterFactory.CreateNoiseFilter(settings.biomeColourSettings.biomeNoise);
-        heightMapNoiseFilter = NoiseFilterFactory.CreateNoiseFilter(settings.biomeColourSettings.heightMapNoise);
+        biomeNoiseFilter = NoiseFilterFactory.CreateNoiseFilter(
+            settings.biomeColourSettings.biomeNoise
+        );
+        heightMapNoiseFilter = NoiseFilterFactory.CreateNoiseFilter(
+            settings.biomeColourSettings.heightMapNoise
+        );
     }
 
     public void UpdateElevation(MinMax elevationMinMax)
@@ -24,32 +28,38 @@ public class ColorGenerator
 
     public float BiomePercentFromPoint(Vector3 pointOnUnitSphere)
     {
-        return BiomeIndexFromPoint(pointOnUnitSphere) / Mathf.Max(1, settings.biomeColourSettings.biomes.Length - 1);
+        return BiomeIndexFromPoint(pointOnUnitSphere)
+            / Mathf.Max(1, settings.biomeColourSettings.biomes.Length - 1);
     }
 
-    public float BiomeIndexFromPoint(Vector3 pointOnUnitSphere) 
+    public float BiomeIndexFromPoint(Vector3 pointOnUnitSphere)
     {
         float heightPercent = (pointOnUnitSphere.Y + 1) / 2f;
-        heightPercent += (biomeNoiseFilter.Evaluate(pointOnUnitSphere) - settings.biomeColourSettings.biomeNoiseOffset) * settings.biomeColourSettings.biomeNoiseStrength;
+        heightPercent +=
+            (
+                biomeNoiseFilter.Evaluate(pointOnUnitSphere)
+                - settings.biomeColourSettings.biomeNoiseOffset
+            ) * settings.biomeColourSettings.biomeNoiseStrength;
         float biomeIndex = 0;
         int numBiomes = settings.biomeColourSettings.biomes.Length;
         float blendRange = settings.biomeColourSettings.biomeBlendAmount / 2f + .001f;
         for (int i = 0; i < numBiomes; i++)
         {
             float dst = heightPercent - settings.biomeColourSettings.biomes[i].startHeight;
-            float weight = Mathf.Clamp(Mathf.InverseLerp(-blendRange, blendRange, dst),0,1);
+            float weight = Mathf.Clamp(Mathf.InverseLerp(-blendRange, blendRange, dst), 0, 1);
             biomeIndex *= (1 - weight);
             biomeIndex += i * weight;
         }
 
         return biomeIndex;
-
     }
 
     public Color BiomeColourFromPoint(Vector3 pointOnUnitSphere, float height)
     {
         height = (height + 1f) / 2f;
-        height += heightMapNoiseFilter.Evaluate(pointOnUnitSphere) * settings.biomeColourSettings.heightMapNoiseStrength;
+        height +=
+            heightMapNoiseFilter.Evaluate(pointOnUnitSphere)
+            * settings.biomeColourSettings.heightMapNoiseStrength;
         var min = (settings.elevation.Min + 1f) / 2f;
         var range = settings.elevation.Max - settings.elevation.Min;
         float index = BiomeIndexFromPoint(pointOnUnitSphere);
@@ -57,15 +67,20 @@ public class ColorGenerator
         float remainder = index - (float)baseIndex;
         float percent = (height - min) / range;
         Mathf.Clamp(percent, 0f, 1f);
-        
+
         Biome biome = settings.biomeColourSettings.biomes[baseIndex];
         Color biomeColor;
         Color tintColor;
-        if (settings.biomeColourSettings.biomes.Length > baseIndex + 1 && remainder > 0) {
+        if (settings.biomeColourSettings.biomes.Length > baseIndex + 1 && remainder > 0)
+        {
             Biome nextBiome = settings.biomeColourSettings.biomes[baseIndex + 1];
-            biomeColor = biome.gradient.Sample(percent).Lerp(nextBiome.gradient.Sample(percent), remainder);
+            biomeColor = biome
+                .gradient.Sample(percent)
+                .Lerp(nextBiome.gradient.Sample(percent), remainder);
             tintColor = biome.tint.Lerp(nextBiome.tint, remainder);
-        } else {
+        }
+        else
+        {
             biomeColor = biome.gradient.Sample((height - min) / range);
             tintColor = biome.tint;
         }

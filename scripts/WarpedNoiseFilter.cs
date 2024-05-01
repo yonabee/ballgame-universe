@@ -1,8 +1,7 @@
-
 using Godot;
 
-public class WarpedNoiseFilter : INoiseFilter {
-
+public class WarpedNoiseFilter : INoiseFilter
+{
     NoiseSettings settings;
     FastNoiseLite noise;
 
@@ -25,7 +24,8 @@ public class WarpedNoiseFilter : INoiseFilter {
 
     public float Evaluate(Vector3 point)
     {
-        float noiseValue = (noise.GetNoise3Dv(point * settings.frequency + settings.center) + 1) * 0.5f;
+        float noiseValue =
+            (noise.GetNoise3Dv(point * settings.frequency + settings.center) + 1) * 0.5f;
         noiseValue = noiseValue - settings.minValue;
         return noiseValue * settings.strength;
     }

@@ -1,6 +1,6 @@
-using Godot;
 using System;
 using System.Collections.Generic;
+using Godot;
 
 public partial class Planetoid : RigidBody3D, HeavenlyBody
 {
@@ -45,7 +45,7 @@ public partial class Planetoid : RigidBody3D, HeavenlyBody
         GenerateMesh();
     }
 
-    public virtual void Initialize() {}
+    public virtual void Initialize() { }
 
-    public virtual void GenerateMesh() {}
+    public virtual void GenerateMesh() { }
 }

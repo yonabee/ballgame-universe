@@ -1,6 +1,6 @@
-using Godot;
 using System;
 using System.Collections.Generic;
+using Godot;
 
 public partial class MicroSpheroid : Planetoid
 {
@@ -16,20 +16,22 @@ public partial class MicroSpheroid : Planetoid
     public override void Initialize()
     {
         base.Initialize();
-		Meshes = new MeshInstance3D[Faces * Layers];
+        Meshes = new MeshInstance3D[Faces * Layers];
         Colliders = new CollisionShape3D[Faces * Layers];
-        for (int i = 0; i < Faces * Layers; i++) {
+        for (int i = 0; i < Faces * Layers; i++)
+        {
             Meshes[i] = new MeshInstance3D();
             Colliders[i] = new CollisionShape3D();
             AddChild(Meshes[i]);
             AddChild(Colliders[i]);
         }
-        if (Colliders[0].Shape == null) {
+        if (Colliders[0].Shape == null)
+        {
             var shape = new SphereShape3D();
             shape.Radius = Radius;
             Colliders[0].Shape = shape;
         }
-        
+
         _Noise = new FastNoiseLite
         {
             NoiseType = FastNoiseLite.NoiseTypeEnum.Simplex,
@@ -43,44 +45,62 @@ public partial class MicroSpheroid : Planetoid
 
         _StripeChance = Random.Randf();
 
-        _GetVertexColor = (Vector3 vert) => {
+        _GetVertexColor = (Vector3 vert) =>
+        {
             var color = Colors.Black;
             var noiseValue = Mathf.Abs(_Noise.GetNoise3Dv(vert));
 
             // Contrast stripes
-            if (_StripeChance < 0.2 && noiseValue < 0.3 && crayons.Length > 1) {
-                if (noiseValue < 0.1) {
+            if (_StripeChance < 0.2 && noiseValue < 0.3 && crayons.Length > 1)
+            {
+                if (noiseValue < 0.1)
+                {
                     color = crayons[1].Lightened(0.2f);
-                } else {
+                }
+                else
+                {
                     color = crayons[1];
                 }
 
-            // Regular racing stripes, occasionally with spots
-            } else if (noiseValue < 0.1) {
-                if (crayons[0] != Colors.White) {
+                // Regular racing stripes, occasionally with spots
+            }
+            else if (noiseValue < 0.1)
+            {
+                if (crayons[0] != Colors.White)
+                {
                     color = crayons[0].Lightened(0.2f);
-                } else {
+                }
+                else
+                {
                     color = crayons[1].Darkened(0.15f);
                 }
-
-            } else if (noiseValue > 0.6) {
-                if (_StripeChance < 0.4 && crayons.Length > 1) {
+            }
+            else if (noiseValue > 0.6)
+            {
+                if (_StripeChance < 0.4 && crayons.Length > 1)
+                {
                     color = crayons[1].Darkened(0.15f);
-                } else  {
-                    if (crayons[0] != Colors.White) {
+                }
+                else
+                {
+                    if (crayons[0] != Colors.White)
+                    {
                         color = crayons[0].Darkened(0.15f);
-                    } else {
+                    }
+                    else
+                    {
                         color = crayons[1].Lightened(0.2f);
                     }
                 }
-
-            } else {
+            }
+            else
+            {
                 color = crayons[0];
             }
             return color;
         };
     }
-    
+
     public override void _IntegrateForces(PhysicsDirectBodyState3D state)
     {
         state.LinearVelocity = CurrentVelocity;
@@ -90,7 +110,12 @@ public partial class MicroSpheroid : Planetoid
     public override void GenerateMesh()
     {
         base.GenerateMesh();
-        Meshes[0].Mesh = MeshUtils.GenerateSphereMesh(Radius, rings, radialSegments, _GetVertexColor);
+        Meshes[0].Mesh = MeshUtils.GenerateSphereMesh(
+            Radius,
+            rings,
+            radialSegments,
+            _GetVertexColor
+        );
         var material = new StandardMaterial3D
         {
             EmissionEnabled = true,

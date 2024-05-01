@@ -1,9 +1,9 @@
 [gd_scene load_steps=10 format=3 uid="uid://bfbrc8hceno8d"]
 
-[ext_resource type="Script" path="res://Universe.cs" id="1_wh6hk"]
-[ext_resource type="Script" path="res://Pivot.cs" id="2_7e67d"]
-[ext_resource type="Script" path="res://Watcher.cs" id="3_3ebdc"]
-[ext_resource type="FontFile" uid="uid://fgohvphw7rug" path="res://TeenyTinyPixls-o2zo.ttf" id="4_lyy58"]
+[ext_resource type="Script" path="res://scripts/Universe.cs" id="1_wh6hk"]
+[ext_resource type="Script" path="res://scripts/Pivot.cs" id="2_7e67d"]
+[ext_resource type="Script" path="res://scripts/Watcher.cs" id="3_3ebdc"]
+[ext_resource type="FontFile" uid="uid://fgohvphw7rug" path="res://fonts/TeenyTinyPixls-o2zo.ttf" id="4_lyy58"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_1qxg7"]
 radius = 300.0

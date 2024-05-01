@@ -1,12 +1,13 @@
-using Godot;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Godot;
 using static Utils;
 
-public enum LOD {
+public enum LOD
+{
     Planet,
     NearOrbit,
     Orbit,
@@ -31,21 +32,31 @@ public partial class CubePlanet : Planetoid
     public StandardMaterial3D LandRenderer;
     public StandardMaterial3D OceanRenderer;
 
-    Vector3[] directions = { Vector3.Up, Vector3.Down, Vector3.Left, Vector3.Right, Vector3.Forward, Vector3.Back };
+    Vector3[] directions =
+    {
+        Vector3.Up,
+        Vector3.Down,
+        Vector3.Left,
+        Vector3.Right,
+        Vector3.Forward,
+        Vector3.Back
+    };
 
-    public override void _Ready() {
+    public override void _Ready()
+    {
         Configure();
         GeneratePlanet();
     }
 
-    public override void Configure() {
+    public override void Configure()
+    {
         Gravity = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle();
 
         base.Configure();
 
         Faces = 6;
         Layers = 2;
-        faceRenderMask = new List<Face>{ Face.All };
+        faceRenderMask = new List<Face> { Face.All };
         LOD = LOD.NearOrbit;
         CollisionLayer = 2;
         SetCollisionMaskValue(1, false);
@@ -55,12 +66,9 @@ public partial class CubePlanet : Planetoid
     {
         base.Initialize();
 
-        if (shapeSettings == null) {
-            shapeSettings = new ShapeGenerator.ShapeSettings
-            {
-                mass = Mass,
-                radius = Radius
-            };
+        if (shapeSettings == null)
+        {
+            shapeSettings = new ShapeGenerator.ShapeSettings { mass = Mass, radius = Radius };
 
             var center = ToGlobal(Transform.Origin);
 
@@ -109,7 +117,8 @@ public partial class CubePlanet : Planetoid
             shapeSettings.noiseSettings = noiseSettings;
         }
 
-        if (colorSettings == null) {
+        if (colorSettings == null)
+        {
             colorSettings = new ColorSettings
             {
                 oceanColor = new Color(Crayons[Random.RandiRange(0, 35)]),
@@ -183,24 +192,30 @@ public partial class CubePlanet : Planetoid
             };
 
             colorSettings.biomeColourSettings.heightMapNoise = heightMapNoise;
-            colorSettings.biomeColourSettings.heightMapNoiseStrength = Random.RandfRange(0.2f, 0.5f);
+            colorSettings.biomeColourSettings.heightMapNoiseStrength = Random.RandfRange(
+                0.2f,
+                0.5f
+            );
         }
 
         Shapes.UpdateSettings(shapeSettings);
         Colors.UpdateSettings(colorSettings);
 
-        if (TerrainFaces == null || TerrainFaces.Length == 0) {
+        if (TerrainFaces == null || TerrainFaces.Length == 0)
+        {
             TerrainFaces = new TerrainFace[Faces];
         }
 
-        if (LandRenderer == null) {
+        if (LandRenderer == null)
+        {
             LandRenderer = new StandardMaterial3D
             {
                 VertexColorUseAsAlbedo = true,
                 TextureFilter = StandardMaterial3D.TextureFilterEnum.Nearest
             };
         }
-        if (OceanRenderer == null) {
+        if (OceanRenderer == null)
+        {
             OceanRenderer = new StandardMaterial3D
             {
                 VertexColorUseAsAlbedo = true,
@@ -209,12 +224,13 @@ public partial class CubePlanet : Planetoid
             };
         }
 
-        for (int i = 0; i < Faces; i++) {
+        for (int i = 0; i < Faces; i++)
+        {
             TerrainFaces[i] = new TerrainFace(
-                Colors, 
-                Shapes, 
-                shapeSettings, 
-                Resolution, 
+                Colors,
+                Shapes,
+                shapeSettings,
+                Resolution,
                 directions[i],
                 (Face)i + 1
             );
@@ -227,63 +243,99 @@ public partial class CubePlanet : Planetoid
     {
         base._Process(delta);
 
-        if (TerrainFaces == null) {
+        if (TerrainFaces == null)
+        {
             return;
         }
 
-        if (Universe.PlayerCam.Current) {
+        if (Universe.PlayerCam.Current)
+        {
             var cameraY = Universe.CameraArm.Transform.Origin.Y - Universe.Planet.Radius;
-            if (cameraY >= 5000f) {
+            if (cameraY >= 5000f)
+            {
                 LOD = LOD.Space;
-            } else if (cameraY < 5000f && cameraY > 1500f) {
+            }
+            else if (cameraY < 5000f && cameraY > 1500f)
+            {
                 LOD = LOD.Orbit;
-            } else if (cameraY <= 1500f && cameraY > 500f) {
+            }
+            else if (cameraY <= 1500f && cameraY > 500f)
+            {
                 LOD = LOD.NearOrbit;
-            } else if (LOD != LOD.Planet) {
+            }
+            else if (LOD != LOD.Planet)
+            {
                 faceRenderMask.Clear();
                 faceRenderMask.AddRange(GetFaces(Universe.CurrentFace));
                 LOD = LOD.Planet;
             }
-            Universe.InfoText2.Text = string.Format("{0} {1} {2}x{3}", LOD, Universe.CurrentFace, Universe.Location.X, Universe.Location.Y);
-        } else if (Universe.WatcherCam.Current) {
-            if (LOD == LOD.Planet) {
+            Universe.InfoText2.Text = string.Format(
+                "{0} {1} {2}x{3}",
+                LOD,
+                Universe.CurrentFace,
+                Universe.Location.X,
+                Universe.Location.Y
+            );
+        }
+        else if (Universe.WatcherCam.Current)
+        {
+            if (LOD == LOD.Planet)
+            {
                 faceRenderMask.Clear();
                 faceRenderMask.Add(Face.All);
             }
             var cameraZ = Universe.WatcherCam.Transform.Origin.Z - Universe.Planet.Radius;
-            if (cameraZ >= 5000f) {
+            if (cameraZ >= 5000f)
+            {
                 LOD = LOD.Space;
-            } else if (cameraZ < 5000f && cameraZ > 1500f) {
+            }
+            else if (cameraZ < 5000f && cameraZ > 1500f)
+            {
                 LOD = LOD.Orbit;
-            } else {
+            }
+            else
+            {
                 LOD = LOD.NearOrbit;
             }
-            Universe.InfoText2.Text = String.Format("{0} {1}", LOD, Universe.WatcherCam.Position.DistanceTo(Position).ToString());
+            Universe.InfoText2.Text = String.Format(
+                "{0} {1}",
+                LOD,
+                Universe.WatcherCam.Position.DistanceTo(Position).ToString()
+            );
         }
 
         // Universe.InfoText2.Text = String.Format("{0} lost", Universe.OutOfBounds);
 
         //GD.Print(LOD);
 
-        for (int i = 0; i < Faces; i++) {
-            if (faceRenderMask.Contains(Face.All) || faceRenderMask.Contains((Face)i + 1)) {
+        for (int i = 0; i < Faces; i++)
+        {
+            if (faceRenderMask.Contains(Face.All) || faceRenderMask.Contains((Face)i + 1))
+            {
                 TerrainFaces[i].Show();
-            } else {
+            }
+            else
+            {
                 TerrainFaces[i].Hide();
             }
         }
     }
 
-    public new void UpdatePosition(float timeStep) {
+    public new void UpdatePosition(float timeStep)
+    {
         RotateObjectLocal(BaseRotation.Normalized(), timeStep * RotationSpeed);
     }
 
     public override async void GenerateMesh()
     {
-        var generateLOD = async (LOD lod) => {
-            for (int i = 0; i < Faces; i++) {
-                bool renderFace = faceRenderMask.Contains(Face.All) || faceRenderMask.Contains((Face)i + 1);
-                if (!renderFace) {
+        var generateLOD = async (LOD lod) =>
+        {
+            for (int i = 0; i < Faces; i++)
+            {
+                bool renderFace =
+                    faceRenderMask.Contains(Face.All) || faceRenderMask.Contains((Face)i + 1);
+                if (!renderFace)
+                {
                     continue;
                 }
                 var face = TerrainFaces[i];
@@ -294,9 +346,12 @@ public partial class CubePlanet : Planetoid
             // Make this here and pass it in so we can throw it away when we're done.
             var seams = new Dictionary<Vector3, Vector3>();
 
-            for (int i = 0; i < Faces; i++) {
-                bool renderFace = faceRenderMask.Contains(Face.All) || faceRenderMask.Contains((Face)i + 1);
-                if (!renderFace) {
+            for (int i = 0; i < Faces; i++)
+            {
+                bool renderFace =
+                    faceRenderMask.Contains(Face.All) || faceRenderMask.Contains((Face)i + 1);
+                if (!renderFace)
+                {
                     continue;
                 }
                 var face = TerrainFaces[i];
@@ -313,26 +368,22 @@ public partial class CubePlanet : Planetoid
         await generateLOD(LOD.Orbit);
         await generateLOD(LOD.NearOrbit);
 
-        if (Universe.ConstructPlanetColliders) {
-            foreach(var face in TerrainFaces) {
+        if (Universe.ConstructPlanetColliders)
+        {
+            foreach (var face in TerrainFaces)
+            {
                 await face.MakeColliders();
                 GD.Print("Generating colliders for face " + face.Face);
             }
-            var planetBody = new AnimatableBody3D() 
-            {
-                CollisionLayer = 2,
-            };
+            var planetBody = new AnimatableBody3D() { CollisionLayer = 2, };
             planetBody.SetCollisionMaskValue(1, false);
             var planetCollider = new CollisionShape3D
             {
-                Shape = new SphereShape3D()
-                {
-                    Radius = Radius
-                }
+                Shape = new SphereShape3D() { Radius = Radius }
             };
             planetBody.AddChild(planetCollider);
             // Primarily so it doesn't rotate
-            GetNode("/root/Universe").AddChild(planetBody);        
+            GetNode("/root/Universe").AddChild(planetBody);
         }
         GetTree().Paused = false;
         Universe.Progress.Visible = false;
@@ -345,13 +396,14 @@ public partial class CubePlanet : Planetoid
     {
         var gradient = new Color[7];
         Color grey = new Color(Crayons[Crayons.Length + Random.RandiRange(0, 11) - 12]);
-        if (grey.V < 0.5f) {
+        if (grey.V < 0.5f)
+        {
             gradient[6] = grey;
             var darkIdx = Crayons.Length + Random.RandiRange(0, 11) - 24;
             gradient[5] = new Color(Crayons[darkIdx]);
             var darkOffsetIdx = 24 + ((darkIdx - 24 + Offset(3)) % 12);
             gradient[4] = new Color(Crayons[darkOffsetIdx]);
-            var mediumIdx =  12 + ((darkIdx - 24 + Offset(3)) % 12);
+            var mediumIdx = 12 + ((darkIdx - 24 + Offset(3)) % 12);
             gradient[3] = new Color(Crayons[mediumIdx]);
             var mediumOffsetIdx = 12 + ((mediumIdx - 12 + Offset(3)) % 12);
             gradient[2] = new Color(Crayons[mediumOffsetIdx]);
@@ -359,7 +411,9 @@ public partial class CubePlanet : Planetoid
             gradient[1] = new Color(Crayons[lightIdx]);
             var lightOffsetIdx = Mathf.Abs((lightIdx + Offset(3)) % 12);
             gradient[0] = new Color(Crayons[lightOffsetIdx]);
-        } else {
+        }
+        else
+        {
             gradient[0] = grey;
             var lightIdx = Random.RandiRange(0, 11);
             gradient[1] = new Color(Crayons[lightIdx]);
@@ -371,13 +425,13 @@ public partial class CubePlanet : Planetoid
             gradient[4] = new Color(Crayons[mediumOffsetIdx]);
             var darkIdx = 24 + ((medIdx - 12 + Offset(3)) % 12);
             gradient[5] = new Color(Crayons[darkIdx]);
-            var darkOffsetIdx =  24 + ((darkIdx - 24 + Offset(3)) % 12);
+            var darkOffsetIdx = 24 + ((darkIdx - 24 + Offset(3)) % 12);
             gradient[6] = new Color(Crayons[darkOffsetIdx]);
         }
-        if (Random.Randf() >= 0.5f) {
+        if (Random.Randf() >= 0.5f)
+        {
             Array.Reverse(gradient);
         }
         return gradient;
     }
-
 }

@@ -2,8 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using Godot;
 
-public class SimpleNoiseFilter : INoiseFilter {
-
+public class SimpleNoiseFilter : INoiseFilter
+{
     NoiseSettings settings;
     FastNoiseLite noise;
 

@@ -1,6 +1,6 @@
-using Godot;
 using System;
 using System.Collections.Generic;
+using Godot;
 
 public partial class Spheroid : Planetoid
 {
@@ -16,22 +16,21 @@ public partial class Spheroid : Planetoid
     public override void Initialize()
     {
         base.Initialize();
-		Meshes = new MeshInstance3D[Faces * Layers];
+        Meshes = new MeshInstance3D[Faces * Layers];
         Colliders = new CollisionShape3D[Faces * Layers];
-        for (int i = 0; i < Faces * Layers; i++) {
+        for (int i = 0; i < Faces * Layers; i++)
+        {
             Meshes[i] = new MeshInstance3D();
             Colliders[i] = new CollisionShape3D();
             AddChild(Meshes[i]);
             AddChild(Colliders[i]);
         }
-        if (Colliders[0].Shape == null) {
-            var shape = new SphereShape3D
-            {
-                Radius = Radius
-            };
+        if (Colliders[0].Shape == null)
+        {
+            var shape = new SphereShape3D { Radius = Radius };
             Colliders[0].Shape = shape;
         }
-        
+
         _Noise = new FastNoiseLite
         {
             NoiseType = FastNoiseLite.NoiseTypeEnum.Simplex,
@@ -39,7 +38,7 @@ public partial class Spheroid : Planetoid
             Seed = Seed,
             Frequency = Random.RandfRange(0.0005f, 0.001f),
             DomainWarpEnabled = true,
-            DomainWarpFractalOctaves = Random.RandiRange(1,3),
+            DomainWarpFractalOctaves = Random.RandiRange(1, 3),
             DomainWarpFractalGain = Random.Randf() * 0.75f,
             DomainWarpAmplitude = Random.RandfRange(10f, 100f),
             DomainWarpFrequency = Random.RandfRange(0.0005f, 0.005f)
@@ -47,71 +46,100 @@ public partial class Spheroid : Planetoid
 
         _StripeChance = Random.Randf();
 
-        _GetVertexColor = (Vector3 vert) => {
+        _GetVertexColor = (Vector3 vert) =>
+        {
             var noiseValue = Mathf.Abs(_Noise.GetNoise3Dv(vert));
             var color = Colors.Black;
 
             // "Pride" marbles 🏳️‍🌈🏳️‍⚧️
-            if (Crayons.Length > 2) {
-                for (var k = 0; k < Crayons.Length; k++) {
-                    if (noiseValue < (float)(k + 1)/(float)Crayons.Length) {
-                        if (_StripeChance < 0.1) {
+            if (Crayons.Length > 2)
+            {
+                for (var k = 0; k < Crayons.Length; k++)
+                {
+                    if (noiseValue < (float)(k + 1) / (float)Crayons.Length)
+                    {
+                        if (_StripeChance < 0.1)
+                        {
                             color = Crayons[k].Lightened(0.2f);
-                        } else if (_StripeChance < 0.2) {
+                        }
+                        else if (_StripeChance < 0.2)
+                        {
                             color = Crayons[k].Darkened(0.15f);
-                        } else {
+                        }
+                        else
+                        {
                             color = Crayons[k];
                         }
                         break;
                     }
                 }
             }
-
             // Contrast stripes
-            else if (_StripeChance < 0.2 && noiseValue < 0.3 && Crayons.Length > 1) {
-                if (noiseValue < 0.1) {
+            else if (_StripeChance < 0.2 && noiseValue < 0.3 && Crayons.Length > 1)
+            {
+                if (noiseValue < 0.1)
+                {
                     color = Crayons[1].Lightened(0.2f);
-                } else {
+                }
+                else
+                {
                     color = Crayons[1];
                 }
 
-            // Regular racing stripes, occasionally with spots
-            } else if (noiseValue < 0.1) {
-                if (Crayons[0] != Colors.White) {
+                // Regular racing stripes, occasionally with spots
+            }
+            else if (noiseValue < 0.1)
+            {
+                if (Crayons[0] != Colors.White)
+                {
                     color = Crayons[0].Lightened(0.2f);
-                } else {
+                }
+                else
+                {
                     color = Crayons[1].Darkened(0.15f);
                 }
-
-            } else if (noiseValue > 0.6) {
-                if (_StripeChance < 0.4 && Crayons.Length > 1) {
+            }
+            else if (noiseValue > 0.6)
+            {
+                if (_StripeChance < 0.4 && Crayons.Length > 1)
+                {
                     color = Crayons[1].Darkened(0.15f);
-                } else  {
-                    if (Crayons[0] != Colors.White) {
+                }
+                else
+                {
+                    if (Crayons[0] != Colors.White)
+                    {
                         color = Crayons[0].Darkened(0.15f);
-                    } else {
+                    }
+                    else
+                    {
                         color = Crayons[1].Lightened(0.2f);
                     }
                 }
-
-            } else {
+            }
+            else
+            {
                 color = Crayons[0];
             }
             return color;
         };
     }
-    
+
     public override void _IntegrateForces(PhysicsDirectBodyState3D state)
     {
         state.LinearVelocity = CurrentVelocity;
         state.AngularVelocity = BaseRotation;
     }
 
-
     public override void GenerateMesh()
     {
         base.GenerateMesh();
-        Meshes[0].Mesh = MeshUtils.GenerateSphereMesh(Radius, rings, radialSegments, _GetVertexColor);
+        Meshes[0].Mesh = MeshUtils.GenerateSphereMesh(
+            Radius,
+            rings,
+            radialSegments,
+            _GetVertexColor
+        );
         var material = new StandardMaterial3D
         {
             EmissionEnabled = true,

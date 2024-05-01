@@ -8,8 +8,8 @@ public struct Elevation
     public float scaled;
 }
 
-public class ShapeGenerator {
-
+public class ShapeGenerator
+{
     public ShapeSettings settings;
     INoiseFilter[] noiseFilters;
     public MinMax elevationMinMax;
@@ -18,7 +18,8 @@ public class ShapeGenerator {
     readonly float _heightScaling = 1.1f;
 
     [System.Serializable]
-    public class ShapeSettings {
+    public class ShapeSettings
+    {
         public float radius = 1;
         public float mass = 1;
         public NoiseSettings[] noiseSettings;
@@ -35,12 +36,14 @@ public class ShapeGenerator {
         elevationMinMax = new MinMax();
     }
 
-    public Elevation DetermineElevation(Vector3 pointOnUnitSphere) {
-        Elevation result; 
+    public Elevation DetermineElevation(Vector3 pointOnUnitSphere)
+    {
+        Elevation result;
         result = new Elevation();
         result.unscaled = CalculateUnscaledElevation(pointOnUnitSphere);
         result.scaled = CalculateScaledElevation(result.unscaled);
-        if (Start == Vector3.Zero) {
+        if (Start == Vector3.Zero)
+        {
             Start = pointOnUnitSphere;
         }
         return result;
@@ -75,7 +78,7 @@ public class ShapeGenerator {
     }
 
     // Elevation in units above sea level.
-    float CalculateScaledElevation(float unscaledElevation) 
+    float CalculateScaledElevation(float unscaledElevation)
     {
         float elevation = Mathf.Max(0, unscaledElevation);
         elevation = settings.radius * (1 + unscaledElevation);

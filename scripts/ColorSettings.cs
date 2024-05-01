@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Godot;
 
-public class ColorSettings 
+public class ColorSettings
 {
     public StandardMaterial3D planetMaterial;
     public StandardMaterial3D oceanMaterial;
@@ -31,4 +31,4 @@ public class ColorSettings
             public float tintPercent;
         }
     }
-} 
+}

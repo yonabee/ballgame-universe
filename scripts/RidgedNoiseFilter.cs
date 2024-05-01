@@ -1,10 +1,9 @@
-
 using System.Collections;
 using System.Collections.Generic;
 using Godot;
 
-public class RidgedNoiseFilter : INoiseFilter {
-
+public class RidgedNoiseFilter : INoiseFilter
+{
     NoiseSettings settings;
     FastNoiseLite noise;
 
