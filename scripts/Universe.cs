@@ -228,6 +228,7 @@ public partial class Universe : Node3D
         {
             PlayerPivot.CameraRotation.X = mouseMotion.Relative.X;
             PlayerPivot.CameraRotation.Y = mouseMotion.Relative.Y;
+            PlayerPivot.IsMouse = true;
         }
 
         if (@event is InputEventJoypadMotion && PlayerPivot != null)
@@ -240,8 +241,8 @@ public partial class Universe : Node3D
             );
             Vector2 velocity = Input.GetVector("move_left", "move_right", "move_up", "move_down");
             PlayerPivot.Velocity = velocity;
-            PlayerPivot.CameraRotation.X += cameraVelocity.X * _cameraPadSpeed;
-            PlayerPivot.CameraRotation.Y += cameraVelocity.Y * _cameraPadSpeed;
+            PlayerPivot.CameraRotation = cameraVelocity;
+            PlayerPivot.IsMouse = false;
         }
     }
 

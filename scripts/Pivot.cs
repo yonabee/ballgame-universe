@@ -10,6 +10,7 @@ public partial class Pivot : Marker3D
     public Camera3D Camera;
     public Vector2 CameraRotation;
     public Vector2 Velocity;
+    public bool IsMouse = true;
 
     float _strafeStep = 1500f;
     bool _jumping = false;
@@ -191,8 +192,14 @@ public partial class Pivot : Marker3D
             _CameraUp(Mathf.Abs(Velocity.Y) * (float)delta * Speed);
         }
         // The pivot rotates for X and the camera rotates for Y
-        RotateObjectLocal(Vector3.Down, CameraRotation.X * (float)delta * Speed * 2);
-        Camera.RotateObjectLocal(Vector3.Left, CameraRotation.Y * (float)delta * Speed * 2);
+        RotateObjectLocal(
+            Vector3.Down,
+            CameraRotation.X * (float)delta * Speed * (IsMouse ? 2 : 10)
+        );
+        Camera.RotateObjectLocal(
+            Vector3.Left,
+            CameraRotation.Y * (float)delta * Speed * (IsMouse ? 2 : 10)
+        );
 
         if (_targetHeight < Universe.Planet.Radius)
         {
@@ -215,9 +222,10 @@ public partial class Pivot : Marker3D
         // 	((_targetHeight > maxElevation && _targetHeight > Universe.Planet.Radius) ? "jumping  at " : "hovering at ")
         // 	+ (_targetHeight - Universe.Planet.Radius).ToString("f2")
         // 	+ " ft";
-
-        CameraRotation = Vector2.Zero;
-        Velocity = Vector2.Zero;
+        if (IsMouse)
+        {
+            CameraRotation = Vector2.Zero;
+        }
     }
 
     private void _CameraUp(float amount)
