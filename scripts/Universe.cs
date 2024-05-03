@@ -12,8 +12,12 @@ public partial class Universe : Node3D
     public static CubePlanet Planet;
     public static Pivot PlayerPivot;
     public static Node3D CameraArm;
-    public static Label InfoText;
-    public static Label InfoText2;
+    public static Label SeedText;
+    public static Label HeightText;
+    public static Label ObjectsText;
+    public static Label StatusText;
+    public static Label PositionText;
+    public static Label TimeText;
     public static Camera3D PlayerCam;
     public static Camera3D WatcherCam;
     public static float Gravity;
@@ -88,10 +92,14 @@ public partial class Universe : Node3D
         WatcherCam.Current = false;
         PlayerCam.Current = true;
 
-        InfoText ??= GetNode<Label>("InfoText");
-        InfoText2 ??= GetNode<Label>("InfoText2");
+        SeedText ??= GetNode<Label>("Info1/SeedText");
+        HeightText ??= GetNode<Label>("Info1/HeightText");
+        ObjectsText ??= GetNode<Label>("Info1/ObjectsText");
+        TimeText ??= GetNode<Label>("Info1/TimeText");
+        StatusText ??= GetNode<Label>("Info1/StatusText");
+        PositionText ??= GetNode<Label>("Info1/PositionText");
         Progress ??= GetNode<ProgressBar>("ProgressBar");
-        InfoText.Text = Seed.ToLower();
+        SeedText.Text = Seed.ToLower();
 
         if (Sunlight == null)
         {
@@ -129,10 +137,22 @@ public partial class Universe : Node3D
 
         Atmosphere.Call("set_shader_parameter", "u_atmosphere_ambient_color", mieColor);
 
-        _InitializeGasGiants(Random.RandiRange(1, _numGG));
-        _InitializeMoons(Random.RandiRange(10, _numMoons));
-        _InitializeMoonlets(Random.RandiRange(50, _numMoonlets));
+        var ggCount = Random.RandiRange(1, _numGG);
+        _InitializeGasGiants(ggCount);
+        var moonCount = Random.RandiRange(10, _numMoons);
+        _InitializeMoons(moonCount);
+        var moonletCount = Random.RandiRange(50, _numMoonlets);
+        _InitializeMoonlets(moonletCount);
         _InitializeStars(_numStars);
+
+        ObjectsText.Text =
+            ggCount.ToString()
+            + ", "
+            + moonCount.ToString()
+            + ", "
+            + moonletCount.ToString()
+            + ", "
+            + starIndex.ToString();
 
         Bodies.ForEach(body =>
             body.BaseRotation = Utils.RandomPointOnUnitSphere() * Random.RandfRange(0.5f, 2f)
@@ -165,7 +185,7 @@ public partial class Universe : Node3D
             Sunlight.Transform.Basis.Z
         );
 
-        //InfoText2.Text = (planetDot + 1f).ToString("f4");
+        TimeText.Text = (planetDot + 1f).ToString("f4");
 
         Sky.SetShaderParameter("sun_energy", Mathf.Lerp(0.3f, 1f, planetDot + 1f));
         Sky.SetShaderParameter("sun_fade", Mathf.Lerp(0.5f, 1f, planetDot + 1f));
@@ -211,7 +231,27 @@ public partial class Universe : Node3D
 
         if (@event.IsActionPressed("info_toggle"))
         {
-            InfoText.Visible = !InfoText.Visible;
+            if (SeedText.Visible && !ObjectsText.Visible)
+            {
+                ObjectsText.Visible = true;
+                TimeText.Visible = true;
+                StatusText.Visible = true;
+                PositionText.Visible = true;
+                HeightText.Visible = true;
+            }
+            else if (!SeedText.Visible)
+            {
+                SeedText.Visible = true;
+            }
+            else
+            {
+                SeedText.Visible = false;
+                ObjectsText.Visible = false;
+                TimeText.Visible = false;
+                StatusText.Visible = false;
+                PositionText.Visible = false;
+                HeightText.Visible = false;
+            }
         }
 
         if (@event.IsActionPressed("slower"))

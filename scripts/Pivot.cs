@@ -215,13 +215,8 @@ public partial class Pivot : Marker3D
             * 10;
 
         Universe.CameraArm.TranslateObjectLocal(new Vector3(0, -offset, 0));
+        Universe.HeightText.Text = (_targetHeight - Universe.Planet.Radius).ToString("f2") + "m";
 
-        // Universe.InfoText2.Text =
-        // 	_jumpImpulse.ToString("f2") +
-        // 	(_jumping ? " jump  and " : " hover and ") +
-        // 	((_targetHeight > maxElevation && _targetHeight > Universe.Planet.Radius) ? "jumping  at " : "hovering at ")
-        // 	+ (_targetHeight - Universe.Planet.Radius).ToString("f2")
-        // 	+ " ft";
         if (IsMouse)
         {
             CameraRotation = Vector2.Zero;

@@ -269,7 +269,7 @@ public partial class CubePlanet : Planetoid
                 faceRenderMask.AddRange(GetFaces(Universe.CurrentFace));
                 LOD = LOD.Planet;
             }
-            Universe.InfoText2.Text = string.Format(
+            Universe.PositionText.Text = string.Format(
                 "{0} {1} {2}x{3}",
                 LOD,
                 Universe.CurrentFace,
@@ -297,14 +297,14 @@ public partial class CubePlanet : Planetoid
             {
                 LOD = LOD.NearOrbit;
             }
-            Universe.InfoText2.Text = String.Format(
+            Universe.PositionText.Text = String.Format(
                 "{0} {1}",
                 LOD,
                 Universe.WatcherCam.Position.DistanceTo(Position).ToString()
             );
         }
 
-        // Universe.InfoText2.Text = String.Format("{0} lost", Universe.OutOfBounds);
+        Universe.StatusText.Text = String.Format("{0} lost", Universe.OutOfBounds);
 
         //GD.Print(LOD);
 
