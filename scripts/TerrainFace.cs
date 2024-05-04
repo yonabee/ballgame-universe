@@ -86,7 +86,7 @@ public class TerrainFace
         var tasks = colliderTasks.Select(async action =>
         {
             await Task.Run(action);
-            Universe.Progress.Value += 4.2;
+            GUI.Progress.Value += 4.2;
         });
         await Task.WhenAll(tasks);
         colliderTasks.Clear();
@@ -105,7 +105,7 @@ public class TerrainFace
 
             int scale = _GetScale(lod);
             int landMeshIndex = 0;
-            float far = 12000f;
+            float far = 15000f;
             float near = 5000f;
             if (lod == LOD.Orbit)
             {

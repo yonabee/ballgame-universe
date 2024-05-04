@@ -116,16 +116,20 @@ public partial class MicroSpheroid : Planetoid
             radialSegments,
             _GetVertexColor
         );
-        var material = new StandardMaterial3D
+        var materialChance = Universe.Random.Randf();
+        StandardMaterial3D material;
+        if (materialChance < 0.01)
         {
-            EmissionEnabled = true,
-            VertexColorUseAsAlbedo = true,
-            ClearcoatEnabled = true,
-            ClearcoatRoughness = 1.0f,
-            Roughness = 1.0f,
-            Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
-            RefractionEnabled = true
-        };
+            material = GetMaterial(MaterialType.Metallic);
+        }
+        else if (materialChance > 0.95)
+        {
+            material = GetMaterial(MaterialType.SolidGlass);
+        }
+        else
+        {
+            material = GetMaterial(MaterialType.Standard);
+        }
         (Meshes[0].Mesh as ArrayMesh).SurfaceSetMaterial(0, material);
     }
 }

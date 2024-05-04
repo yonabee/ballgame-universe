@@ -74,16 +74,27 @@ public partial class CubePlanet : Planetoid
 
             var noiseLayer1 = new NoiseSettings
             {
-                strength = 0.15f,
-                octaves = 4,
-                frequency = 0.5f,
-                roughness = 2.35f,
-                persistence = 0.5f,
+                strength = Random.RandfRange(0.03f, 0.2f), //0.15f,
+                octaves = Random.RandiRange(2, 6), //4,
+                frequency = Random.RandfRange(0.25f, 0.75f), //0.5f,
+                roughness = Random.RandfRange(1f, 4f), //2.35f,
+                persistence = Random.RandfRange(0.25f, 0.75f), //0.5f,
                 minValue = 1.1f,
                 center = center,
                 filterType = NoiseSettings.FilterType.Simple,
                 seed = Seed
             };
+
+            GUI.Noise1.Text =
+                noiseLayer1.strength.ToString("f2")
+                + ", "
+                + noiseLayer1.octaves.ToString()
+                + ", "
+                + noiseLayer1.frequency.ToString("f2")
+                + ", "
+                + noiseLayer1.roughness.ToString("f2")
+                + ", "
+                + noiseLayer1.persistence.ToString("f2");
 
             var noiseLayer2 = new NoiseSettings
             {
@@ -112,6 +123,34 @@ public partial class CubePlanet : Planetoid
                 useFirstLayerAsMask = true,
                 seed = Seed
             };
+
+            // var noiseLayer2 = new NoiseSettings
+            // {
+            //     strength = Random.RandfRange(0.5f, 6f), // 4f,
+            //     octaves = Random.RandiRange(2, 6), // 5,
+            //     frequency = Random.RandfRange(0.5f, 1.5f), //1f,
+            //     roughness = Random.RandfRange(1f, 3f), //2f,
+            //     persistence = Random.RandfRange(0.1f, 0.9f), // 0.5f,
+            //     minValue = 1.25f,
+            //     center = center,
+            //     filterType = NoiseSettings.FilterType.Simple,
+            //     useFirstLayerAsMask = true,
+            //     seed = Seed
+            // };
+
+            // var noiseLayer3 = new NoiseSettings
+            // {
+            //     strength = Random.RandfRange(0.2f, 2f), //0.8f,
+            //     octaves = Random.RandiRange(1, 4), //4,
+            //     frequency = Random.RandfRange(0.5f, 3f), //2.5f,
+            //     roughness = Random.RandfRange(0.2f, 3f), //2f,
+            //     persistence = Random.RandfRange(0.1f, 1f), //0.5f,
+            //     minValue = 0f,
+            //     center = center,
+            //     filterType = NoiseSettings.FilterType.Ridged,
+            //     useFirstLayerAsMask = true,
+            //     seed = Seed
+            // };
 
             NoiseSettings[] noiseSettings = new[] { noiseLayer1, noiseLayer2, noiseLayer3 };
             shapeSettings.noiseSettings = noiseSettings;
@@ -269,8 +308,8 @@ public partial class CubePlanet : Planetoid
                 faceRenderMask.AddRange(GetFaces(Universe.CurrentFace));
                 LOD = LOD.Planet;
             }
-            Universe.PositionText.Text = string.Format(
-                "{0} {1} {2}x{3}",
+            GUI.Location.Text = string.Format(
+                "{0}, Sector {1} at {2}x{3}",
                 LOD,
                 Universe.CurrentFace,
                 Universe.Location.X,
@@ -297,14 +336,14 @@ public partial class CubePlanet : Planetoid
             {
                 LOD = LOD.NearOrbit;
             }
-            Universe.PositionText.Text = String.Format(
+            GUI.Location.Text = String.Format(
                 "{0} {1}",
                 LOD,
                 Universe.WatcherCam.Position.DistanceTo(Position).ToString()
             );
         }
 
-        Universe.StatusText.Text = String.Format("{0} lost", Universe.OutOfBounds);
+        GUI.Status.Text = String.Format("{0} heavenly bodies out of bounds", Universe.OutOfBounds);
 
         //GD.Print(LOD);
 
@@ -357,7 +396,7 @@ public partial class CubePlanet : Planetoid
                 var face = TerrainFaces[i];
                 await face.ConstructMesh(lod, seams);
                 GD.Print("Generated mesh for face " + face.Face);
-                Universe.Progress.Value += Universe.ConstructPlanetColliders ? 4.1 : 6.1;
+                GUI.Progress.Value += Universe.ConstructPlanetColliders ? 4.1 : 6.1;
             }
             GD.Print("Generated meshes for " + lod);
         };
@@ -386,7 +425,7 @@ public partial class CubePlanet : Planetoid
             GetNode("/root/Universe").AddChild(planetBody);
         }
         GetTree().Paused = false;
-        Universe.Progress.Visible = false;
+        GUI.Progress.Visible = false;
         Universe.Bodies.ForEach(body => (body as Node3D).Visible = true);
         Universe.Stars.Visible = true;
         Universe.Initialized = true;

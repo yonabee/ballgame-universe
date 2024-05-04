@@ -12,12 +12,6 @@ public partial class Universe : Node3D
     public static CubePlanet Planet;
     public static Pivot PlayerPivot;
     public static Node3D CameraArm;
-    public static Label SeedText;
-    public static Label HeightText;
-    public static Label ObjectsText;
-    public static Label StatusText;
-    public static Label PositionText;
-    public static Label TimeText;
     public static Camera3D PlayerCam;
     public static Camera3D WatcherCam;
     public static float Gravity;
@@ -29,16 +23,16 @@ public partial class Universe : Node3D
     public static Godot.Environment Environment;
     public static ShaderMaterial Sky;
     public static MultiMeshInstance3D Stars;
-    public static ProgressBar Progress;
     public static Node3D Atmosphere;
     public static GDScript AtmosphereScript;
-
+    public static GUI GuiManager;
     public static readonly bool ConstructPlanetColliders = true;
     public static int OutOfBounds = 0;
     public static bool Initialized = false;
     public static string Seed = "tatooine";
     public static readonly float CameraFloatHeight = 100f;
 
+    float _previousDot = 0f;
     float _sunSpeed = 256f;
     readonly int _numGG = 5;
     readonly int _numMoons = 25;
@@ -50,12 +44,12 @@ public partial class Universe : Node3D
 
     // Multiple of 10, minimum 20.
     // This is of the full planet and is used as a base for LODs.
-    readonly int _planetResolution = 900;
+    readonly int _planetResolution = 700;
     readonly float _maxMoonInitialVelocity = 500f;
-    readonly int _minMoonSize = 100;
-    readonly int _maxMoonSize = 350;
-    readonly int _minMoonlet = 10;
-    readonly int _maxMoonlet = 70;
+    readonly int _minMoonSize = 200;
+    readonly int _maxMoonSize = 450;
+    readonly int _minMoonlet = 100;
+    readonly int _maxMoonlet = 150;
     readonly float _moonAlpha = 0.6f;
     readonly float _moonletAlpha = 0.6f;
 
@@ -83,6 +77,9 @@ public partial class Universe : Node3D
     {
         _InitializeUniverse();
 
+        GuiManager ??= GetNode<GUI>("GUI");
+        GuiManager.Initialize();
+
         if (Planet == null || Planet.IsQueuedForDeletion())
         {
             _InitializePlanet();
@@ -91,15 +88,6 @@ public partial class Universe : Node3D
         WatcherCam ??= GetNode<Camera3D>("Pivot/Watcher");
         WatcherCam.Current = false;
         PlayerCam.Current = true;
-
-        SeedText ??= GetNode<Label>("Info1/SeedText");
-        HeightText ??= GetNode<Label>("Info1/HeightText");
-        ObjectsText ??= GetNode<Label>("Info1/ObjectsText");
-        TimeText ??= GetNode<Label>("Info1/TimeText");
-        StatusText ??= GetNode<Label>("Info1/StatusText");
-        PositionText ??= GetNode<Label>("Info1/PositionText");
-        Progress ??= GetNode<ProgressBar>("ProgressBar");
-        SeedText.Text = Seed.ToLower();
 
         if (Sunlight == null)
         {
@@ -145,13 +133,17 @@ public partial class Universe : Node3D
         _InitializeMoonlets(moonletCount);
         _InitializeStars(_numStars);
 
-        ObjectsText.Text =
-            ggCount.ToString()
+        GUI.Objects.Text =
+            "pockets: "
+            + ggCount.ToString()
             + ", "
+            + "cues: "
             + moonCount.ToString()
             + ", "
+            + "moons: "
             + moonletCount.ToString()
             + ", "
+            + "stars: "
             + starIndex.ToString();
 
         Bodies.ForEach(body =>
@@ -185,7 +177,32 @@ public partial class Universe : Node3D
             Sunlight.Transform.Basis.Z
         );
 
-        TimeText.Text = (planetDot + 1f).ToString("f4");
+        // Morning
+        if (planetDot > _previousDot)
+        {
+            var time = Mathf.Lerp(0f, 12f, (planetDot + 1f) * 0.5f);
+            var hour = Mathf.FloorToInt(time);
+            var min = Mathf.FloorToInt(Mathf.Lerp(0f, 60f, time - (float)Math.Truncate(time)));
+            if (hour == 0)
+            {
+                GUI.Time.Text = "12:" + (min < 10 ? "0" : "") + min.ToString() + " AM";
+            }
+            else
+            {
+                GUI.Time.Text =
+                    hour.ToString() + ":" + (min < 10 ? "0" : "") + min.ToString() + " AM";
+            }
+        }
+        // Evening
+        else
+        {
+            var time = Mathf.Lerp(0f, 12f, 1f - (planetDot + 1f) * 0.5f);
+            var hour = Mathf.CeilToInt(time);
+            var min = Mathf.FloorToInt(Mathf.Lerp(0f, 60f, time - (float)Math.Truncate(time)));
+            GUI.Time.Text = hour.ToString() + ":" + (min < 10 ? "0" : "") + min.ToString() + " PM";
+        }
+
+        _previousDot = planetDot;
 
         Sky.SetShaderParameter("sun_energy", Mathf.Lerp(0.3f, 1f, planetDot + 1f));
         Sky.SetShaderParameter("sun_fade", Mathf.Lerp(0.5f, 1f, planetDot + 1f));
@@ -210,8 +227,8 @@ public partial class Universe : Node3D
             Bodies.Clear();
             Planet.QueueFree();
             Stars.Visible = false;
-            Progress.Value = 0;
-            Progress.Visible = true;
+            GUI.Progress.Value = 0;
+            GUI.Progress.Visible = true;
             _Ready();
         }
 
@@ -226,31 +243,6 @@ public partial class Universe : Node3D
             {
                 PlayerCam.Current = false;
                 WatcherCam.Current = true;
-            }
-        }
-
-        if (@event.IsActionPressed("info_toggle"))
-        {
-            if (SeedText.Visible && !ObjectsText.Visible)
-            {
-                ObjectsText.Visible = true;
-                TimeText.Visible = true;
-                StatusText.Visible = true;
-                PositionText.Visible = true;
-                HeightText.Visible = true;
-            }
-            else if (!SeedText.Visible)
-            {
-                SeedText.Visible = true;
-            }
-            else
-            {
-                SeedText.Visible = false;
-                ObjectsText.Visible = false;
-                TimeText.Visible = false;
-                StatusText.Visible = false;
-                PositionText.Visible = false;
-                HeightText.Visible = false;
             }
         }
 

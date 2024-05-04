@@ -1,8 +1,9 @@
-[gd_scene load_steps=10 format=3 uid="uid://bfbrc8hceno8d"]
+[gd_scene load_steps=11 format=3 uid="uid://bfbrc8hceno8d"]
 
 [ext_resource type="Script" path="res://scripts/Universe.cs" id="1_wh6hk"]
 [ext_resource type="Script" path="res://scripts/Pivot.cs" id="2_7e67d"]
 [ext_resource type="Script" path="res://scripts/Watcher.cs" id="3_3ebdc"]
+[ext_resource type="Script" path="res://GUI.cs" id="4_b5mpq"]
 [ext_resource type="FontFile" uid="uid://fgohvphw7rug" path="res://fonts/TeenyTinyPixls-o2zo.ttf" id="4_lyy58"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_1qxg7"]
@@ -153,44 +154,28 @@ script = ExtResource("3_3ebdc")
 near = 1.0
 far = 200000.0
 
-[node name="RigidBody3D" type="RigidBody3D" parent="PlayerCam"]
-custom_integrator = true
-continuous_cd = true
+[node name="PlayerBody" type="AnimatableBody3D" parent="PlayerCam"]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="PlayerCam/RigidBody3D"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PlayerCam/PlayerBody"]
 shape = SubResource("SphereShape3D_1qxg7")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_p4qy4")
 
-[node name="ProgressBar" type="ProgressBar" parent="."]
-process_mode = 3
-offset_left = 32.0
-offset_top = 83.0
-offset_right = 354.0
-offset_bottom = 110.0
-theme_override_fonts/font = ExtResource("4_lyy58")
-theme_override_font_sizes/font_size = 15
-rounded = true
+[node name="GUI" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("4_b5mpq")
 
-[node name="Info1" type="Control" parent="."]
+[node name="Info2" type="Control" parent="GUI"]
 layout_mode = 3
 anchors_preset = 0
 offset_right = 384.0
 offset_bottom = 216.0
 
-[node name="SeedText" type="Label" parent="Info1"]
-offset_left = 1.0
-offset_top = 1.0
-offset_right = 183.0
-offset_bottom = 7.0
-theme_override_colors/font_color = Color(1, 1, 1, 0.498039)
-theme_override_constants/outline_size = 0
-theme_override_fonts/font = ExtResource("4_lyy58")
-theme_override_font_sizes/font_size = 5
-
-[node name="ObjectsText" type="Label" parent="Info1"]
-visible = false
+[node name="ObjectsText" type="Label" parent="GUI/Info2"]
 offset_left = 1.0
 offset_top = 8.0
 offset_right = 183.0
@@ -200,8 +185,7 @@ theme_override_constants/outline_size = 0
 theme_override_fonts/font = ExtResource("4_lyy58")
 theme_override_font_sizes/font_size = 5
 
-[node name="TimeText" type="Label" parent="Info1"]
-visible = false
+[node name="StatusText" type="Label" parent="GUI/Info2"]
 offset_left = 1.0
 offset_top = 15.0
 offset_right = 201.0
@@ -211,8 +195,7 @@ theme_override_constants/outline_size = 0
 theme_override_fonts/font = ExtResource("4_lyy58")
 theme_override_font_sizes/font_size = 5
 
-[node name="StatusText" type="Label" parent="Info1"]
-visible = false
+[node name="PositionText" type="Label" parent="GUI/Info2"]
 offset_left = 1.0
 offset_top = 22.0
 offset_right = 201.0
@@ -222,8 +205,7 @@ theme_override_constants/outline_size = 0
 theme_override_fonts/font = ExtResource("4_lyy58")
 theme_override_font_sizes/font_size = 5
 
-[node name="PositionText" type="Label" parent="Info1"]
-visible = false
+[node name="HeightText" type="Label" parent="GUI/Info2"]
 offset_left = 1.0
 offset_top = 29.0
 offset_right = 201.0
@@ -233,8 +215,7 @@ theme_override_constants/outline_size = 0
 theme_override_fonts/font = ExtResource("4_lyy58")
 theme_override_font_sizes/font_size = 5
 
-[node name="HeightText" type="Label" parent="Info1"]
-visible = false
+[node name="TimeText" type="Label" parent="GUI/Info2"]
 offset_left = 1.0
 offset_top = 36.0
 offset_right = 201.0
@@ -244,8 +225,38 @@ theme_override_constants/outline_size = 0
 theme_override_fonts/font = ExtResource("4_lyy58")
 theme_override_font_sizes/font_size = 5
 
-[node name="Info2" type="Control" parent="."]
+[node name="NoiseText1" type="Label" parent="GUI/Info2"]
+offset_left = 1.0
+offset_top = 43.0
+offset_right = 201.0
+offset_bottom = 49.0
+theme_override_colors/font_color = Color(1, 1, 1, 0.498039)
+theme_override_constants/outline_size = 0
+theme_override_fonts/font = ExtResource("4_lyy58")
+theme_override_font_sizes/font_size = 5
+
+[node name="Info1" type="Control" parent="GUI"]
 layout_mode = 3
 anchors_preset = 0
 offset_right = 384.0
 offset_bottom = 216.0
+
+[node name="SeedText" type="Label" parent="GUI/Info1"]
+offset_left = 1.0
+offset_top = 1.0
+offset_right = 183.0
+offset_bottom = 7.0
+theme_override_colors/font_color = Color(1, 1, 1, 0.498039)
+theme_override_constants/outline_size = 0
+theme_override_fonts/font = ExtResource("4_lyy58")
+theme_override_font_sizes/font_size = 5
+
+[node name="ProgressBar" type="ProgressBar" parent="GUI"]
+process_mode = 3
+offset_left = 32.0
+offset_top = 83.0
+offset_right = 354.0
+offset_bottom = 110.0
+theme_override_fonts/font = ExtResource("4_lyy58")
+theme_override_font_sizes/font_size = 15
+rounded = true

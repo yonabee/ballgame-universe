@@ -21,6 +21,10 @@ public partial class Pivot : Marker3D
 
     public override void _PhysicsProcess(double delta)
     {
+        if (Universe.Planet == null || Universe.PlayerPivot == null || Universe.CameraArm == null)
+        {
+            return;
+        }
         if (Universe.Planet.IsQueuedForDeletion())
         {
             return;
@@ -115,14 +119,18 @@ public partial class Pivot : Marker3D
         {
             // As jump is held down increase the frame counter and add impulse
             _jumpFrames++;
-            if (_jumpFrames < 500)
+            if (_jumpFrames < 50)
             {
-                _jumpImpulse += 1f;
+                _jumpImpulse += 6f;
+            }
+            else if (_jumpFrames < 300)
+            {
+                _jumpImpulse += 1.8f;
             }
             // Weak gravity while jump held
             else if (_targetHeight > Universe.Planet.Radius && _targetHeight > maxElevation)
             {
-                _targetHeight -= Universe.Planet.Gravity * (float)delta * (_jumpFrames / 2f);
+                _targetHeight -= Universe.Planet.Gravity * (float)delta * (_jumpFrames / 10f);
             }
         }
         else
@@ -130,7 +138,7 @@ public partial class Pivot : Marker3D
             // Apply full gravity
             if (_jumping && _targetHeight > Universe.Planet.Radius && _targetHeight > maxElevation)
             {
-                _targetHeight -= Universe.Planet.Gravity * (float)delta * (100f + _jumpFrames);
+                _targetHeight -= Universe.Planet.Gravity * (float)delta * (200f + _jumpFrames * 5);
             }
         }
 
@@ -215,7 +223,8 @@ public partial class Pivot : Marker3D
             * 10;
 
         Universe.CameraArm.TranslateObjectLocal(new Vector3(0, -offset, 0));
-        Universe.HeightText.Text = (_targetHeight - Universe.Planet.Radius).ToString("f2") + "m";
+        GUI.Height.Text =
+            (_targetHeight - Universe.Planet.Radius).ToString("f2") + " meters above sea level";
 
         if (IsMouse)
         {

@@ -140,18 +140,28 @@ public partial class Spheroid : Planetoid
             radialSegments,
             _GetVertexColor
         );
-        var material = new StandardMaterial3D
+        var materialChance = Universe.Random.Randf();
+        StandardMaterial3D material;
+        if (materialChance < 0.025)
         {
-            EmissionEnabled = true,
-            EmissionEnergyMultiplier = 200f / Radius,
-            VertexColorUseAsAlbedo = true,
-            ClearcoatEnabled = true,
-            ClearcoatRoughness = 1.0f,
-            Roughness = 1.0f,
-            Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
-            RefractionEnabled = true,
-            SpecularMode = BaseMaterial3D.SpecularModeEnum.Toon,
-        };
+            material = GetMaterial(MaterialType.Metallic);
+        }
+        else if (materialChance < 0.03)
+        {
+            material = GetMaterial(MaterialType.BlackHole);
+        }
+        else if (materialChance > 0.9)
+        {
+            material = GetMaterial(MaterialType.SolidGlass);
+        }
+        else if (materialChance > 0.85)
+        {
+            material = GetMaterial(MaterialType.Glass);
+        }
+        else
+        {
+            material = GetMaterial(MaterialType.Standard);
+        }
         (Meshes[0].Mesh as ArrayMesh).SurfaceSetMaterial(0, material);
     }
 }

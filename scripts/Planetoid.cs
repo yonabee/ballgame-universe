@@ -15,6 +15,15 @@ public partial class Planetoid : RigidBody3D, HeavenlyBody
     public bool OutOfBounds { get; set; }
     public Vector3 BaseRotation { get; set; }
 
+    public enum MaterialType
+    {
+        Standard,
+        Metallic,
+        Glass,
+        SolidGlass,
+        BlackHole
+    }
+
     public override void _Ready()
     {
         Configure();
@@ -43,6 +52,86 @@ public partial class Planetoid : RigidBody3D, HeavenlyBody
     {
         Initialize();
         GenerateMesh();
+    }
+
+    public StandardMaterial3D GetMaterial(MaterialType type)
+    {
+        StandardMaterial3D material;
+        if (type == MaterialType.BlackHole)
+        {
+            material = new StandardMaterial3D
+            {
+                EmissionEnabled = true,
+                EmissionEnergyMultiplier = 200f / Radius,
+                VertexColorUseAsAlbedo = true,
+                Roughness = 0f,
+                Metallic = 1f,
+                Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+                RefractionEnabled = true,
+                RimEnabled = true,
+                RimTint = 0.5f,
+                SpecularMode = BaseMaterial3D.SpecularModeEnum.Toon,
+            };
+        }
+        else if (type == MaterialType.Glass)
+        {
+            material = new StandardMaterial3D
+            {
+                EmissionEnabled = true,
+                VertexColorUseAsAlbedo = true,
+                ClearcoatEnabled = true,
+                ClearcoatRoughness = 0.5f,
+                Roughness = 0.3f,
+                Metallic = 0.3f,
+                Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+                RimEnabled = true,
+                RimTint = 0.5f,
+                CullMode = BaseMaterial3D.CullModeEnum.Disabled
+            };
+        }
+        else if (type == MaterialType.SolidGlass)
+        {
+            material = new StandardMaterial3D
+            {
+                EmissionEnabled = true,
+                VertexColorUseAsAlbedo = true,
+                ClearcoatEnabled = true,
+                ClearcoatRoughness = 0.5f,
+                Roughness = 0.8f,
+                Metallic = 0.3f,
+                Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+                CullMode = BaseMaterial3D.CullModeEnum.Disabled
+            };
+        }
+        else if (type == MaterialType.Metallic)
+        {
+            material = new StandardMaterial3D
+            {
+                EmissionEnabled = true,
+                EmissionEnergyMultiplier = 200f / Radius,
+                ClearcoatEnabled = true,
+                ClearcoatRoughness = 0.5f,
+                VertexColorUseAsAlbedo = true,
+                Roughness = 0.2f,
+                Metallic = 1f,
+            };
+        }
+        else
+        {
+            material = new StandardMaterial3D
+            {
+                EmissionEnabled = true,
+                EmissionEnergyMultiplier = 200f / Radius,
+                VertexColorUseAsAlbedo = true,
+                ClearcoatEnabled = true,
+                ClearcoatRoughness = 1.0f,
+                Roughness = 1.0f,
+                Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+                RefractionEnabled = true,
+                SpecularMode = BaseMaterial3D.SpecularModeEnum.Toon,
+            };
+        }
+        return material;
     }
 
     public virtual void Initialize() { }
