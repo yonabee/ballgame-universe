@@ -253,7 +253,7 @@ public static class Utils
 
     public static Face[] GetFaces(Face face)
     {
-        var loc = Universe.Location;
+        var loc = Universe.CurrentLocation;
         var faces = new Face[4];
         faces[0] = face;
         var halfway = Universe.Planet.Resolution / 2f;

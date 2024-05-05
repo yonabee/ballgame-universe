@@ -7,7 +7,7 @@ public interface HeavenlyBody
     public float Radius { get; set; }
     public float Gravity { get; set; }
     public Vector3 CurrentVelocity { get; set; }
-    public Vector3 BaseRotation { get; set; }
+    public Vector3 CurrentRotation { get; set; }
     public bool OutOfBounds { get; set; }
     public Transform3D Transform { get; }
     public Vector3 Rotation { get; set; }

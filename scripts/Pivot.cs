@@ -77,7 +77,7 @@ public partial class Pivot : Marker3D
                 break;
         }
         Universe.CurrentFace = face;
-        Universe.Location = new Vector2(x, y);
+        Universe.CurrentLocation = new Vector2(x, y);
 
         TerrainFace terrainFace = Universe.Planet.TerrainFaces[(int)face - 1];
         var xLength = terrainFace.Elevations.GetLength(0);
@@ -91,12 +91,18 @@ public partial class Pivot : Marker3D
         float maxElevation = new float[]
         {
             elevation,
-            x > 1 ? terrainFace.Elevations[x - 2, y].scaled : 0,
-            x > 1 && y > 1 ? terrainFace.Elevations[x - 2, y - 2].scaled : 0,
-            y > 1 ? terrainFace.Elevations[x, y - 2].scaled : 0,
-            x < xLength - 2 ? terrainFace.Elevations[x + 2, y].scaled : 0,
-            x < xLength - 2 && y < yLength - 2 ? terrainFace.Elevations[x + 2, y + 2].scaled : 0,
-            y < yLength - 2 ? terrainFace.Elevations[x, y + 2].scaled : 0
+            x > 0 ? terrainFace.Elevations[x - 1, y].scaled : 0,
+            x > 0 && y > 0 ? terrainFace.Elevations[x - 1, y - 1].scaled : 0,
+            y > 0 ? terrainFace.Elevations[x, y - 1].scaled : 0,
+            x < xLength - 1 ? terrainFace.Elevations[x + 1, y].scaled : 0,
+            x < xLength - 1 && y < yLength - 1 ? terrainFace.Elevations[x + 1, y + 1].scaled : 0,
+            y < yLength - 1 ? terrainFace.Elevations[x, y + 1].scaled : 0,
+            x > 2 ? terrainFace.Elevations[x - 3, y].scaled : 0,
+            x > 2 && y > 2 ? terrainFace.Elevations[x - 3, y - 3].scaled : 0,
+            y > 2 ? terrainFace.Elevations[x, y - 3].scaled : 0,
+            x < xLength - 3 ? terrainFace.Elevations[x + 3, y].scaled : 0,
+            x < xLength - 3 && y < yLength - 3 ? terrainFace.Elevations[x + 3, y + 3].scaled : 0,
+            y < yLength - 3 ? terrainFace.Elevations[x, y + 3].scaled : 0
         }.Max();
 
         if (!_jumping)

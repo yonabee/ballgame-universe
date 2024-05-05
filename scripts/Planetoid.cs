@@ -13,7 +13,7 @@ public partial class Planetoid : RigidBody3D, HeavenlyBody
     public int Seed { get; set; }
     public float Gravity { get; set; }
     public bool OutOfBounds { get; set; }
-    public Vector3 BaseRotation { get; set; }
+    public Vector3 CurrentRotation { get; set; }
 
     public enum MaterialType
     {

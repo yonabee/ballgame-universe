@@ -27,8 +27,7 @@ public partial class MicroSpheroid : Planetoid
         }
         if (Colliders[0].Shape == null)
         {
-            var shape = new SphereShape3D();
-            shape.Radius = Radius;
+            var shape = new SphereShape3D { Radius = Radius };
             Colliders[0].Shape = shape;
         }
 
@@ -104,7 +103,19 @@ public partial class MicroSpheroid : Planetoid
     public override void _IntegrateForces(PhysicsDirectBodyState3D state)
     {
         state.LinearVelocity = CurrentVelocity;
-        state.AngularVelocity = BaseRotation;
+        state.AngularVelocity = CurrentRotation;
+        // state.ApplyTorque(CurrentRotation);
+    }
+
+    public override void _PhysicsProcess(double delta)
+    {
+        // var collision = MoveAndCollide(CurrentVelocity * (float)delta);
+        // if (collision != null)
+        // {
+        //     var normal = collision.GetNormal();
+        //     CurrentVelocity = CurrentVelocity.Bounce(normal);
+        //     CurrentRotation = CurrentRotation.Bounce(normal);
+        // }
     }
 
     public override void GenerateMesh()

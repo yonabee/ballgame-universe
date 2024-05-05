@@ -6,15 +6,12 @@ public static class NoiseFilterFactory
 {
     public static INoiseFilter CreateNoiseFilter(NoiseSettings settings)
     {
-        switch (settings.filterType)
+        return settings.filterType switch
         {
-            case NoiseSettings.FilterType.Simple:
-                return new SimpleNoiseFilter(settings);
-            case NoiseSettings.FilterType.Ridged:
-                return new RidgedNoiseFilter(settings);
-            case NoiseSettings.FilterType.Warped:
-                return new WarpedNoiseFilter(settings);
-        }
-        return null;
+            NoiseSettings.FilterType.Simple => new SimpleNoiseFilter(settings),
+            NoiseSettings.FilterType.Ridged => new RidgedNoiseFilter(settings),
+            NoiseSettings.FilterType.Warped => new WarpedNoiseFilter(settings),
+            _ => null,
+        };
     }
 }

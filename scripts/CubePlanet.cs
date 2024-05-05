@@ -75,14 +75,14 @@ public partial class CubePlanet : Planetoid
 
             var noiseLayer1 = new NoiseSettings
             {
-                strength = Random.RandfRange(0.1f, 0.2f), //0.15f,
+                strength = Random.Randfn(0.15f, 0.01f), //Range(0.1f, 0.2f), //0.15f,
                 octaves = Random.RandiRange(2, 6), //4,
-                frequency = Random.RandfRange(0.4f, 0.6f), //0.5f,
-                roughness = Random.RandfRange(1f, 3f), //2.35f,
-                persistence = Random.RandfRange(0.25f, 0.75f), //0.5f,
-                warpOctaves = Random.RandiRange(1, 4),
-                warpFrequency = Random.RandfRange(0.1f, 1f),
-                warpRoughness = Random.RandfRange(1f, 4f),
+                frequency = Random.Randfn(0.5f, 0.01f), // Range(0.4f, 0.6f), //0.5f,
+                roughness = Random.Randfn(2.35f, 0.5f), //2.35f,
+                persistence = Random.Randfn(0.5f, 0.25f), //0.5f,
+                warpOctaves = Random.RandiRange(1, 2),
+                warpFrequency = Random.RandfRange(0.1f, 0.2f),
+                warpRoughness = Random.RandfRange(0.1f, 2f),
                 warpPersistence = Random.RandfRange(0.25f, 1f),
                 minValue = 1.1f,
                 center = center,
@@ -121,21 +121,14 @@ public partial class CubePlanet : Planetoid
 
             var noiseLayer2 = new NoiseSettings
             {
-                strength = Random.RandfRange(2f, 6f), // 4f,
+                strength = Random.Randfn(4f, 0.1f), // 4f,
                 octaves = Random.RandiRange(2, 6), // 5,
-                frequency = Random.RandfRange(0.75f, 1.25f), //1f,
-                roughness = Random.RandfRange(0.5f, 2f), //2f,
-                persistence = Random.RandfRange(0.1f, 0.9f), // 0.5f,
-                warpOctaves = Random.RandiRange(1, 4),
-                warpFrequency = Random.RandfRange(0.1f, 1f),
-                warpRoughness = Random.RandfRange(1f, 4f),
-                warpPersistence = Random.RandfRange(0.25f, 1f),
+                frequency = Random.Randfn(1f, 0.1f), //1f,
+                roughness = Random.Randfn(2f, 0.2f), //2f,
+                persistence = Random.Randfn(0.5f, 0.15f), // 0.5f,
                 minValue = 1.25f,
                 center = center,
-                filterType =
-                    warpChance < 0.333f
-                        ? NoiseSettings.FilterType.Warped
-                        : NoiseSettings.FilterType.Simple,
+                filterType = NoiseSettings.FilterType.Simple,
                 useFirstLayerAsMask = true,
                 seed = Seed
             };
@@ -152,37 +145,16 @@ public partial class CubePlanet : Planetoid
                 + noiseLayer2.persistence.ToString("f2")
                 + " :mount";
 
-            if (noiseLayer2.filterType == NoiseSettings.FilterType.Warped)
-            {
-                GUI.Noise2.Text +=
-                    " "
-                    + noiseLayer2.warpOctaves.ToString()
-                    + ", "
-                    + noiseLayer2.warpFrequency.ToString("f2")
-                    + ", "
-                    + noiseLayer2.warpRoughness.ToString("f2")
-                    + ", "
-                    + noiseLayer2.warpPersistence.ToString("f2")
-                    + " :mount-x";
-            }
-
             var noiseLayer3 = new NoiseSettings
             {
-                strength = Random.RandfRange(0.2f, 1f), //0.8f,
-                octaves = Random.RandiRange(1, 6), //4,
-                frequency = Random.RandfRange(0.5f, 3f), //2.5f,
-                roughness = Random.RandfRange(0.2f, 3f), //2f,
-                persistence = Random.RandfRange(0.1f, 1f), //0.5f,
-                warpOctaves = Random.RandiRange(1, 4),
-                warpFrequency = Random.RandfRange(0.1f, 1f),
-                warpRoughness = Random.RandfRange(1f, 4f),
-                warpPersistence = Random.RandfRange(0.25f, 1f),
+                strength = Random.Randfn(0.8f, 0.05f), //0.8f,
+                octaves = Random.RandiRange(1, 4), //4,
+                frequency = Random.RandfRange(0.5f, 2.75f), //2.5f,
+                roughness = Random.Randfn(2f, 0.1f), //2f,
+                persistence = Random.Randfn(0.5f, 0.1f), //0.5f,
                 minValue = 0f,
                 center = center,
-                filterType =
-                    warpChance < 0.333f
-                        ? NoiseSettings.FilterType.Warped
-                        : NoiseSettings.FilterType.Simple,
+                filterType = NoiseSettings.FilterType.Simple,
                 useFirstLayerAsMask = true,
                 seed = Seed
             };
@@ -198,20 +170,6 @@ public partial class CubePlanet : Planetoid
                 + ", "
                 + noiseLayer3.persistence.ToString("f2")
                 + " :ridge";
-
-            if (noiseLayer3.filterType == NoiseSettings.FilterType.Warped)
-            {
-                GUI.Noise3.Text +=
-                    " "
-                    + noiseLayer3.warpOctaves.ToString()
-                    + ", "
-                    + noiseLayer3.warpFrequency.ToString("f2")
-                    + ", "
-                    + noiseLayer3.warpRoughness.ToString("f2")
-                    + ", "
-                    + noiseLayer3.warpPersistence.ToString("f2")
-                    + " :ridge-x";
-            }
 
             NoiseSettings[] noiseSettings = new[] { noiseLayer1, noiseLayer2, noiseLayer3 };
             shapeSettings.noiseSettings = noiseSettings;
@@ -373,8 +331,8 @@ public partial class CubePlanet : Planetoid
                 "{0}, Sector {1} at {2}x{3}",
                 LOD,
                 Universe.CurrentFace,
-                Universe.Location.X,
-                Universe.Location.Y
+                Universe.CurrentLocation.X,
+                Universe.CurrentLocation.Y
             );
         }
         else if (Universe.WatcherCam.Current)
@@ -423,7 +381,7 @@ public partial class CubePlanet : Planetoid
 
     public new void UpdatePosition(float timeStep)
     {
-        RotateObjectLocal(BaseRotation.Normalized(), timeStep * RotationSpeed);
+        RotateObjectLocal(CurrentRotation.Normalized(), timeStep * RotationSpeed);
     }
 
     public override async void GenerateMesh()

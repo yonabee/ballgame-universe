@@ -18,7 +18,7 @@ public partial class Universe : Node3D
     public static int Radius = 7500;
     public static RandomNumberGenerator Random;
     public static Face CurrentFace;
-    public static Vector2 Location;
+    public static Vector2 CurrentLocation;
     public static DirectionalLight3D Sunlight;
     public static Godot.Environment Environment;
     public static ShaderMaterial Sky;
@@ -31,29 +31,7 @@ public partial class Universe : Node3D
     public static bool Initialized = false;
     public static string Seed = "tatooine";
     public static readonly float CameraFloatHeight = 100f;
-
-    float _previousDot = 0f;
-    float _sunSpeed = 256f;
-    readonly int _numGG = 5;
-    readonly int _numMoons = 25;
-    readonly int _numMoonlets = 150;
-    readonly int _numStars = 10000;
-    readonly float _playerSpeed = 0.3f;
-    readonly float _cameraPadSpeed = 3f;
-    readonly float _planetRadius = 2000f;
-
-    // Multiple of 10, minimum 20.
-    // This is of the full planet and is used as a base for LODs.
-    readonly int _planetResolution = 700;
-    readonly float _maxMoonInitialVelocity = 500f;
-    readonly int _minMoonSize = 200;
-    readonly int _maxMoonSize = 450;
-    readonly int _minMoonlet = 50;
-    readonly int _maxMoonlet = 150;
-    readonly float _moonAlpha = 0.6f;
-    readonly float _moonletAlpha = 0.4f;
-
-    Color[] colors =
+    public Color[] Colors =
     {
         new Color("#000000"),
         new Color("#E50000"),
@@ -67,6 +45,27 @@ public partial class Universe : Node3D
         new Color("#73D7EE"),
         new Color("#613915")
     };
+
+    float _previousDot = 0f;
+    float _sunSpeed = 256f;
+    readonly int _numGG = 5;
+    readonly int _numMoons = 25;
+    readonly int _numMoonlets = 150;
+    readonly int _numStars = 10000;
+    readonly float _playerSpeed = 0.3f;
+    readonly float _cameraPadSpeed = 3f;
+    readonly float _planetRadius = 3000f;
+
+    // Multiple of 10, minimum 20.
+    // This is of the full planet and is used as a base for LODs.
+    readonly int _planetResolution = 1250;
+    readonly float _maxMoonInitialVelocity = 500f;
+    readonly int _minMoonSize = 200;
+    readonly int _maxMoonSize = 450;
+    readonly int _minMoonlet = 50;
+    readonly int _maxMoonlet = 150;
+    readonly float _moonAlpha = 0.6f;
+    readonly float _moonletAlpha = 0.6f;
 
     float[] starLuminosity;
     Vector3 starRotation;
@@ -147,9 +146,9 @@ public partial class Universe : Node3D
             + starIndex.ToString();
 
         Bodies.ForEach(body =>
-            body.BaseRotation = Utils.RandomPointOnUnitSphere() * Random.RandfRange(0.5f, 2f)
+            body.CurrentRotation = Utils.RandomPointOnUnitSphere() * Random.RandfRange(0.5f, 2f)
         );
-        Planet.BaseRotation = Utils.RandomPointOnUnitSphere();
+        Planet.CurrentRotation = Utils.RandomPointOnUnitSphere();
         Planet.RotationSpeed = Random.RandfRange(0.03f, 0.07f);
     }
 
@@ -350,7 +349,7 @@ public partial class Universe : Node3D
             Atmosphere = (Node3D)AtmosphereScript.New();
             Atmosphere.Set("sun_path", Sunlight);
             Atmosphere.Set("planet_radius", Planet.Radius);
-            Atmosphere.Set("atmosphere_height", Planet.Radius / 5f);
+            Atmosphere.Set("atmosphere_height", Planet.Radius / 10f);
             Planet.AddChild(Atmosphere);
         }
         else
@@ -365,161 +364,31 @@ public partial class Universe : Node3D
     {
         float maxV = _maxMoonInitialVelocity;
         float maxDistance = Radius;
+        float radius = Random.RandiRange(_minMoonSize, _maxMoonSize);
         for (int i = 0; i < moonCount; i++)
         {
-            var sphere = new Spheroid
-            {
-                Seed = i,
-                Radius = Random.RandiRange(_minMoonSize, _maxMoonSize)
-            };
-            sphere.rings = Mathf.FloorToInt(sphere.Radius);
-            sphere.radialSegments = sphere.rings;
-            sphere.Gravity = sphere.Radius / 10f;
-            sphere.initialVelocity = new Vector3(
-                Random.Randf() * maxV * 2 - maxV,
-                Random.Randf() * maxV * 2 - maxV,
-                Random.Randf() * maxV * 2 - maxV
-            );
-
-            float distance =
-                Random.RandfRange(Planet.Radius * 2, maxDistance) + (sphere.Radius * 10);
-            if (Random.Randf() < 0.5f)
-            {
-                distance = -distance;
-            }
-            sphere.Translate(Utils.RandomPointOnUnitSphere() * distance);
-
-            var chance = Random.Randf();
-            if (chance < 0.2f)
-            {
-                chance = Random.Randf();
-                Color[] crayons;
-                // classic rainbow
-                if (chance < 0.15f)
-                {
-                    crayons = new[]
+            var sphere =
+                StarNursery.CreateHeavenlyBody(
+                    new BodySettings
                     {
-                        new Color("#E50000"),
-                        new Color("#FF8D00"),
-                        new Color("#FFEE00"),
-                        new Color("#028121"),
-                        new Color("#004CFF"),
-                        new Color("#770088")
-                    };
-
-                    // progress rainbow
-                }
-                else if (chance < 0.3f)
-                {
-                    crayons = new[]
-                    {
-                        new Color("#FFFFFF"),
-                        new Color("#FFAFC7"),
-                        new Color("#73D7EE"),
-                        new Color("#613915"),
-                        new Color("#000000"),
-                        new Color("#E50000"),
-                        new Color("#FF8D00"),
-                        new Color("#FFEE00"),
-                        new Color("#028121"),
-                        new Color("#004CFF"),
-                        new Color("#770088")
-                    };
-
-                    // transgender
-                }
-                else if (chance < 0.45f)
-                {
-                    crayons = new[]
-                    {
-                        new Color("#5BCFFB"),
-                        new Color("#F5ABB9"),
-                        new Color("#FFFFFF"),
-                        new Color("#F5ABB9"),
-                        new Color("#5BCFFB")
-                    };
-
-                    // lesbian
-                }
-                else if (chance < 0.6f)
-                {
-                    crayons = new[]
-                    {
-                        new Color("#D62800"),
-                        new Color("#FF9B56"),
-                        new Color("#FFFFFF"),
-                        new Color("#D462A6"),
-                        new Color("#A40062"),
-                    };
-
-                    // bisexual
-                }
-                else if (chance < 0.7f)
-                {
-                    crayons = new[]
-                    {
-                        new Color("#D60270"),
-                        new Color("#9B4F96"),
-                        new Color("#0038A8")
-                    };
-
-                    // pansexual
-                }
-                else if (chance < 0.8f)
-                {
-                    crayons = new[]
-                    {
-                        new Color("#FF1C8D"),
-                        new Color("#FFD700"),
-                        new Color("#1AB3FF")
-                    };
-
-                    // nonbinary
-                }
-                else if (chance < 0.9f)
-                {
-                    crayons = new[]
-                    {
-                        new Color("#FCF431"),
-                        new Color("#FCFCFC"),
-                        new Color("#9D59D2"),
-                        new Color("#282828")
-                    };
-
-                    // genderfluid
-                }
-                else
-                {
-                    crayons = new[]
-                    {
-                        new Color("#FE76A2"),
-                        new Color("#FFFFFF"),
-                        new Color("#BF12D7"),
-                        new Color("#000000"),
-                        new Color("#303CBE")
-                    };
-                }
-
-                var offset = Random.RandiRange(0, crayons.Length - 1);
-                sphere.Crayons = new Color[crayons.Length];
-                for (var idx = offset; idx < crayons.Length + offset; idx++)
-                {
-                    sphere.Crayons[idx % crayons.Length] = crayons[idx % crayons.Length];
-                    sphere.Crayons[idx % crayons.Length].A = _moonAlpha;
-                }
-            }
-            else
-            {
-                sphere.Crayons = new[]
-                {
-                    colors[i % colors.Length],
-                    colors[(i + Random.RandiRange(1, 32)) % colors.Length]
-                };
-                for (int j = 0; j < sphere.Crayons.Length; j++)
-                {
-                    sphere.Crayons[j].A = _moonAlpha;
-                }
-            }
+                        Type = BodyType.Moon,
+                        Size = radius,
+                        Seed = Seed.GetHashCode() + i + _numMoonlets,
+                        Velocity = new Vector3(
+                            Random.Randf() * maxV * 2 - maxV,
+                            Random.Randf() * maxV * 2 - maxV,
+                            Random.Randf() * maxV * 2 - maxV
+                        ),
+                        Distance =
+                            Random.RandfRange(Planet.Radius * 2, maxDistance) + (radius * 10),
+                        Colors = new[]
+                        {
+                            Colors[i % Colors.Length],
+                            Colors[(i + Random.RandiRange(1, 32)) % Colors.Length]
+                        },
+                        Transparency = _moonAlpha
+                    }
+                ) as Spheroid;
             sphere.Visible = false;
             Bodies.Add(sphere);
             AddChild(sphere);
@@ -534,36 +403,22 @@ public partial class Universe : Node3D
         for (int i = 0; i < gasGiantCount; i++)
         {
             var giantSize = Random.RandiRange(1000, 10000);
-            var lightColor = colors[Random.RandiRange(1, 10)];
-            var gg = new GasGiant
-            {
-                Gravity = giantSize,
-                EventHorizon = giantSize / 5f,
-                Radius = 0.0f,
-                OmniRange = giantSize,
-                //OmniAttenuation = 0.2f,
-                LightColor = lightColor,
-                //ShadowEnabled = true,
-                LightSize = giantSize / 15f,
-                //ShadowBias = 0.1f,
-                //ShadowNormalBias = 1f,
-                //ShadowBlur = 5f,
-                RotationSpeed = Random.RandfRange(0.1f, 0.3f)
-            };
-            gg.rings = Mathf.FloorToInt(gg.EventHorizon);
-            gg.radialSegments = gg.rings;
+            var lightColor = Colors[Random.RandiRange(1, 10)];
+            var gg =
+                StarNursery.CreateHeavenlyBody(
+                    new BodySettings
+                    {
+                        Type = BodyType.BlackHole,
+                        Size = Random.RandiRange(1000, 10000),
+                        Seed = Seed.GetHashCode() + i + _numMoonlets + _numMoons,
+                        Velocity = Vector3.Zero,
+                        Distance =
+                            Random.RandfRange(Planet.Radius * 2, Radius)
+                            + giantSize * 2 * Mathf.Sign(Random.Randfn()),
+                        Colors = new[] { lightColor }
+                    }
+                ) as GasGiant;
 
-            float distance = Random.RandfRange(Planet.Radius * 2, Radius) + (gg.EventHorizon * 2);
-            if (Random.Randf() < 0.5f)
-            {
-                distance = -distance;
-            }
-            var chance = Random.Randf();
-            if (gasGiantPosition == Vector3.Zero || chance > 0.05f)
-            {
-                gasGiantPosition = Utils.RandomPointOnUnitSphere() * distance;
-            }
-            gg.Translate(gasGiantPosition);
             gg.Visible = false;
             // var gas = (Node3D)AtmosphereScript.New();
             // gas.Set("sun_path", Sunlight);
@@ -585,37 +440,29 @@ public partial class Universe : Node3D
         float maxDistance = Radius * 0.333f;
         for (int i = 0; i < asteroidCount; i++)
         {
-            var sphere = new MicroSpheroid
-            {
-                Seed = i,
-                Radius = Random.RandiRange(_minMoonlet, _maxMoonlet)
-            };
-            sphere.rings = Mathf.FloorToInt(sphere.Radius);
-            sphere.radialSegments = sphere.rings;
-            sphere.Gravity = sphere.Radius / 5f;
-            sphere.initialVelocity = new Vector3(
-                Random.Randf() * maxV * 2 - maxV,
-                Random.Randf() * maxV * 2 - maxV,
-                Random.Randf() * maxV * 2 - maxV
-            );
-
-            float distance = Random.RandfRange(Planet.Radius, maxDistance);
-            if (Random.Randf() < 0.5f)
-            {
-                distance = -distance;
-            }
-            sphere.Translate(Utils.RandomPointOnUnitSphere() * distance);
-
-            // sphere.Translate(new Vector3(transX, transY, transZ));
-            sphere.crayons = new[]
-            {
-                colors[i % colors.Length],
-                colors[(i + Random.RandiRange(1, 32)) % colors.Length]
-            };
-            for (int j = 0; j < sphere.crayons.Length; j++)
-            {
-                sphere.crayons[j].A = _moonletAlpha;
-            }
+            var sphere =
+                StarNursery.CreateHeavenlyBody(
+                    new BodySettings
+                    {
+                        Type = BodyType.Moonlet,
+                        Seed = i + Seed.GetHashCode(),
+                        Size = Random.RandfRange(_minMoonlet, _maxMoonlet),
+                        Velocity = new Vector3(
+                            Random.Randf() * maxV * 2 - maxV,
+                            Random.Randf() * maxV * 2 - maxV,
+                            Random.Randf() * maxV * 2 - maxV
+                        ),
+                        Distance =
+                            Random.RandfRange(Planet.Radius, maxDistance)
+                            * Mathf.Sign(Random.Randfn()),
+                        Colors = new[]
+                        {
+                            Colors[i % Colors.Length],
+                            Colors[(i + Random.RandiRange(1, 32)) % Colors.Length]
+                        },
+                        Transparency = _moonletAlpha
+                    }
+                ) as MicroSpheroid;
             sphere.Visible = false;
             Bodies.Add(sphere);
             AddChild(sphere);
@@ -640,7 +487,7 @@ public partial class Universe : Node3D
             var multiMesh = new MultiMesh();
             Stars = new MultiMeshInstance3D { Multimesh = multiMesh, Position = Vector3.Zero };
 
-            var mesh = MeshUtils.GenerateCubeMesh(Colors.White, 20);
+            var mesh = MeshUtils.GenerateCubeMesh(Godot.Colors.White, 20);
             mesh.SurfaceSetMaterial(0, material);
 
             Stars.Multimesh.TransformFormat = MultiMesh.TransformFormatEnum.Transform3D;
@@ -685,7 +532,7 @@ public partial class Universe : Node3D
             Stars.Multimesh.SetInstanceTransform(starIndex, transform);
 
             var chance = Random.Randf();
-            Color color = Colors.White;
+            Color color = Godot.Colors.White;
             if (chance < 0.05)
             {
                 color = new Color(Utils.Crayons[Random.RandiRange(0, 47)]);

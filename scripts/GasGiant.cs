@@ -10,8 +10,9 @@ public partial class GasGiant : OmniLight3D, HeavenlyBody
     public Vector3 CurrentVelocity { get; set; }
     public bool OutOfBounds { get; set; }
     public float EventHorizon { get; set; }
-    public Vector3 BaseRotation { get; set; }
+    public Vector3 CurrentRotation { get; set; }
     public Color[] Crayons { get; set; }
+    public int Seed { get; set; }
     public MeshInstance3D GGMesh = new MeshInstance3D();
     public Vector3 initialVelocity;
     public float RotationSpeed { get; set; }
@@ -35,7 +36,7 @@ public partial class GasGiant : OmniLight3D, HeavenlyBody
         {
             NoiseType = FastNoiseLite.NoiseTypeEnum.Simplex,
             FractalOctaves = 4,
-            Seed = Universe.Seed.GetHashCode(),
+            Seed = Seed,
             Frequency = Universe.Random.RandfRange(0.00005f, 0.0001f),
             DomainWarpEnabled = true,
             DomainWarpFractalOctaves = Universe.Random.RandiRange(1, 3),
@@ -152,7 +153,7 @@ public partial class GasGiant : OmniLight3D, HeavenlyBody
     public void UpdatePosition(float timeStep)
     {
         Translate(CurrentVelocity * timeStep);
-        RotateObjectLocal(BaseRotation.Normalized(), timeStep * RotationSpeed);
+        RotateObjectLocal(CurrentRotation.Normalized(), timeStep * RotationSpeed);
     }
 
     public void GenerateMesh()
