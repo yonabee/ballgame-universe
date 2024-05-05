@@ -48,10 +48,10 @@ public partial class Universe : Node3D
     readonly float _maxMoonInitialVelocity = 500f;
     readonly int _minMoonSize = 200;
     readonly int _maxMoonSize = 450;
-    readonly int _minMoonlet = 100;
+    readonly int _minMoonlet = 50;
     readonly int _maxMoonlet = 150;
     readonly float _moonAlpha = 0.6f;
-    readonly float _moonletAlpha = 0.6f;
+    readonly float _moonletAlpha = 0.4f;
 
     Color[] colors =
     {
@@ -285,7 +285,7 @@ public partial class Universe : Node3D
         Seed = File.ReadLines("scrabble.txt").ElementAtOrDefault(Random.RandiRange(0, 267706));
         Random.Seed = (ulong)Seed.GetHashCode();
         OutOfBounds = 0;
-        Gravity = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle();
+        Gravity = 9.8f; // ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle();
         CurrentFace = Face.Top;
         starLuminosity = new float[_numStars];
 
@@ -350,7 +350,7 @@ public partial class Universe : Node3D
             Atmosphere = (Node3D)AtmosphereScript.New();
             Atmosphere.Set("sun_path", Sunlight);
             Atmosphere.Set("planet_radius", Planet.Radius);
-            Atmosphere.Set("atmosphere_height", Planet.Radius / 10f);
+            Atmosphere.Set("atmosphere_height", Planet.Radius / 5f);
             Planet.AddChild(Atmosphere);
         }
         else
@@ -540,13 +540,14 @@ public partial class Universe : Node3D
                 Gravity = giantSize,
                 EventHorizon = giantSize / 5f,
                 Radius = 0.0f,
-                OmniRange = giantSize * 2f,
-                OmniAttenuation = 0.2f,
+                OmniRange = giantSize,
+                //OmniAttenuation = 0.2f,
                 LightColor = lightColor,
-                // ShadowEnabled = true,
-                // LightSize = giantSize / 15f,
-                ShadowBias = 0.3f,
-                ShadowBlur = 5f,
+                //ShadowEnabled = true,
+                LightSize = giantSize / 15f,
+                //ShadowBias = 0.1f,
+                //ShadowNormalBias = 1f,
+                //ShadowBlur = 5f,
                 RotationSpeed = Random.RandfRange(0.1f, 0.3f)
             };
             gg.rings = Mathf.FloorToInt(gg.EventHorizon);

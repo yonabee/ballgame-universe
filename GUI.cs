@@ -9,6 +9,8 @@ public partial class GUI : Control
     public static Label Status;
     public static Label Location;
     public static Label Noise1;
+    public static Label Noise2;
+    public static Label Noise3;
     public static Label Time;
     public static ProgressBar Progress;
 
@@ -21,6 +23,8 @@ public partial class GUI : Control
         Status ??= GetNode<Label>("./Info2/StatusText");
         Location ??= GetNode<Label>("./Info2/PositionText");
         Noise1 ??= GetNode<Label>("./Info2/NoiseText1");
+        Noise2 ??= GetNode<Label>("./Info2/NoiseText2");
+        Noise3 ??= GetNode<Label>("./Info2/NoiseText3");
         Progress ??= GetNode<ProgressBar>("./ProgressBar");
         SeedText.Text = Universe.Seed.ToUpper();
     }
@@ -37,6 +41,8 @@ public partial class GUI : Control
                 Location.Visible = true;
                 Height.Visible = true;
                 Noise1.Visible = true;
+                Noise2.Visible = true;
+                Noise3.Visible = true;
             }
             else if (!SeedText.Visible)
             {
@@ -51,6 +57,8 @@ public partial class GUI : Control
                 Location.Visible = false;
                 Height.Visible = false;
                 Noise1.Visible = false;
+                Noise2.Visible = false;
+                Noise3.Visible = false;
             }
         }
     }

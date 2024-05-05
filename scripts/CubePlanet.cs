@@ -50,7 +50,7 @@ public partial class CubePlanet : Planetoid
 
     public override void Configure()
     {
-        Gravity = ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle();
+        Gravity = 9.8f; //ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle();
 
         base.Configure();
 
@@ -71,17 +71,25 @@ public partial class CubePlanet : Planetoid
             shapeSettings = new ShapeGenerator.ShapeSettings { mass = Mass, radius = Radius };
 
             var center = ToGlobal(Transform.Origin);
+            var warpChance = Random.Randf();
 
             var noiseLayer1 = new NoiseSettings
             {
-                strength = Random.RandfRange(0.03f, 0.2f), //0.15f,
+                strength = Random.RandfRange(0.1f, 0.2f), //0.15f,
                 octaves = Random.RandiRange(2, 6), //4,
-                frequency = Random.RandfRange(0.25f, 0.75f), //0.5f,
-                roughness = Random.RandfRange(1f, 4f), //2.35f,
+                frequency = Random.RandfRange(0.4f, 0.6f), //0.5f,
+                roughness = Random.RandfRange(1f, 3f), //2.35f,
                 persistence = Random.RandfRange(0.25f, 0.75f), //0.5f,
+                warpOctaves = Random.RandiRange(1, 4),
+                warpFrequency = Random.RandfRange(0.1f, 1f),
+                warpRoughness = Random.RandfRange(1f, 4f),
+                warpPersistence = Random.RandfRange(0.25f, 1f),
                 minValue = 1.1f,
                 center = center,
-                filterType = NoiseSettings.FilterType.Simple,
+                filterType =
+                    warpChance < 0.666f
+                        ? NoiseSettings.FilterType.Warped
+                        : NoiseSettings.FilterType.Simple,
                 seed = Seed
             };
 
@@ -94,63 +102,116 @@ public partial class CubePlanet : Planetoid
                 + ", "
                 + noiseLayer1.roughness.ToString("f2")
                 + ", "
-                + noiseLayer1.persistence.ToString("f2");
+                + noiseLayer1.persistence.ToString("f2")
+                + " :hills";
+
+            if (noiseLayer1.filterType == NoiseSettings.FilterType.Warped)
+            {
+                GUI.Noise1.Text +=
+                    " "
+                    + noiseLayer1.warpOctaves.ToString()
+                    + ", "
+                    + noiseLayer1.warpFrequency.ToString("f2")
+                    + ", "
+                    + noiseLayer1.warpRoughness.ToString("f2")
+                    + ", "
+                    + noiseLayer1.warpPersistence.ToString("f2")
+                    + " :hills-x";
+            }
 
             var noiseLayer2 = new NoiseSettings
             {
-                strength = 4f,
-                octaves = 5,
-                frequency = 1f,
-                roughness = 2f,
-                persistence = 0.5f,
+                strength = Random.RandfRange(2f, 6f), // 4f,
+                octaves = Random.RandiRange(2, 6), // 5,
+                frequency = Random.RandfRange(0.75f, 1.25f), //1f,
+                roughness = Random.RandfRange(0.5f, 2f), //2f,
+                persistence = Random.RandfRange(0.1f, 0.9f), // 0.5f,
+                warpOctaves = Random.RandiRange(1, 4),
+                warpFrequency = Random.RandfRange(0.1f, 1f),
+                warpRoughness = Random.RandfRange(1f, 4f),
+                warpPersistence = Random.RandfRange(0.25f, 1f),
                 minValue = 1.25f,
                 center = center,
-                filterType = NoiseSettings.FilterType.Simple,
+                filterType =
+                    warpChance < 0.333f
+                        ? NoiseSettings.FilterType.Warped
+                        : NoiseSettings.FilterType.Simple,
                 useFirstLayerAsMask = true,
                 seed = Seed
             };
+
+            GUI.Noise2.Text =
+                noiseLayer2.strength.ToString("f2")
+                + ", "
+                + noiseLayer2.octaves.ToString()
+                + ", "
+                + noiseLayer2.frequency.ToString("f2")
+                + ", "
+                + noiseLayer2.roughness.ToString("f2")
+                + ", "
+                + noiseLayer2.persistence.ToString("f2")
+                + " :mount";
+
+            if (noiseLayer2.filterType == NoiseSettings.FilterType.Warped)
+            {
+                GUI.Noise2.Text +=
+                    " "
+                    + noiseLayer2.warpOctaves.ToString()
+                    + ", "
+                    + noiseLayer2.warpFrequency.ToString("f2")
+                    + ", "
+                    + noiseLayer2.warpRoughness.ToString("f2")
+                    + ", "
+                    + noiseLayer2.warpPersistence.ToString("f2")
+                    + " :mount-x";
+            }
 
             var noiseLayer3 = new NoiseSettings
             {
-                strength = 0.8f,
-                octaves = 4,
-                frequency = 2.5f,
-                roughness = 2f,
-                persistence = 0.5f,
+                strength = Random.RandfRange(0.2f, 1f), //0.8f,
+                octaves = Random.RandiRange(1, 6), //4,
+                frequency = Random.RandfRange(0.5f, 3f), //2.5f,
+                roughness = Random.RandfRange(0.2f, 3f), //2f,
+                persistence = Random.RandfRange(0.1f, 1f), //0.5f,
+                warpOctaves = Random.RandiRange(1, 4),
+                warpFrequency = Random.RandfRange(0.1f, 1f),
+                warpRoughness = Random.RandfRange(1f, 4f),
+                warpPersistence = Random.RandfRange(0.25f, 1f),
                 minValue = 0f,
                 center = center,
-                filterType = NoiseSettings.FilterType.Ridged,
+                filterType =
+                    warpChance < 0.333f
+                        ? NoiseSettings.FilterType.Warped
+                        : NoiseSettings.FilterType.Simple,
                 useFirstLayerAsMask = true,
                 seed = Seed
             };
 
-            // var noiseLayer2 = new NoiseSettings
-            // {
-            //     strength = Random.RandfRange(0.5f, 6f), // 4f,
-            //     octaves = Random.RandiRange(2, 6), // 5,
-            //     frequency = Random.RandfRange(0.5f, 1.5f), //1f,
-            //     roughness = Random.RandfRange(1f, 3f), //2f,
-            //     persistence = Random.RandfRange(0.1f, 0.9f), // 0.5f,
-            //     minValue = 1.25f,
-            //     center = center,
-            //     filterType = NoiseSettings.FilterType.Simple,
-            //     useFirstLayerAsMask = true,
-            //     seed = Seed
-            // };
+            GUI.Noise3.Text =
+                noiseLayer3.strength.ToString("f2")
+                + ", "
+                + noiseLayer3.octaves.ToString()
+                + ", "
+                + noiseLayer3.frequency.ToString("f2")
+                + ", "
+                + noiseLayer3.roughness.ToString("f2")
+                + ", "
+                + noiseLayer3.persistence.ToString("f2")
+                + " :ridge";
 
-            // var noiseLayer3 = new NoiseSettings
-            // {
-            //     strength = Random.RandfRange(0.2f, 2f), //0.8f,
-            //     octaves = Random.RandiRange(1, 4), //4,
-            //     frequency = Random.RandfRange(0.5f, 3f), //2.5f,
-            //     roughness = Random.RandfRange(0.2f, 3f), //2f,
-            //     persistence = Random.RandfRange(0.1f, 1f), //0.5f,
-            //     minValue = 0f,
-            //     center = center,
-            //     filterType = NoiseSettings.FilterType.Ridged,
-            //     useFirstLayerAsMask = true,
-            //     seed = Seed
-            // };
+            if (noiseLayer3.filterType == NoiseSettings.FilterType.Warped)
+            {
+                GUI.Noise3.Text +=
+                    " "
+                    + noiseLayer3.warpOctaves.ToString()
+                    + ", "
+                    + noiseLayer3.warpFrequency.ToString("f2")
+                    + ", "
+                    + noiseLayer3.warpRoughness.ToString("f2")
+                    + ", "
+                    + noiseLayer3.warpPersistence.ToString("f2")
+                    + " :ridge-x";
+            }
 
             NoiseSettings[] noiseSettings = new[] { noiseLayer1, noiseLayer2, noiseLayer3 };
             shapeSettings.noiseSettings = noiseSettings;

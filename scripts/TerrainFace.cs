@@ -207,6 +207,7 @@ public class TerrainFace
                         Universe.Planet.LandRenderer
                     );
                 LandMeshes[landMeshIndex].Visible = false;
+                LandMeshes[landMeshIndex].GIMode = GeometryInstance3D.GIModeEnum.Static;
                 Universe.Planet.CallDeferred(Node.MethodName.AddChild, LandMeshes[landMeshIndex]);
             }
             else if (Universe.ConstructPlanetColliders)

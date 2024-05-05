@@ -18,6 +18,8 @@ public partial class Pivot : Marker3D
     float _targetHeight = 0f;
     int _jumpFrames = 0;
     float _jumpDecay = 0.01f;
+    bool _falling = false;
+    int _fallFrames = 0;
 
     public override void _PhysicsProcess(double delta)
     {
@@ -89,12 +91,12 @@ public partial class Pivot : Marker3D
         float maxElevation = new float[]
         {
             elevation,
-            x > 0 ? terrainFace.Elevations[x - 1, y].scaled : 0,
-            x > 0 && y > 0 ? terrainFace.Elevations[x - 1, y - 1].scaled : 0,
-            y > 0 ? terrainFace.Elevations[x, y - 1].scaled : 0,
-            x < xLength - 1 ? terrainFace.Elevations[x + 1, y].scaled : 0,
-            x < xLength - 1 && y < yLength - 1 ? terrainFace.Elevations[x + 1, y + 1].scaled : 0,
-            y < yLength - 1 ? terrainFace.Elevations[x, y + 1].scaled : 0
+            x > 1 ? terrainFace.Elevations[x - 2, y].scaled : 0,
+            x > 1 && y > 1 ? terrainFace.Elevations[x - 2, y - 2].scaled : 0,
+            y > 1 ? terrainFace.Elevations[x, y - 2].scaled : 0,
+            x < xLength - 2 ? terrainFace.Elevations[x + 2, y].scaled : 0,
+            x < xLength - 2 && y < yLength - 2 ? terrainFace.Elevations[x + 2, y + 2].scaled : 0,
+            y < yLength - 2 ? terrainFace.Elevations[x, y + 2].scaled : 0
         }.Max();
 
         if (!_jumping)
@@ -109,6 +111,7 @@ public partial class Pivot : Marker3D
             if (!_jumping)
             {
                 _jumping = true;
+                _falling = false;
                 _jumpImpulse = 50f;
                 _jumpFrames = 0;
                 _targetHeight = Mathf.Max(maxElevation, Universe.Planet.Radius);
@@ -121,11 +124,11 @@ public partial class Pivot : Marker3D
             _jumpFrames++;
             if (_jumpFrames < 50)
             {
-                _jumpImpulse += 6f;
+                _jumpImpulse += 5f;
             }
             else if (_jumpFrames < 300)
             {
-                _jumpImpulse += 1.8f;
+                _jumpImpulse += 1.5f;
             }
             // Weak gravity while jump held
             else if (_targetHeight > Universe.Planet.Radius && _targetHeight > maxElevation)
@@ -138,8 +141,19 @@ public partial class Pivot : Marker3D
             // Apply full gravity
             if (_jumping && _targetHeight > Universe.Planet.Radius && _targetHeight > maxElevation)
             {
-                _targetHeight -= Universe.Planet.Gravity * (float)delta * (200f + _jumpFrames * 5);
+                _targetHeight -= Universe.Planet.Gravity * (float)delta * (150f + _fallFrames * 5);
             }
+
+            if (_falling)
+            {
+                _fallFrames++;
+            }
+        }
+
+        if (Input.IsActionJustReleased("jump") && _jumping)
+        {
+            _falling = true;
+            _fallFrames = 0;
         }
 
         // Apply impulse to height, and then decay
@@ -156,6 +170,8 @@ public partial class Pivot : Marker3D
             _jumpImpulse = 0f;
             _jumpFrames = 0;
             _jumping = false;
+            _falling = false;
+            _fallFrames = 0;
         }
 
         if (Input.IsActionPressed("move_up_key"))

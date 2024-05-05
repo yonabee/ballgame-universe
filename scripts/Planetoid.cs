@@ -39,7 +39,7 @@ public partial class Planetoid : RigidBody3D, HeavenlyBody
     {
         Faces = 1;
         Layers = 1;
-        CustomIntegrator = true;
+        // CustomIntegrator = true;
         CurrentVelocity = initialVelocity;
         Mass = Gravity * Radius * Radius / Universe.Gravity * 10000;
         Random = Universe.Random;
@@ -97,8 +97,10 @@ public partial class Planetoid : RigidBody3D, HeavenlyBody
                 VertexColorUseAsAlbedo = true,
                 ClearcoatEnabled = true,
                 ClearcoatRoughness = 0.5f,
-                Roughness = 0.8f,
-                Metallic = 0.3f,
+                Roughness = 0.3f,
+                Metallic = 0.8f,
+                RimEnabled = true,
+                RimTint = 1f,
                 Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
                 CullMode = BaseMaterial3D.CullModeEnum.Disabled
             };
