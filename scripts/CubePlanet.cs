@@ -60,6 +60,8 @@ public partial class CubePlanet : Planetoid
         LOD = LOD.NearOrbit;
         CollisionLayer = 2;
         SetCollisionMaskValue(1, false);
+        MaxContactsReported = 0;
+        ContactMonitor = false;
     }
 
     public override void Initialize()

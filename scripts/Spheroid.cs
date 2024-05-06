@@ -127,8 +127,7 @@ public partial class Spheroid : Planetoid
 
     public override void _IntegrateForces(PhysicsDirectBodyState3D state)
     {
-        state.LinearVelocity = CurrentVelocity;
-        state.AngularVelocity = CurrentRotation;
+        IntegrateForces(state);
     }
 
     public override void GenerateMesh()

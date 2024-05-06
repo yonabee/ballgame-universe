@@ -54,15 +54,15 @@ public partial class Universe : Node3D
     readonly int _numStars = 10000;
     readonly float _playerSpeed = 0.3f;
     readonly float _cameraPadSpeed = 3f;
-    readonly float _planetRadius = 3000f;
+    readonly float _planetRadius = 2000f;
 
     // Multiple of 10, minimum 20.
     // This is of the full planet and is used as a base for LODs.
-    readonly int _planetResolution = 1250;
-    readonly float _maxMoonInitialVelocity = 500f;
+    readonly int _planetResolution = 750;
+    readonly float _maxMoonInitialVelocity = 1000f;
     readonly int _minMoonSize = 200;
     readonly int _maxMoonSize = 450;
-    readonly int _minMoonlet = 50;
+    readonly int _minMoonlet = 100;
     readonly int _maxMoonlet = 150;
     readonly float _moonAlpha = 0.6f;
     readonly float _moonletAlpha = 0.6f;
@@ -158,10 +158,12 @@ public partial class Universe : Node3D
 
         if (Initialized)
         {
-            Bodies.ForEach(body =>
-                body.UpdateVelocity(Bodies, Planet.Transform.Origin, (float)delta)
-            );
-            Bodies.ForEach(body => body.UpdatePosition((float)delta));
+            for (int i = 0; i < Bodies.Count; i++)
+            {
+                var body = Bodies[i];
+                body.UpdateVelocity(Bodies, Planet.Transform.Origin, (float)delta);
+                body.UpdatePosition((float)delta);
+            }
             Planet.UpdatePosition((float)delta);
             Stars.RotateObjectLocal(starRotation.Normalized(), (float)delta * starSpeed);
         }
@@ -436,7 +438,7 @@ public partial class Universe : Node3D
 
     void _InitializeMoonlets(int asteroidCount)
     {
-        float maxV = _maxMoonInitialVelocity / 10f;
+        float maxV = _maxMoonInitialVelocity;
         float maxDistance = Radius * 0.333f;
         for (int i = 0; i < asteroidCount; i++)
         {

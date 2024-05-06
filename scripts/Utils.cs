@@ -423,6 +423,28 @@ public static class Utils
         }
     }
 
+    // Elastic collision of two spherical bodies:
+    // https://physics.stackexchange.com/questions/599278/how-can-i-calculate-the-final-velocities-of-two-spheres-after-an-elastic-collisi
+    public static Vector3 Collide(Planetoid body1, Planetoid body2, Vector3 n)
+    {
+        var v1 = body1.CurrentVelocity;
+        var v2 = body2.CurrentVelocity;
+        var c =
+            2
+            * (
+                (n.X * (v2.X - v1.X) + n.Y * (v2.Y - v1.Y) + n.Z * (v2.Z - v1.Z))
+                / (
+                    (Mathf.Pow(n.X, 2) + Mathf.Pow(n.Y, 2) + Mathf.Pow(n.Z, 2))
+                    * (1 / body1.Mass + 1 / body2.Mass)
+                )
+            );
+        var v1Result = v1 + ((c / body1.Mass) * n);
+        // var v2Result = v2 - (c / body2.Mass * n);
+        //GD.Print(c);
+        // GD.Print(v1 + " --- " + v1Result);
+        return v1Result.Reflect(n);
+    }
+
     // from the mac os colourpicker
     public static string[] Crayons = new[]
     {

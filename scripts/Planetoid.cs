@@ -15,6 +15,9 @@ public partial class Planetoid : RigidBody3D, HeavenlyBody
     public bool OutOfBounds { get; set; }
     public Vector3 CurrentRotation { get; set; }
 
+    private ulong _colliderId;
+    private int _collisionWaitFrames = 0;
+
     public enum MaterialType
     {
         Standard,
@@ -30,6 +33,14 @@ public partial class Planetoid : RigidBody3D, HeavenlyBody
         GeneratePlanet();
     }
 
+    public override void _PhysicsProcess(double delta)
+    {
+        if (_collisionWaitFrames > 0)
+        {
+            _collisionWaitFrames--;
+        }
+    }
+
     public void UpdatePosition(float timeStep)
     {
         // Do nothing and let _IntegrateForces handle it.
@@ -39,19 +50,62 @@ public partial class Planetoid : RigidBody3D, HeavenlyBody
     {
         Faces = 1;
         Layers = 1;
-        // CustomIntegrator = true;
+        CustomIntegrator = true;
         CurrentVelocity = initialVelocity;
         Mass = Gravity * Radius * Radius / Universe.Gravity * 10000;
         Random = Universe.Random;
         CollisionLayer = 1;
         SetCollisionMaskValue(1, true);
         SetCollisionMaskValue(2, true);
+        MaxContactsReported = 1;
+        ContactMonitor = true;
     }
 
     public void GeneratePlanet()
     {
         Initialize();
         GenerateMesh();
+    }
+
+    public void IntegrateForces(PhysicsDirectBodyState3D state)
+    {
+        if (state.GetContactCount() > 0)
+        {
+            var id = state.GetContactColliderId(0);
+            if (_colliderId == id && _collisionWaitFrames > 0)
+            {
+                return;
+            }
+            _colliderId = id;
+            _collisionWaitFrames = 10;
+            var collider = state.GetContactColliderObject(0);
+            //GD.Print(collider.GetClass() + " - " + collider.GetType().ToString());
+            var colliderName = collider.GetType().ToString();
+            var normal = state.GetContactLocalNormal(0);
+            if (colliderName == "Spheroid" || colliderName == "MicroSpheroid")
+            {
+                var planetoid = collider as Planetoid;
+                // GD.Print(
+                //     "Mass of "
+                //         + Mass.ToString()
+                //         + " colliding with "
+                //         + planetoid.Mass.ToString()
+                //         + " of velocity "
+                //         + planetoid.CurrentVelocity
+                // );
+                CurrentVelocity = Utils.Collide(this, planetoid, -normal);
+            }
+            else
+            {
+                CurrentVelocity = CurrentVelocity.Bounce(normal);
+            }
+
+            CurrentRotation = CurrentRotation.Bounce(normal);
+        }
+        //state.AddConstantCentralForce(CurrentVelocity);
+        state.LinearVelocity = CurrentVelocity;
+        state.AngularVelocity = CurrentRotation;
+        //state.AddConstantTorque(CurrentRotation);
     }
 
     public StandardMaterial3D GetMaterial(MaterialType type)

@@ -102,20 +102,7 @@ public partial class MicroSpheroid : Planetoid
 
     public override void _IntegrateForces(PhysicsDirectBodyState3D state)
     {
-        state.LinearVelocity = CurrentVelocity;
-        state.AngularVelocity = CurrentRotation;
-        // state.ApplyTorque(CurrentRotation);
-    }
-
-    public override void _PhysicsProcess(double delta)
-    {
-        // var collision = MoveAndCollide(CurrentVelocity * (float)delta);
-        // if (collision != null)
-        // {
-        //     var normal = collision.GetNormal();
-        //     CurrentVelocity = CurrentVelocity.Bounce(normal);
-        //     CurrentRotation = CurrentRotation.Bounce(normal);
-        // }
+        IntegrateForces(state);
     }
 
     public override void GenerateMesh()
