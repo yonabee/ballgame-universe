@@ -52,6 +52,7 @@ public static class StarNursery
 
                 moon.Translate(Utils.RandomPointOnUnitSphere() * settings.Distance);
 
+                moon.Crayons = settings.Colors;
                 var chance = Universe.Random.Randf();
                 if (chance < 0.2f)
                 {

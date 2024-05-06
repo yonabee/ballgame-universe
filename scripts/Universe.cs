@@ -385,8 +385,10 @@ public partial class Universe : Node3D
                             Random.RandfRange(Planet.Radius * 2, maxDistance) + (radius * 10),
                         Colors = new[]
                         {
-                            Colors[i % Colors.Length],
-                            Colors[(i + Random.RandiRange(1, 32)) % Colors.Length]
+                            new Color(Utils.Crayons[i % Utils.Crayons.Length]),
+                            new Color(
+                                Utils.Crayons[(i + Random.RandiRange(1, 32)) % Utils.Crayons.Length]
+                            )
                         },
                         Transparency = _moonAlpha
                     }
@@ -459,8 +461,10 @@ public partial class Universe : Node3D
                             * Mathf.Sign(Random.Randfn()),
                         Colors = new[]
                         {
-                            Colors[i % Colors.Length],
-                            Colors[(i + Random.RandiRange(1, 32)) % Colors.Length]
+                            new Color(Utils.Crayons[i % Utils.Crayons.Length]),
+                            new Color(
+                                Utils.Crayons[(i + Random.RandiRange(1, 32)) % Utils.Crayons.Length]
+                            )
                         },
                         Transparency = _moonletAlpha
                     }

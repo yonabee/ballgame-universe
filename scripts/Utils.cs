@@ -438,11 +438,9 @@ public static class Utils
                     * (1 / body1.Mass + 1 / body2.Mass)
                 )
             );
-        var v1Result = v1 + ((c / body1.Mass) * n);
+        var v1Result = v1 + (c / body1.Mass * n);
         // var v2Result = v2 - (c / body2.Mass * n);
-        //GD.Print(c);
-        // GD.Print(v1 + " --- " + v1Result);
-        return v1Result.Reflect(n);
+        return v1Result;
     }
 
     // from the mac os colourpicker
