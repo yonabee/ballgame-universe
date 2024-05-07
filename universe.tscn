@@ -181,6 +181,7 @@ offset_bottom = 216.0
 
 [node name="ObjectsText" type="Label" parent="GUI/Info2"]
 visible = false
+layout_mode = 0
 offset_left = 1.0
 offset_top = 8.0
 offset_right = 183.0
@@ -192,6 +193,7 @@ theme_override_font_sizes/font_size = 5
 
 [node name="StatusText" type="Label" parent="GUI/Info2"]
 visible = false
+layout_mode = 0
 offset_left = 1.0
 offset_top = 15.0
 offset_right = 201.0
@@ -203,6 +205,7 @@ theme_override_font_sizes/font_size = 5
 
 [node name="PositionText" type="Label" parent="GUI/Info2"]
 visible = false
+layout_mode = 0
 offset_left = 1.0
 offset_top = 22.0
 offset_right = 201.0
@@ -214,6 +217,7 @@ theme_override_font_sizes/font_size = 5
 
 [node name="HeightText" type="Label" parent="GUI/Info2"]
 visible = false
+layout_mode = 0
 offset_left = 1.0
 offset_top = 29.0
 offset_right = 201.0
@@ -225,6 +229,7 @@ theme_override_font_sizes/font_size = 5
 
 [node name="TimeText" type="Label" parent="GUI/Info2"]
 visible = false
+layout_mode = 0
 offset_left = 1.0
 offset_top = 36.0
 offset_right = 201.0
@@ -236,6 +241,7 @@ theme_override_font_sizes/font_size = 5
 
 [node name="NoiseText1" type="Label" parent="GUI/Info2"]
 visible = false
+layout_mode = 0
 offset_left = 1.0
 offset_top = 43.0
 offset_right = 201.0
@@ -247,6 +253,7 @@ theme_override_font_sizes/font_size = 5
 
 [node name="NoiseText2" type="Label" parent="GUI/Info2"]
 visible = false
+layout_mode = 0
 offset_left = 1.0
 offset_top = 50.0
 offset_right = 201.0
@@ -258,6 +265,7 @@ theme_override_font_sizes/font_size = 5
 
 [node name="NoiseText3" type="Label" parent="GUI/Info2"]
 visible = false
+layout_mode = 0
 offset_left = 1.0
 offset_top = 57.0
 offset_right = 201.0
@@ -274,6 +282,7 @@ offset_right = 384.0
 offset_bottom = 216.0
 
 [node name="SeedText" type="Label" parent="GUI/Info1"]
+layout_mode = 0
 offset_left = 1.0
 offset_top = 1.0
 offset_right = 183.0
@@ -285,6 +294,7 @@ theme_override_font_sizes/font_size = 5
 
 [node name="ProgressBar" type="ProgressBar" parent="GUI"]
 process_mode = 3
+layout_mode = 0
 offset_left = 32.0
 offset_top = 83.0
 offset_right = 354.0

@@ -16,9 +16,12 @@ public partial class Universe : Node3D
     public static Camera3D WatcherCam;
     public static float Gravity;
     public static int Radius = 7500;
+
     public static RandomNumberGenerator Random;
     public static Face CurrentFace;
     public static Vector2 CurrentLocation;
+    public static float CurrentElevation = 0f;
+
     public static DirectionalLight3D Sunlight;
     public static Godot.Environment Environment;
     public static ShaderMaterial Sky;
@@ -230,6 +233,8 @@ public partial class Universe : Node3D
             Stars.Visible = false;
             GUI.Progress.Value = 0;
             GUI.Progress.Visible = true;
+            CurrentElevation = 0f;
+            CurrentLocation = Vector2.Zero;
             _Ready();
         }
 

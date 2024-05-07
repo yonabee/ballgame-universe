@@ -4,6 +4,7 @@ using Godot;
 
 public partial class Planetoid : RigidBody3D, HeavenlyBody
 {
+    public static readonly float Dampening = 0.8f;
     public Vector3 initialVelocity;
     public float Radius { get; set; }
     public int Faces { get; set; }
@@ -77,11 +78,11 @@ public partial class Planetoid : RigidBody3D, HeavenlyBody
                 return;
             }
             _colliderId = id;
-            _collisionWaitFrames = 10;
+            _collisionWaitFrames = 25;
             var collider = state.GetContactColliderObject(0);
-            //GD.Print(collider.GetClass() + " - " + collider.GetType().ToString());
             var colliderName = collider.GetType().ToString();
             var normal = state.GetContactLocalNormal(0);
+
             if (colliderName == "Spheroid" || colliderName == "MicroSpheroid")
             {
                 var planetoid = collider as Planetoid;
@@ -97,15 +98,13 @@ public partial class Planetoid : RigidBody3D, HeavenlyBody
             }
             else
             {
-                CurrentVelocity = CurrentVelocity.Bounce(normal);
+                CurrentVelocity = CurrentVelocity.Bounce(normal) * Dampening;
             }
 
             CurrentRotation = CurrentRotation.Bounce(normal);
         }
-        //state.AddConstantCentralForce(CurrentVelocity);
         state.LinearVelocity = CurrentVelocity;
         state.AngularVelocity = CurrentRotation;
-        //state.AddConstantTorque(CurrentRotation);
     }
 
     public StandardMaterial3D GetMaterial(MaterialType type)
