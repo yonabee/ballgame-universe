@@ -34,6 +34,8 @@ public partial class Universe : Node3D
     public static bool Initialized = false;
     public static string Seed = "tatooine";
     public static readonly float CameraFloatHeight = 100f;
+    public static HeavenlyBody LastPlayerHit;
+    public static int HitTimer = 0;
     public Color[] Colors =
     {
         new Color("#000000"),
@@ -161,6 +163,10 @@ public partial class Universe : Node3D
 
         if (Initialized)
         {
+            if (HitTimer > 0)
+            {
+                HitTimer--;
+            }
             for (int i = 0; i < Bodies.Count; i++)
             {
                 var body = Bodies[i];
