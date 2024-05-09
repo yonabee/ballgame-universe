@@ -393,8 +393,8 @@ public static class Utils
     }
 
     public static void ApplyBodyToVelocity(
-        HeavenlyBody thisBody,
-        HeavenlyBody otherBody,
+        CelestialObject thisBody,
+        CelestialObject otherBody,
         float mass,
         float radius,
         float timeStep,

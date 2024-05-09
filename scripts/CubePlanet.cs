@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Godot;
+using static Universe;
 using static Utils;
 
 public enum LOD
@@ -15,8 +16,16 @@ public enum LOD
     Collision,
 }
 
-public partial class CubePlanet : Planetoid
+public partial class CubePlanet : Node3D, CelestialObject
 {
+    public float Radius { get; set; }
+    public int Faces { get; set; }
+    public int Layers { get; set; }
+    public float Gravity { get; set; }
+    public float Mass { get; set; }
+    public Vector3 CurrentRotation { get; set; }
+    public Vector3 CurrentVelocity { get; set; }
+
     public int Resolution = 400;
     public float RotationSpeed = 0.3f;
     public List<Face> faceRenderMask;
@@ -45,54 +54,47 @@ public partial class CubePlanet : Planetoid
     public override void _Ready()
     {
         Configure();
-        GeneratePlanet();
+        Initialize();
+        GenerateMesh();
     }
 
-    public override void Configure()
+    public void Configure()
     {
         Gravity = 9.8f; //ProjectSettings.GetSetting("physics/3d/default_gravity").AsSingle();
-
-        base.Configure();
-
+        Mass = Gravity * Radius * Radius / Universe.Gravity * 10000;
         Faces = 6;
         Layers = 2;
         faceRenderMask = new List<Face> { Face.All };
         LOD = LOD.NearOrbit;
-        CollisionLayer = 2;
-        SetCollisionMaskValue(1, false);
-        MaxContactsReported = 0;
-        ContactMonitor = false;
     }
 
-    public override void Initialize()
+    public void Initialize()
     {
-        base.Initialize();
-
         if (shapeSettings == null)
         {
-            shapeSettings = new ShapeGenerator.ShapeSettings { mass = Mass, radius = Radius };
+            shapeSettings = new ShapeGenerator.ShapeSettings { radius = Radius };
 
             var center = ToGlobal(Transform.Origin);
-            var warpChance = Random.Randf();
+            var warpChance = Universe.Random.Randf();
 
             var noiseLayer1 = new NoiseSettings
             {
-                strength = Random.Randfn(0.15f, 0.01f), //Range(0.1f, 0.2f), //0.15f,
-                octaves = Random.RandiRange(2, 6), //4,
-                frequency = Random.Randfn(0.5f, 0.01f), // Range(0.4f, 0.6f), //0.5f,
-                roughness = Random.Randfn(2.35f, 0.5f), //2.35f,
-                persistence = Random.Randfn(0.5f, 0.25f), //0.5f,
-                warpOctaves = Random.RandiRange(1, 2),
-                warpFrequency = Random.RandfRange(0.1f, 0.2f),
-                warpRoughness = Random.RandfRange(0.1f, 2f),
-                warpPersistence = Random.RandfRange(0.25f, 1f),
+                strength = Universe.Random.Randfn(0.15f, 0.01f), //Range(0.1f, 0.2f), //0.15f,
+                octaves = Universe.Random.RandiRange(2, 6), //4,
+                frequency = Universe.Random.Randfn(0.5f, 0.01f), // Range(0.4f, 0.6f), //0.5f,
+                roughness = Universe.Random.Randfn(2.35f, 0.5f), //2.35f,
+                persistence = Universe.Random.Randfn(0.5f, 0.25f), //0.5f,
+                warpOctaves = Universe.Random.RandiRange(1, 2),
+                warpFrequency = Universe.Random.RandfRange(0.1f, 0.2f),
+                warpRoughness = Universe.Random.RandfRange(0.1f, 2f),
+                warpPersistence = Universe.Random.RandfRange(0.25f, 1f),
                 minValue = 1.1f,
                 center = center,
                 filterType =
                     warpChance < 0.666f
                         ? NoiseSettings.FilterType.Warped
                         : NoiseSettings.FilterType.Simple,
-                seed = Seed
+                seed = (int)Universe.Random.Randi()
             };
 
             GUI.Noise1.Text =
@@ -123,16 +125,16 @@ public partial class CubePlanet : Planetoid
 
             var noiseLayer2 = new NoiseSettings
             {
-                strength = Random.Randfn(4f, 0.1f), // 4f,
-                octaves = Random.RandiRange(2, 6), // 5,
-                frequency = Random.Randfn(1f, 0.1f), //1f,
-                roughness = Random.Randfn(2f, 0.2f), //2f,
-                persistence = Random.Randfn(0.5f, 0.15f), // 0.5f,
+                strength = Universe.Random.Randfn(4f, 0.1f), // 4f,
+                octaves = Universe.Random.RandiRange(2, 6), // 5,
+                frequency = Universe.Random.Randfn(1f, 0.1f), //1f,
+                roughness = Universe.Random.Randfn(2f, 0.2f), //2f,
+                persistence = Universe.Random.Randfn(0.5f, 0.15f), // 0.5f,
                 minValue = 1.25f,
                 center = center,
                 filterType = NoiseSettings.FilterType.Simple,
                 useFirstLayerAsMask = true,
-                seed = Seed
+                seed = (int)Universe.Random.Randi()
             };
 
             GUI.Noise2.Text =
@@ -149,16 +151,16 @@ public partial class CubePlanet : Planetoid
 
             var noiseLayer3 = new NoiseSettings
             {
-                strength = Random.Randfn(0.8f, 0.05f), //0.8f,
-                octaves = Random.RandiRange(1, 4), //4,
-                frequency = Random.RandfRange(0.5f, 2.75f), //2.5f,
-                roughness = Random.Randfn(2f, 0.1f), //2f,
-                persistence = Random.Randfn(0.5f, 0.1f), //0.5f,
+                strength = Universe.Random.Randfn(0.8f, 0.05f), //0.8f,
+                octaves = Universe.Random.RandiRange(1, 4), //4,
+                frequency = Universe.Random.RandfRange(0.5f, 2.75f), //2.5f,
+                roughness = Universe.Random.Randfn(2f, 0.1f), //2f,
+                persistence = Universe.Random.Randfn(0.5f, 0.1f), //0.5f,
                 minValue = 0f,
                 center = center,
                 filterType = NoiseSettings.FilterType.Simple,
                 useFirstLayerAsMask = true,
-                seed = Seed
+                seed = (int)Universe.Random.Randi()
             };
 
             GUI.Noise3.Text =
@@ -181,13 +183,13 @@ public partial class CubePlanet : Planetoid
         {
             colorSettings = new ColorSettings
             {
-                oceanColor = new Color(Crayons[Random.RandiRange(0, 35)]),
+                oceanColor = new Color(Crayons[Universe.Random.RandiRange(0, 35)]),
                 biomeColourSettings = new ColorSettings.BiomeColourSettings()
             };
 
             var biome1 = new ColorSettings.BiomeColourSettings.Biome
             {
-                tint = new Color(Crayons[Random.RandiRange(0, 47)]),
+                tint = new Color(Crayons[Universe.Random.RandiRange(0, 47)]),
                 tintPercent = 0.3f,
                 startHeight = 0f,
                 gradient = new Gradient
@@ -199,7 +201,7 @@ public partial class CubePlanet : Planetoid
 
             var biome2 = new ColorSettings.BiomeColourSettings.Biome
             {
-                tint = new Color(Crayons[Random.RandiRange(0, 47)]),
+                tint = new Color(Crayons[Universe.Random.RandiRange(0, 47)]),
                 tintPercent = 0.3f,
                 startHeight = 0.333f,
                 gradient = new Gradient
@@ -211,7 +213,7 @@ public partial class CubePlanet : Planetoid
 
             var biome3 = new ColorSettings.BiomeColourSettings.Biome
             {
-                tint = new Color(Crayons[Random.RandiRange(0, 47)]),
+                tint = new Color(Crayons[Universe.Random.RandiRange(0, 47)]),
                 tintPercent = 0.3f,
                 startHeight = 0.666f,
                 gradient = new Gradient
@@ -244,15 +246,15 @@ public partial class CubePlanet : Planetoid
                 filterType = NoiseSettings.FilterType.Warped,
                 strength = 1f,
                 octaves = 5,
-                frequency = Random.RandfRange(0.1f, 1f),
-                roughness = Random.RandfRange(1f, 3f),
-                persistence = Random.RandfRange(0.3f, 0.7f),
+                frequency = Universe.Random.RandfRange(0.1f, 1f),
+                roughness = Universe.Random.RandfRange(1f, 3f),
+                persistence = Universe.Random.RandfRange(0.3f, 0.7f),
                 minValue = 0f,
-                warpFrequency = Random.RandfRange(0.1f, 1f)
+                warpFrequency = Universe.Random.RandfRange(0.1f, 1f)
             };
 
             colorSettings.biomeColourSettings.heightMapNoise = heightMapNoise;
-            colorSettings.biomeColourSettings.heightMapNoiseStrength = Random.RandfRange(
+            colorSettings.biomeColourSettings.heightMapNoiseStrength = Universe.Random.RandfRange(
                 0.2f,
                 0.5f
             );
@@ -381,12 +383,12 @@ public partial class CubePlanet : Planetoid
         }
     }
 
-    public new void UpdatePosition(float timeStep)
+    public void UpdatePosition(float timeStep)
     {
         RotateObjectLocal(CurrentRotation.Normalized(), timeStep * RotationSpeed);
     }
 
-    public override async void GenerateMesh()
+    public async void GenerateMesh()
     {
         var generateLOD = async (LOD lod) =>
         {
@@ -455,11 +457,11 @@ public partial class CubePlanet : Planetoid
     Color[] _CreateBiomeGradient()
     {
         var gradient = new Color[7];
-        Color grey = new Color(Crayons[Crayons.Length + Random.RandiRange(0, 11) - 12]);
+        Color grey = new Color(Crayons[Crayons.Length + Universe.Random.RandiRange(0, 11) - 12]);
         if (grey.V < 0.5f)
         {
             gradient[6] = grey;
-            var darkIdx = Crayons.Length + Random.RandiRange(0, 11) - 24;
+            var darkIdx = Crayons.Length + Universe.Random.RandiRange(0, 11) - 24;
             gradient[5] = new Color(Crayons[darkIdx]);
             var darkOffsetIdx = 24 + ((darkIdx - 24 + Offset(3)) % 12);
             gradient[4] = new Color(Crayons[darkOffsetIdx]);
@@ -475,7 +477,7 @@ public partial class CubePlanet : Planetoid
         else
         {
             gradient[0] = grey;
-            var lightIdx = Random.RandiRange(0, 11);
+            var lightIdx = Universe.Random.RandiRange(0, 11);
             gradient[1] = new Color(Crayons[lightIdx]);
             var lightOffsetIdx = Mathf.Abs((lightIdx + Offset(3)) % 12);
             gradient[2] = new Color(Crayons[lightOffsetIdx]);
@@ -488,7 +490,7 @@ public partial class CubePlanet : Planetoid
             var darkOffsetIdx = 24 + ((darkIdx - 24 + Offset(3)) % 12);
             gradient[6] = new Color(Crayons[darkOffsetIdx]);
         }
-        if (Random.Randf() >= 0.5f)
+        if (Universe.Random.Randf() >= 0.5f)
         {
             Array.Reverse(gradient);
         }

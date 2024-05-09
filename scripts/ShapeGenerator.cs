@@ -21,7 +21,6 @@ public class ShapeGenerator
     public class ShapeSettings
     {
         public float radius = 1;
-        public float mass = 1;
         public NoiseSettings[] noiseSettings;
     }
 
@@ -39,8 +38,7 @@ public class ShapeGenerator
     public Elevation DetermineElevation(Vector3 pointOnUnitSphere)
     {
         Elevation result;
-        result = new Elevation();
-        result.unscaled = CalculateUnscaledElevation(pointOnUnitSphere);
+        result = new Elevation { unscaled = CalculateUnscaledElevation(pointOnUnitSphere) };
         result.scaled = CalculateScaledElevation(result.unscaled);
         if (Start == Vector3.Zero)
         {

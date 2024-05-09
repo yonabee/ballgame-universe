@@ -308,7 +308,6 @@ public partial class Universe : Node3D
     {
         Planet = new CubePlanet
         {
-            Seed = (int)Random.Randi(),
             Radius = _planetRadius,
             // Multiple of 10, minimum 20.
             // This is of the full planet and is used as a base for LODs.
